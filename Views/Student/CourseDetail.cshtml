@@ -1,0 +1,73 @@
+@model COTHUYPRO.Models.Course
+@{
+    ViewData["Title"] = Model.CourseName;
+    var lessons = ViewBag.Lessons as List<COTHUYPRO.Models.Lesson>;
+    var progress = (double)ViewBag.Progress;
+}
+
+<div class="page-header container-xxl mt-4">
+    <div>
+        <p class="eyebrow">Chi tiết khóa học</p>
+        <h2>@Model.CourseName</h2>
+        <p class="muted">@Model.Category?.Name • @Model.Level?.Name</p>
+    </div>
+    <div class="quick-actions">
+        <div class="progress" style="width: 200px; height: 10px; margin: 0;">
+            <div class="progress-bar" style="width: @progress%"></div>
+        </div>
+        <small class="text-white ms-2">@progress% hoàn thành</small>
+    </div>
+</div>
+
+<div class="container-xxl">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="panel-card mb-4 animate-fade-in delay-100" style="animation-fill-mode: both;">
+                <div class="panel-head">
+                    <h4>Nội dung khóa học</h4>
+                    <span class="pill muted">@lessons?.Count bài giảng</span>
+                </div>
+                
+                <div class="list-group list-group-flush mt-3" style="background: transparent;">
+                    @if (lessons != null && lessons.Any())
+                    {
+                        foreach (var lesson in lessons)
+                        {
+                            <a asp-action="Lesson" asp-route-id="@lesson.Id" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" style="background: rgba(255,255,255,0.02); color: var(--text); border-color: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px;">
+                                <div>
+                                    <h5 class="mb-1" style="font-size: 1rem;">@lesson.Title</h5>
+                                    <small class="muted">Bài học</small>
+                                </div>
+                                <span class="badge" style="background: var(--primary-2); color: #fff;">Học ngay</span>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted p-3">Đang cập nhật bài giảng cho khóa này.</p>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="panel-card animate-fade-in delay-200" style="animation-fill-mode: both;">
+                <div class="panel-head">
+                    <h4>Giảng viên</h4>
+                </div>
+                @foreach(var inst in Model.Instructors)
+                {
+                    <div class="d-flex align-items-center mt-3 p-3" style="background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <div class="avatar bg-primary text-white d-flex align-items-center justify-content-center rounded-circle" style="width: 48px; height: 48px; font-weight: bold; font-size: 1.2rem;">
+                            @inst.User.FullName?.FirstOrDefault()
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="mb-0 text-white">@inst.User.FullName</h6>
+                            <small class="muted">Chuyên gia đào tạo</small>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

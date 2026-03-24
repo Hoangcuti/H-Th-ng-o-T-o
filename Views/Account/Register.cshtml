@@ -1,0 +1,50 @@
+@model COTHUYPRO.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="auth-wrapper animate-fade-in">
+    <div class="auth-card">
+        <h1>Tạo tài khoản</h1>
+        <form asp-action="Register" method="post">
+            <div class="mb-3">
+                <label class="form-label">Tên đăng nhập</label>
+                <input asp-for="Username" class="form-control" placeholder="Tên đăng nhập" />
+                <span class="text-danger" asp-validation-for="Username"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Họ và tên</label>
+                <input asp-for="FullName" class="form-control" placeholder="Nguyễn Văn A" />
+                <span class="text-danger" asp-validation-for="FullName"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email *</label>
+                <input asp-for="Email" class="form-control" placeholder="email@example.com" />
+                <span class="text-danger" asp-validation-for="Email"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Số điện thoại *</label>
+                <input asp-for="Phone" class="form-control" placeholder="09xx xxx xxx" />
+                <span class="text-danger" asp-validation-for="Phone"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mật khẩu</label>
+                <input asp-for="Password" class="form-control" placeholder="••••••••" />
+                <span class="text-danger" asp-validation-for="Password"></span>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Nhập lại mật khẩu</label>
+                <input asp-for="ConfirmPassword" class="form-control" placeholder="••••••••" />
+                <span class="text-danger" asp-validation-for="ConfirmPassword"></span>
+            </div>
+            <button class="btn btn-primary w-100 lg" type="submit">Đăng ký ngay</button>
+            <p class="mt-4 text-center text-muted m-0" style="color: var(--muted);">
+                Đã có tài khoản? <a asp-action="Login" style="color: var(--primary); font-weight: 600; text-decoration: none;">Đăng nhập</a>
+            </p>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

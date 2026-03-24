@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Training Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/COTHUYPRO.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="container-xxl nav-wrap">
+                <div class="brand">
+                    <div class="mark">IT</div>
+                    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Internal Training</a>
+                </div>
+                <nav>
+                    <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+                    <a asp-controller="Courses" asp-action="Index">Khóa học</a>
+                    <a asp-controller="Home" asp-action="Index" asp-fragment="classes">Lịch học</a>
+                    <a asp-controller="Chat" asp-action="Index">Chat AI</a>
+                    @if (User.IsInRole("Admin"))
+                    { <a asp-controller="Admin" asp-action="Index">Admin</a> }
+                    else if (User.IsInRole("Instructor"))
+                    { <a asp-controller="Instructor" asp-action="Index">Giảng viên</a> }
+                    else if (User.IsInRole("Student"))
+                    { <a asp-controller="Student" asp-action="Index">Học viên</a> }
+                </nav>
+                <div class="auth-actions">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "Chưa cập nhật";
+                        var phone = User.FindFirst(System.Security.Claims.ClaimTypes.MobilePhone)?.Value ?? "Chưa cập nhật";
+                        <div class="user-dropdown nav-item">
+                            <button class="btn ghost dropdown-trigger">
+                                👤 @(User.FindFirst("FullName")?.Value ?? User.Identity.Name)
+                            </button>
+                            <div class="dropdown-menu-custom">
+                                <div class="dropdown-header d-flex justify-content-between align-items-center">
+                                    Hồ sơ cá nhân
+                                    <a asp-controller="Account" asp-action="Profile" class="btn btn-sm ghost" style="padding: 2px 8px; font-size: 0.75rem;">Chỉnh sửa</a>
+                                </div>
+                                <div class="dropdown-item"><span>✉️</span> @email</div>
+                                <div class="dropdown-item"><span>📞</span> @phone</div>
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-item security-toggle" tabindex="0">
+                                    <div class="sec-label">
+                                        <span>🛡️</span> Bảo mật
+                                        <small>T.Báo qua Gmail</small>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                    <button class="dropdown-btn-logout w-100" type="submit">🚪 Đăng xuất</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="btn ghost" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                        <a class="btn solid" asp-controller="Account" asp-action="Register">Đăng ký</a>
+                    }
+                </div>
+            </div>
+        </header>
+
+        <div id="toast-container" class="toast-container"></div>
+        @if (TempData["Message"] != null) { <span class="system-toast" data-type="success" data-msg="@TempData["Message"]" style="display:none"></span> }
+        @if (TempData["Registered"] != null) { <span class="system-toast" data-type="success" data-msg="@TempData["Registered"]" style="display:none"></span> }
+        @if (TempData["Error"] != null) { <span class="system-toast" data-type="error" data-msg="@TempData["Error"]" style="display:none"></span> }
+
+        <div class="content animate-fade-in">
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="footer">
+            <div class="container-xxl footer-row">
+                <div>
+                    <strong>Internal Training</strong><br />
+                    <span class="muted">Đào tạo nội bộ · Quản trị dễ dùng</span>
+                </div>
+                <div class="muted">SQL Server: DESKTOP-KH2OE1U\SQLEXPRESS</div>
+            </div>
+        </footer>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

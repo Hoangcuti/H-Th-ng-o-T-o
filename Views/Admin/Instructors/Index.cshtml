@@ -1,0 +1,84 @@
+@model COTHUYPRO.Models.InstructorsPageVm
+@{
+    ViewData["Title"] = "Quản lý giảng viên";
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Giảng viên</p>
+        <h2>Quản lý giảng viên</h2>
+        <p class="muted">Phân công giảng dạy (CourseInstructors liên kết Users).</p>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head">
+        <h4>Danh sách giảng viên</h4>
+        <span class="pill muted">@Model.Instructors.Count người</span>
+        <a class="btn solid" asp-action="CreateInstructor">➕ Thêm</a>
+    </div>
+    <div class="table-wrapper">
+        <table class="table table-borderless align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Họ tên</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Số khóa phụ trách</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var ins in Model.Instructors)
+            {
+                <tr>
+                    <td class="fw-semibold">@ins.User.FullName</td>
+                    <td>@ins.User.Username</td>
+                    <td>@ins.User.Email</td>
+                    <td>@ins.CourseCount</td>
+                    <td class="muted">@ins.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                    <td class="d-flex gap-2">
+                        <a class="btn ghost btn-sm" asp-action="EditInstructor" asp-route-id="@ins.User.Id">✏</a>
+                        <form asp-action="DeleteInstructor" method="post" onsubmit="return confirm('Xóa giảng viên này?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@ins.User.Id" />
+                            <button class="btn btn-sm" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecdd3;">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head">
+        <h4>Gán giảng viên vào khóa học</h4>
+    </div>
+    <form asp-action="AssignInstructorToCourse" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+        <div class="col-md-6">
+            <label class="form-label">Giảng viên</label>
+            <select name="instructorId" class="form-select">
+                @foreach (var ins in Model.Instructors)
+                {
+                    <option value="@ins.User.Id">@ins.User.FullName (@ins.User.Username)</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Khóa học</label>
+            <select name="courseId" class="form-select">
+                @foreach (var c in Model.Courses)
+                {
+                    <option value="@c.Id">@c.CourseName</option>
+                }
+            </select>
+        </div>
+        <div class="col-12">
+            <button class="btn solid" type="submit">Gán</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,160 @@
+using COTHUYPRO.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace COTHUYPRO.Controllers;
+
+[Authorize(Policy = "AdminOnly")]
+public class AdminController : Controller
+{
+    private readonly TrainingContext _context;
+
+    public AdminController(TrainingContext context)
+    {
+        _context = context;
+    }
+
+    public IActionResult Index()
+    {
+        var stats = new AdminDashboardVm
+        {
+            UserCount = _context.Users.Count(),
+            CourseCount = _context.Courses.Count(),
+            ClassCount = _context.Classes.Count(),
+            ExamCount = _context.Exams.Count(),
+            PendingCertificates = _context.UserCertificates.Count()
+        };
+
+        var latestUsers = _context.Users
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .OrderByDescending(u => u.CreatedAt)
+            .Take(8)
+            .ToList();
+
+        var latestCourses = _context.Courses
+            .Include(c => c.Category)
+            .Include(c => c.Level)
+            .OrderByDescending(c => c.Id)
+            .Take(6)
+            .ToList();
+
+        var vm = new AdminIndexViewModel
+        {
+            Stats = stats,
+            RecentUsers = latestUsers,
+            RecentCourses = latestCourses
+        };
+        return View(vm);
+    }
+
+    public IActionResult Courses()
+    {
+        var data = _context.Courses
+            .Include(c => c.Category)
+            .Include(c => c.Level)
+            .Include(c => c.Instructors).ThenInclude(i => i.User)
+            .Include(c => c.Classes)
+            .Include(c => c.LearningProgresses)
+            .Select(c => new AdminCourseRow
+            {
+                Course = c,
+                CategoryName = c.Category?.Name ?? "Chưa phân loại",
+                LevelName = c.Level?.Name ?? "Không cấp độ",
+                ClassCount = c.Classes.Count,
+                LearnerCount = c.LearningProgresses.Count,
+                Instructors = c.Instructors.Select(i => i.User!.FullName).ToList()
+            })
+            .ToList();
+
+        return View(new CoursesPageVm { Courses = data });
+    }
+
+    public IActionResult Accounts()
+    {
+        var accounts = _context.Users
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .Select(u => new UserAccountVm
+            {
+                User = u,
+                Roles = u.UserRoles.Select(r => r.Role!.Name).ToList()
+            })
+            .ToList();
+        return View(new AccountsPageVm { Accounts = accounts });
+    }
+
+    public IActionResult Students()
+    {
+        var students = _context.Users
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .Include(u => u.Department)
+            .Include(u => u.Position)
+            .Include(u => u.LearningProgresses)
+            .Where(u => u.UserRoles.Any(r => r.Role!.Name == "Student"))
+            .Select(u => new StudentVm
+            {
+                User = u,
+                Department = u.Department?.Name ?? "-",
+                Position = u.Position?.Name ?? "-",
+                CompletedCourses = u.LearningProgresses.Count(lp => lp.Percent >= 100)
+            })
+            .ToList();
+        return View(new StudentsPageVm { Students = students });
+    }
+
+    public IActionResult Instructors()
+    {
+        var instructors = _context.Users
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .Include(u => u.TeachingCourses).ThenInclude(tc => tc.Course)
+            .Where(u => u.UserRoles.Any(r => r.Role!.Name == "Instructor"))
+            .Select(u => new InstructorVm
+            {
+                User = u,
+                CourseCount = u.TeachingCourses.Count
+            })
+            .ToList();
+        return View(new InstructorsPageVm { Instructors = instructors });
+    }
+
+    public IActionResult Lessons() => View();
+
+    public IActionResult Quiz()
+    {
+        var exams = _context.Exams
+            .Include(e => e.Course)
+            .ToList();
+        return View(new QuizPageVm { Exams = exams });
+    }
+
+    public IActionResult Discounts() => View();
+
+    public IActionResult Revenue()
+    {
+        var learnerByCourse = _context.LearningProgresses
+            .GroupBy(lp => lp.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count)
+            .ToList();
+
+        var courseLookup = _context.Courses.ToDictionary(c => c.Id, c => c.CourseName);
+
+        var top = learnerByCourse
+            .Take(5)
+            .Select(g => new RevenueCourseVm
+            {
+                CourseName = courseLookup.TryGetValue(g.CourseId, out var name) ? name : $"Course {g.CourseId}",
+                Learners = g.Count
+            })
+            .ToList();
+
+        var vm = new RevenuePageVm
+        {
+            TotalLearners = learnerByCourse.Sum(x => x.Count),
+            TotalCourses = courseLookup.Count,
+            TopCourses = top
+        };
+        return View(vm);
+    }
+}
+

@@ -1,0 +1,42 @@
+@model COTHUYPRO.Models.EditInstructorVm
+@{
+    ViewData["Title"] = "Chỉnh sửa giảng viên";
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Giảng viên</p>
+        <h2>Chỉnh sửa thông tin</h2>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head"><h4>Thông tin</h4></div>
+    <form asp-action="EditInstructor" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div class="col-md-6">
+            <label class="form-label">Họ tên</label>
+            <input asp-for="FullName" class="form-control" />
+            <span class="text-danger" asp-validation-for="FullName"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span class="text-danger" asp-validation-for="Email"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Số điện thoại</label>
+            <input asp-for="Phone" class="form-control" />
+            <span class="text-danger" asp-validation-for="Phone"></span>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button class="btn solid" type="submit">Lưu</button>
+            <a class="btn ghost" asp-action="Instructors">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

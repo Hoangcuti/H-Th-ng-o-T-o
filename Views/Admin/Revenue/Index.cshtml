@@ -1,0 +1,148 @@
+@model COTHUYPRO.Models.RevenuePageVm
+@{
+    ViewData["Title"] = "Báo cáo Doanh thu";
+}
+
+<div class="page-header mt-4">
+    <div>
+        <p class="eyebrow">Thống kê Tài chính</p>
+        <h2>Doanh thu & Khóa học bán chạy</h2>
+        <p class="muted">Phân tích dòng tiền và xu hướng đăng ký học (Giả định giá bán: 500,000đ/học viên).</p>
+    </div>
+</div>
+
+<div class="stat-grid animate-fade-in delay-100" style="animation-fill-mode: both;">
+    <div class="stat-card primary">
+        <p>Tổng doanh thu (Gross)</p>
+        <h3>@Model.TotalRevenue.ToString("N0") ₫</h3>
+        <span class="muted">Toàn thời gian</span>
+    </div>
+    <div class="stat-card accent">
+        <p>Tổng học viên thu phí</p>
+        <h3>@Model.TotalLearners</h3>
+        <span class="muted">Lượt enroll thành công</span>
+    </div>
+    <div class="stat-card">
+        <p>Khóa học đang khai thác</p>
+        <h3>@Model.TotalCourses</h3>
+        <span class="muted">Kênh mang lại doanh thu</span>
+    </div>
+</div>
+
+<div class="panel-card mt-4 mb-4 animate-fade-in delay-150" style="animation-fill-mode: both;">
+    <div class="panel-head">
+        <div>
+            <h4>Biểu đồ Doanh thu (7 tháng gần nhất)</h4>
+        </div>
+        <span class="pill muted">Giả lập xu hướng</span>
+    </div>
+    <div style="height: 300px; width: 100%;">
+        <canvas id="revChart"></canvas>
+    </div>
+</div>
+
+<div class="panel-grid animate-fade-in delay-200" style="animation-fill-mode: both;">
+    <div class="panel-card" style="grid-column: 1 / -1;">
+        <div class="panel-head">
+            <h4>Top Khóa Học Bán Chạy Nhất</h4>
+            <span class="pill primary">BXH Top @Model.TopCourses.Count</span>
+        </div>
+        <div class="table-responsive mt-3">
+            <table class="table table-borderless align-middle admin-table">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <th>Tên khóa học</th>
+                        <th class="text-center">Số lượt đăng ký</th>
+                        <th class="text-end">Doanh thu mang lại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.TopCourses)
+                {
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                        <td class="fw-semibold text-white">@item.CourseName</td>
+                        <td class="text-center"><span class="badge" style="background: rgba(6,182,212,0.1); color: var(--primary);">@item.Learners học viên</span></td>
+                        <td class="text-end fw-bold" style="color: var(--primary-2);">@item.Revenue.ToString("N0") ₫</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ctx = document.getElementById('revChart').getContext('2d');
+            
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');   
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+
+            var revenues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRevenue));
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9 (Hiện tại)'],
+                    datasets: [{
+                        label: 'Doanh thu (VNĐ)',
+                        data: revenues,
+                        backgroundColor: gradient,
+                        borderColor: '#10b981',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        hoverBackgroundColor: 'rgba(16, 185, 129, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#10b981',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', font: { family: "'Space Grotesk', sans-serif" } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)', borderDash: [5, 5] },
+                            ticks: { 
+                                color: '#94a3b8', 
+                                font: { family: "'Space Grotesk', sans-serif" },
+                                callback: function(value, index, values) {
+                                    return value / 1000000 + 'M';
+                                }
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

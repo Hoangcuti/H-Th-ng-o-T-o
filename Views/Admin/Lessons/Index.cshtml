@@ -1,0 +1,51 @@
+@model COTHUYPRO.Models.LessonsPageVm
+@{
+    ViewData["Title"] = "Quản lý bài giảng";
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Bài giảng</p>
+        <h2>Quản lý bài giảng</h2>
+    </div>
+    <div class="quick-actions">
+        <a class="btn solid" asp-action="CreateLesson">+ Thêm bài giảng</a>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head">
+        <h4>Danh sách bài giảng</h4>
+        <span class="pill muted">@Model.Lessons.Count bài</span>
+    </div>
+    <div class="table-wrapper">
+        <table class="table table-borderless align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tiêu đề</th>
+                    <th>Khóa học</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var l in Model.Lessons)
+            {
+                <tr>
+                    <td class="fw-semibold">@l.Id</td>
+                    <td>@l.Title</td>
+                    <td>@l.CourseName</td>
+                    <td class="d-flex gap-2">
+                        <a class="btn ghost btn-sm" asp-action="EditLesson" asp-route-id="@l.Id">✏</a>
+                        <form asp-action="DeleteLesson" method="post" onsubmit="return confirm('Xóa bài giảng này?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@l.Id" />
+                            <button class="btn btn-sm" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecdd3;">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

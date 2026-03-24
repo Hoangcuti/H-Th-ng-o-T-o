@@ -1,0 +1,47 @@
+@model COTHUYPRO.Models.StudentDashboardVm
+@{
+    ViewData["Title"] = "Không gian Học viên";
+}
+
+<div class="panel container-xxl animate-fade-in">
+    <h1 class="section-title">Khóa học của tôi</h1>
+    <p class="section-sub mb-4">Tiến độ học tập và lịch học sắp tới của bạn.</p>
+
+    <div class="course-grid mb-5 delay-100 animate-fade-in" style="animation-fill-mode: both;">
+        @foreach (var p in Model.Learning)
+        {
+            <a asp-action="CourseDetail" asp-route-id="@p.CourseId" class="text-decoration-none" style="color: inherit;">
+                <div class="course-card">
+                    <div class="course-meta">
+                        <span class="badge">@p.Course?.Category?.Name</span>
+                        <span class="level">@p.Course?.Level?.Name</span>
+                    </div>
+                    <h5>@p.Course?.CourseName</h5>
+                    <p class="progress-label mt-3 mb-1">Tiến độ: @(p.Percent)%</p>
+                    <div class="progress m-0"><div class="progress-bar" style="width:@(p.Percent)%"></div></div>
+                </div>
+            </a>
+        }
+    </div>
+
+    <div class="panel mt-4 py-4 px-4 delay-200 animate-fade-in" style="animation-fill-mode: both; background: rgba(255,255,255,0.02); box-shadow: none;">
+        <div class="panel-header"><h3 class="m-0 text-white">Lịch học</h3></div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th>Lớp</th><th>Phòng</th><th>Trạng thái</th><th>Ngày học</th></tr></thead>
+                <tbody>
+                @foreach (var cls in Model.Classes)
+                {
+                    var next = cls.Schedules.OrderBy(s => s.ScheduleDate).FirstOrDefault();
+                    <tr>
+                        <td class="font-weight-bold">@cls.Course?.CourseName</td>
+                        <td><span class="badge">@cls.Room?.Name</span></td>
+                        <td><span class="pill" style="background: rgba(6,182,212,0.1); color: var(--primary); border:none;">@cls.Status?.Name</span></td>
+                        <td class="font-weight-bold" style="color: var(--primary);">@next?.ScheduleDate.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

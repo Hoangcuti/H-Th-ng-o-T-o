@@ -1,0 +1,38 @@
+@model COTHUYPRO.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="auth-wrapper animate-fade-in">
+    <div class="auth-card">
+        <h1>Đăng nhập</h1>
+        @if (TempData["Registered"] != null)
+        {
+            <div class="alert alert-success" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #fff; border-radius: 12px; margin-bottom: 20px; padding: 12px 16px;">@TempData["Registered"]</div>
+        }
+        <form asp-action="Login" method="post">
+            <div class="mb-4">
+                <label class="form-label">Tên đăng nhập</label>
+                <input asp-for="Username" class="form-control" placeholder="Nhập tên đăng nhập của bạn" />
+                <span class="text-danger" asp-validation-for="Username"></span>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Mật khẩu</label>
+                <input asp-for="Password" class="form-control" placeholder="••••••••" />
+                <span class="text-danger" asp-validation-for="Password"></span>
+            </div>
+            <div class="form-check mb-4">
+                <input asp-for="RememberMe" class="form-check-input" id="remember" />
+                <label class="form-check-label" for="remember">Nhớ đăng nhập</label>
+            </div>
+            <button class="btn btn-primary w-100 lg" type="submit">Đăng nhập</button>
+            <p class="mt-4 text-center text-muted m-0" style="color: var(--muted);">
+                Chưa có tài khoản? <a asp-action="Register" style="color: var(--primary); font-weight: 600; text-decoration: none;">Đăng ký</a>
+            </p>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

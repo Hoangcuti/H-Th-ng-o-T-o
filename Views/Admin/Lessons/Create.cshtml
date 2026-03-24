@@ -1,0 +1,38 @@
+@model COTHUYPRO.Models.LessonFormVm
+@{
+    ViewData["Title"] = "Tạo bài giảng";
+    var courses = ViewBag.Courses as List<COTHUYPRO.Models.Course> ?? new();
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Bài giảng</p>
+        <h2>Tạo bài giảng</h2>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head"><h4>Thông tin</h4></div>
+    <form asp-action="CreateLesson" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+        <div class="col-md-6">
+            <label class="form-label">Tiêu đề</label>
+            <input asp-for="Title" class="form-control" />
+            <span class="text-danger" asp-validation-for="Title"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Khóa học</label>
+            <select asp-for="CourseId" class="form-select">
+                @foreach (var c in courses) { <option value="@c.Id">@c.CourseName</option> }
+            </select>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button class="btn solid" type="submit">Tạo</button>
+            <a class="btn ghost" asp-action="Lessons">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

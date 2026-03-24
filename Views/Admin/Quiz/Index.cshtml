@@ -1,0 +1,40 @@
+@model COTHUYPRO.Models.QuizPageVm
+@{
+    ViewData["Title"] = "Quản lý bài Quiz";
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Quiz</p>
+        <h2>Quản lý bài Quiz</h2>
+        <p class="muted">Dữ liệu từ bảng Exams (gắn với Course).</p>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head">
+        <h4>Danh sách quiz</h4>
+        <span class="pill muted">@Model.Exams.Count bài</span>
+    </div>
+    <div class="table-wrapper">
+        <table class="table table-borderless align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Khóa học</th>
+                    <th>CourseId</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var q in Model.Exams)
+            {
+                <tr>
+                    <td class="fw-semibold">@q.Id</td>
+                    <td>@q.Course?.CourseName</td>
+                    <td>@q.CourseId</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

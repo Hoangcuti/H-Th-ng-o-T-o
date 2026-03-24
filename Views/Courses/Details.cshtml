@@ -1,0 +1,33 @@
+@model COTHUYPRO.Models.Course
+@{
+    ViewData["Title"] = Model.CourseName;
+    var price = 1200000 + Model.Id * 150000;
+}
+
+<section class="panel container-xxl">
+    <div class="panel-header">
+        <div>
+            <p class="label">@Model.Category?.Name ?? "Khóa học"</p>
+            <h2 class="section-title">@Model.CourseName</h2>
+            <p class="section-sub">Cấp độ: @Model.Level?.Name ?? "N/A" · Giảng viên: @string.Join(", ", Model.Instructors.Select(i => i.User?.FullName ?? i.User?.Username ?? "N/A"))</p>
+        </div>
+        <div class="price-tag big">@String.Format("{0:#,0} đ", price)</div>
+    </div>
+
+    <div class="course-detail-grid">
+        <div class="course-detail-card">
+            <h4>Nội dung chính</h4>
+            <ul>
+                <li>Video bài giảng & tài liệu tải xuống.</li>
+                <li>Bài tập + trắc nghiệm tự đánh giá.</li>
+                <li>Chứng chỉ nội bộ khi hoàn thành.</li>
+            </ul>
+            <div class="card-actions">
+                <form asp-controller="Courses" asp-action="Enroll" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                    <button type="submit" class="btn solid lg">Đăng ký & xác nhận</button>
+                </form>
+                <button class="btn ghost lg">Chia sẻ khóa học</button>
+            </div>
+        </div>
+    </div>
+</section>

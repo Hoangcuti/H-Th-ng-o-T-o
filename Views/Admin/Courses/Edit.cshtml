@@ -1,0 +1,48 @@
+@model COTHUYPRO.Models.CourseFormVm
+@{
+    ViewData["Title"] = "Chỉnh sửa khóa học";
+    var categories = ViewBag.Categories as List<COTHUYPRO.Models.CourseCategory> ?? new();
+    var levels = ViewBag.Levels as List<COTHUYPRO.Models.CourseLevel> ?? new();
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Khóa học</p>
+        <h2>Chỉnh sửa khóa học</h2>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head"><h4>Thông tin</h4></div>
+    <form asp-action="EditCourse" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div class="col-md-6">
+            <label class="form-label">Tên khóa</label>
+            <input asp-for="CourseName" class="form-control" />
+            <span class="text-danger" asp-validation-for="CourseName"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Danh mục</label>
+            <select asp-for="CategoryId" class="form-select">
+                <option value="">--Chọn--</option>
+                @foreach (var c in categories) { <option value="@c.Id" selected="@(Model.CategoryId==c.Id)">@c.Name</option> }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Cấp độ</label>
+            <select asp-for="LevelId" class="form-select">
+                <option value="">--Chọn--</option>
+                @foreach (var l in levels) { <option value="@l.Id" selected="@(Model.LevelId==l.Id)">@l.Name</option> }
+            </select>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button class="btn solid" type="submit">Lưu</button>
+            <a class="btn ghost" asp-action="Courses">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

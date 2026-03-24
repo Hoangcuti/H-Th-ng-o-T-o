@@ -1,0 +1,77 @@
+@model COTHUYPRO.Models.InstructorDashboardVm
+@{
+    ViewData["Title"] = "Bảng điều khiển Giảng viên";
+}
+
+<div class="panel container-xxl animate-fade-in">
+    <h1 class="section-title">Giảng dạy của tôi</h1>
+    <p class="section-sub mb-4">Khóa học phụ trách, lịch lớp và học viên đang tham gia.</p>
+
+    <div class="hero-stats" style="margin:0 0 24px;">
+        <div class="stat">
+            <p class="label">Khóa đang phụ trách</p>
+            <h2>@Model.Courses.Count</h2>
+        </div>
+        <div class="stat">
+            <p class="label">Lớp đang dạy</p>
+            <h2>@Model.Classes.Count</h2>
+        </div>
+        <div class="stat">
+            <p class="label">Học viên</p>
+            <h2>@Model.Students.Count</h2>
+        </div>
+    </div>
+
+    <div class="panel-header mt-2"><h3 class="m-0 text-white">Khóa học phụ trách</h3></div>
+    <div class="course-grid mb-5 delay-100 animate-fade-in" style="animation-fill-mode: both;">
+        @foreach (var c in Model.Courses)
+        {
+            <div class="course-card">
+                <div class="course-meta">
+                    <span class="badge">@c.Category?.Name</span>
+                    <span class="level">@c.Level?.Name</span>
+                </div>
+                <h5>@c.CourseName</h5>
+            </div>
+        }
+    </div>
+
+    <div class="panel mt-4 py-4 px-4 delay-200 animate-fade-in" style="animation-fill-mode: both; background: rgba(255,255,255,0.02); box-shadow: none;">
+        <div class="panel-header"><h3 class="m-0 text-white">Lịch lớp đang dạy</h3></div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th>Khóa học</th><th>Phòng</th><th>Trạng thái</th><th>Khai giảng</th></tr></thead>
+                <tbody>
+                @foreach (var cls in Model.Classes)
+                {
+                    <tr>
+                        <td class="font-weight-bold">@cls.Course?.CourseName</td>
+                        <td><span class="badge" style="background: rgba(6,182,212,0.1); color: var(--primary);">@cls.Room?.Name</span></td>
+                        <td><span class="pill" style="background: rgba(245,158,11,0.1); color: var(--accent); border:none;">@cls.Status?.Name</span></td>
+                        <td class="muted">@cls.Schedules.OrderBy(s => s.ScheduleDate).FirstOrDefault()?.ScheduleDate.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel mt-4 py-4 px-4 delay-300 animate-fade-in" style="animation-fill-mode: both; background: rgba(255,255,255,0.02); box-shadow: none;">
+        <div class="panel-header"><h3 class="m-0 text-white">Danh sách học viên</h3></div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th>Họ tên</th><th>Username</th><th>Email</th></tr></thead>
+                <tbody>
+                @foreach (var st in Model.Students)
+                {
+                    <tr>
+                        <td class="font-weight-bold">@st.FullName</td>
+                        <td>@st.Username</td>
+                        <td>@st.Email</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

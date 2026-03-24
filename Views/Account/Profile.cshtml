@@ -1,0 +1,98 @@
+@model COTHUYPRO.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+
+<div class="page-header container-xxl mt-4">
+    <div>
+        <p class="eyebrow">Quản lý tài khoản</p>
+        <h2>Hồ sơ cá nhân</h2>
+        <p class="muted">Cập nhật thông tin liên hệ và bảo mật của bạn.</p>
+    </div>
+</div>
+
+<div class="container-xxl">
+    <div class="auth-card" style="margin: 20px 0;">
+        <h4 class="mb-4 text-white">Chỉnh sửa hồ sơ</h4>
+        <form asp-action="Profile" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            
+            <div class="col-12">
+                <label class="form-label" asp-for="FullName"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label" asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label" asp-for="Phone"></label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 mt-4 pt-3" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="text-white mb-3">Đổi mật khẩu</h5>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label" asp-for="NewPassword"></label>
+                <input asp-for="NewPassword" class="form-control" />
+                <span asp-validation-for="NewPassword" class="text-danger"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label" asp-for="ConfirmNewPassword"></label>
+                <input asp-for="ConfirmNewPassword" class="form-control" />
+                <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+            </div>
+            
+            <div class="col-12 d-flex gap-2 mt-4">
+                <button class="btn solid" type="submit">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+
+    @if (User.IsInRole("Student"))
+    {
+        <div class="auth-card" style="margin: 20px 0;">
+            <h4 class="mb-4 text-white">Khóa học đăng ký</h4>
+            <div class="mb-3">
+                <p class="muted mb-1">Mã Học Viên:</p>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 1rem; padding: 6px 12px;">
+                    @(string.IsNullOrEmpty(Model.StudentCode) ? "Chưa cấp quyền mã" : Model.StudentCode)
+                </span>
+            </div>
+            <div>
+                <p class="muted mb-2">Lộ trình đang tham gia:</p>
+                @if (Model.EnrolledCourses != null && Model.EnrolledCourses.Any())
+                {
+                    <div class="d-flex flex-column gap-2">
+                        @foreach (var c in Model.EnrolledCourses)
+                        {
+                            <div style="background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--primary);">
+                                <strong class="text-white">@c</strong>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-white">Chưa đăng ký khóa học nào.</p>
+                }
+            </div>
+            <div class="mt-4">
+                <a asp-controller="Courses" asp-action="Index" class="btn ghost btn-sm">Tham gia khóa mới</a>
+                <a asp-controller="Student" asp-action="Index" class="btn solid btn-sm ms-2">Đến Không gian học tập</a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

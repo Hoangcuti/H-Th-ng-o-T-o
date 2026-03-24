@@ -1,0 +1,320 @@
+@{
+    ViewData["Title"] = "Trợ lý AI";
+}
+
+<div class="container-xxl p-0 py-lg-4 animate-fade-in" style="height: calc(100vh - 80px); display: flex; flex-direction: column;">
+    <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bot-avatar">AI</div>
+                <div>
+                    <h5 class="m-0 text-white font-weight-bold" style="font-size: 1.1rem;">Trợ lý Đào tạo AI</h5>
+                    <small class="text-success fw-bold">● Đang hoạt động trực tuyến</small>
+                </div>
+            </div>
+            <div class="chat-actions">
+                <span class="chip" style="font-size: 11px;">Mô phỏng (Mock LLM)</span>
+                <button id="saveChatBtn" class="chip" style="font-size: 11px; cursor: pointer;">Lưu nội dung chat</button>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="bubble">Xin chào! 👋 Mình là Trợ lý ảo của trung tâm. Mình có thể giúp bạn tìm hiểu về <b>khóa học</b>, <b>lịch khai giảng</b> hoặc <b>học phí</b>. Bạn cần hỗ trợ gì ạ?</div>
+            </div>
+
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-footer">
+            <div class="chat-hints mb-3 d-flex gap-2" style="overflow-x: auto; padding-bottom: 4px;">
+                <button class="hint-chip" type="button" onclick="sendHint('Mình mới bắt đầu, khóa .NET Backend nào phù hợp?')">Gợi ý khóa .NET Backend</button>
+                <button class="hint-chip" type="button" onclick="sendHint('Lịch khai giảng gần nhất còn chỗ nào?')">Lịch khai giảng gần nhất</button>
+                <button class="hint-chip" type="button" onclick="sendHint('Học phí và ưu đãi hiện tại cho khóa này?')">Học phí + ưu đãi</button>
+                <button class="hint-chip" type="button" onclick="sendHint('Cho mình link đăng ký nhanh nhất.')">Đăng ký nhanh</button>
+            </div>
+            <form id="chatForm" class="d-flex gap-2 m-0 relative">
+                <input type="text" id="userInput" class="form-control msg-input" placeholder="Nhắn tin cho AI..." autocomplete="off" />
+                <button type="submit" class="send-btn">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" class="css-i6dzq1"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Messenger Style UI */
+    .content { padding-bottom: 0 !important; }
+    
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px);
+        flex: 1;
+        overflow: hidden;
+        margin-bottom: 20px; 
+    }
+    .chat-header {
+        padding: 16px 24px;
+        background: rgba(3, 7, 18, 0.8);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .bot-avatar {
+        width: 45px; height: 45px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: #030712; display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 1.2rem; box-shadow: var(--shadow-glow);
+    }
+    .chat-messages {
+        flex: 1;
+        padding: 24px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .message {
+        display: flex;
+        max-width: 80%;
+    }
+    .message.user {
+        align-self: flex-end;
+    }
+    .message.bot {
+        align-self: flex-start;
+    }
+    .bubble {
+        padding: 12px 18px;
+        border-radius: 20px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .message.user .bubble {
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: #030712;
+        border-bottom-right-radius: 4px;
+        font-weight: 500;
+    }
+    .message.bot .bubble {
+        background: rgba(255,255,255,0.08);
+        color: #e5e7eb;
+        border: 1px solid var(--border);
+        border-bottom-left-radius: 4px;
+    }
+    .chat-footer {
+        padding: 16px 24px;
+        background: rgba(3, 7, 18, 0.6);
+        border-top: 1px solid var(--border);
+    }
+    .msg-input {
+        border-radius: 999px !important;
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid var(--border) !important;
+        padding-left: 20px !important;
+        height: 48px;
+        color: #e5e7eb !important;
+        caret-color: var(--primary);
+    }
+    .msg-input::placeholder { color: #9ca3af !important; opacity: 1; }
+    .msg-input:focus {
+        background: rgba(255,255,255,0.1) !important;
+        border-color: var(--primary) !important;
+    }
+    .send-btn {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border);
+        color: var(--primary);
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .send-btn:hover {
+        transform: scale(1.05);
+        background: var(--primary);
+        color: #030712;
+    }
+    .chat-link { color: var(--primary); font-weight: 600; text-decoration: underline; }
+    .hint-chip {
+        background: rgba(6, 182, 212, 0.1);
+        border: 1px solid rgba(6, 182, 212, 0.2);
+        color: var(--primary);
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .hint-chip:hover {
+        background: rgba(6, 182, 212, 0.2);
+        color: #fff;
+    }
+    .typing-indicator {
+        display: flex; gap: 4px; align-items: center; justify-content: center;
+        padding: 12px 18px;
+    }
+    .typing-indicator span {
+        width: 6px; height: 6px; background: var(--muted); border-radius: 50%;
+        animation: typing 1.4s infinite ease-in-out both;
+    }
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    @@keyframes typing {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+    }
+    
+    /* Scrollbar override for chat */
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+</style>
+
+@section Scripts {
+    <script>
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const history = []; // lưu tối đa 10 lượt (user/model)
+
+        function sendHint(text) {
+            userInput.value = text;
+            chatForm.dispatchEvent(new Event('submit'));
+        }
+
+        function appendUserMessage(text) {
+            const html = `
+                <div class="message user animate-fade-in">
+                    <div class="bubble">${text}</div>
+                </div>`;
+            chatMessages.insertAdjacentHTML('beforeend', html);
+            scrollToBottom();
+        }
+
+        function linkify(text) {
+            const escape = (s) => s
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            // 1) Escape HTML to avoid injection
+            let safe = escape(text);
+
+            // 2) Convert markdown-style links [label](url)
+            safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\)/g, (match, label, href) => {
+                const normalized = href.startsWith('http') ? href : href;
+                return `<a href="${normalized}" target="_blank" rel="noopener noreferrer" class="chat-link">${label}</a>`;
+            });
+
+            // 3) Convert bare URLs, www.* and relative paths
+            const urlRegex = /(https?:\/\/[^\s<]+|www\.[^\s<]+|\/[A-Za-z0-9_\/\-\?=&%\.#!]+)/g;
+            safe = safe.replace(urlRegex, (url) => {
+                const href = url.startsWith('http') ? url : (url.startsWith('www.') ? `https://${url}` : url);
+                return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
+            });
+
+            // 4) Preserve line breaks
+            return safe.replace(/\n/g, "<br>");
+        }
+
+        function appendBotMessage(text) {
+            const html = `
+                <div class="message bot animate-fade-in">
+                    <div class="bubble">${linkify(text)}</div>
+                </div>`;
+            chatMessages.insertAdjacentHTML('beforeend', html);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            const id = 'typing-' + Date.now();
+            const html = `
+                <div class="message bot" id="${id}">
+                    <div class="bubble typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>`;
+            chatMessages.insertAdjacentHTML('beforeend', html);
+            scrollToBottom();
+            return id;
+        }
+
+        function removeTyping(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // 1. Show user message
+            appendUserMessage(text);
+            userInput.value = '';
+
+            // 2. Show typing indicator
+            const typingId = showTyping();
+
+            // 3. Call API
+            try {
+                const response = await fetch('/Chat/SendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: text,
+                        history: history.slice(-10)
+                    })
+                });
+
+                const data = await response.json();
+
+                removeTyping(typingId);
+                appendBotMessage(data.response || "Lỗi xử lý ngôn ngữ.");
+
+                // lưu lịch sử cho ngữ cảnh
+                history.push({ role: 'user', content: text });
+                history.push({ role: 'model', content: data.response || "" });
+            } catch (err) {
+                removeTyping(typingId);
+                appendBotMessage("Hệ thống mất kết nối. Vui lòng thử lại sau!");
+            }
+        });
+
+        // Lưu nội dung chat thành file txt (client-side)
+        document.getElementById('saveChatBtn').addEventListener('click', () => {
+            const lines = [];
+            chatMessages.querySelectorAll('.message').forEach(msg => {
+                const isUser = msg.classList.contains('user');
+                const content = msg.innerText.trim();
+                lines.push((isUser ? "User: " : "Bot: ") + content);
+            });
+            const blob = new Blob([lines.join("\n")], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'chat-log.txt';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+}

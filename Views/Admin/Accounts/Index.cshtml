@@ -1,0 +1,92 @@
+@model COTHUYPRO.Models.AccountsPageVm
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Tài khoản</p>
+        <h2>Quản lý tài khoản</h2>
+        <p class="muted">Phân quyền trực tiếp bằng Roles/UserRoles, gán mã học viên theo ngành.</p>
+    </div>
+    <div class="quick-actions">
+        <a class="btn solid" asp-action="CreateAccount">+ Tạo tài khoản</a>
+    </div>
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+
+<div class="panel-card">
+    <div class="panel-head">
+        <h4>Danh sách tài khoản</h4>
+        <span class="pill muted">@Model.Accounts.Count tài khoản</span>
+    </div>
+    <div class="table-wrapper">
+        <table class="table table-borderless align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Mã học viên</th>
+                    <th>Ngày tạo</th>
+                    <th>Phân quyền</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var a in Model.Accounts)
+            {
+                <tr>
+                    <td class="fw-semibold">@a.User.Username</td>
+                    <td>@a.User.FullName</td>
+                    <td>@a.User.Email</td>
+                    <td>@string.Join(" · ", a.Roles.Select(role => role == "Instructor" ? "Giảng viên" : (role == "Student" ? "Học viên" : role)))</td>
+                    <td>@(a.User.StudentCode ?? "-")</td>
+                    <td class="muted">@a.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <form asp-action="AssignRole" method="post" class="d-flex align-items-center gap-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="userId" value="@a.User.Id" />
+                            <select class="form-select form-select-sm" name="roleId">
+                                @foreach (var r in Model.Roles)
+                                {
+                                    var displayName = r.Name == "Instructor" ? "Giảng viên" : (r.Name == "Student" ? "Học viên" : r.Name);
+                                    if (a.Roles.Contains(r.Name))
+                                    {
+                                        <option value="@r.Id" selected>@displayName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@r.Id">@displayName</option>
+                                    }
+                                }
+                            </select>
+                            <select class="form-select form-select-sm" name="categoryId">
+                                <option value="">--Ngành--</option>
+                                @foreach (var c in Model.Categories)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                            <button class="btn btn-sm solid" type="submit">Gán</button>
+                        </form>
+                    </td>
+                    <td class="d-flex gap-2">
+                        <a class="btn ghost btn-sm" asp-action="EditAccount" asp-route-id="@a.User.Id">✏</a>
+                        <form asp-action="DeleteAccount" method="post" onsubmit="return confirm('Xóa tài khoản này?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@a.User.Id" />
+                            <button class="btn btn-sm" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecdd3;">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

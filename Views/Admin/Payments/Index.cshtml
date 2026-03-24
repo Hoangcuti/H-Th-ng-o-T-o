@@ -1,0 +1,42 @@
+@model COTHUYPRO.Models.PaymentPageVm
+@{
+    ViewData["Title"] = "Thanh toán khóa học";
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Thanh toán</p>
+        <h2>Thanh toán khóa học</h2>
+        <p class="muted">Danh sách khóa học, chọn để xử lý thanh toán (demo).</p>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head">
+        <h4>Khóa học</h4>
+        <span class="pill muted">@Model.Courses.Count mục</span>
+    </div>
+    <div class="table-wrapper">
+        <table class="table table-borderless align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Tên khóa</th>
+                    <th>Danh mục</th>
+                    <th>Cấp độ</th>
+                    <th>Thanh toán</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var c in Model.Courses)
+            {
+                <tr>
+                    <td class="fw-semibold">@c.CourseName</td>
+                    <td>@c.Category?.Name</td>
+                    <td>@c.Level?.Name</td>
+                    <td><button class="btn solid" disabled>Thanh toán (demo)</button></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,57 @@
+@model COTHUYPRO.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Thêm giảng viên";
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Giảng viên</p>
+        <h2>Thêm giảng viên</h2>
+        <p class="muted">Tạo tài khoản mới kèm phân quyền giảng viên.</p>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head"><h4>Thông tin</h4></div>
+    <form asp-action="CreateInstructor" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+        <div class="col-md-6">
+            <label class="form-label">Username</label>
+            <input asp-for="Username" class="form-control" />
+            <span class="text-danger" asp-validation-for="Username"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Họ tên</label>
+            <input asp-for="FullName" class="form-control" />
+            <span class="text-danger" asp-validation-for="FullName"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span class="text-danger" asp-validation-for="Email"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Số điện thoại</label>
+            <input asp-for="Phone" class="form-control" />
+            <span class="text-danger" asp-validation-for="Phone"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Mật khẩu</label>
+            <input asp-for="Password" class="form-control" />
+            <span class="text-danger" asp-validation-for="Password"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Nhập lại mật khẩu</label>
+            <input asp-for="ConfirmPassword" class="form-control" />
+            <span class="text-danger" asp-validation-for="ConfirmPassword"></span>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button class="btn solid" type="submit">Tạo</button>
+            <a class="btn ghost" asp-action="Instructors">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
