@@ -137,12 +137,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var course in Model.RecentCourses.Take(5))
+                    @foreach (var top in Model.TopCourses)
                     {
                         <tr>
-                            <td class="fw-semibold">@course.CourseName</td>
-                            <td class="muted">—</td>
-                            <td class="muted">Đang đồng bộ</td>
+                            <td class="fw-semibold">@top.CourseName</td>
+                            <td class="muted">@top.Learners người</td>
+                            <td class="muted">@string.Format("{0:N0} đ", top.Revenue)</td>
+                        </tr>
+                    }
+                    @if (!Model.TopCourses.Any())
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center muted">Chưa có dữ liệu học viên đăng ký khóa học.</td>
                         </tr>
                     }
                 </tbody>

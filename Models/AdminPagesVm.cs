@@ -77,6 +77,8 @@ public class LessonRow
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string CourseName { get; set; } = string.Empty;
+    public int OrderIndex { get; set; }
+    public string? DocumentUrl { get; set; }
 }
 
 public class RevenueCourseVm

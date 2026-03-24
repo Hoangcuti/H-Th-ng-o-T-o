@@ -1,0 +1,207 @@
+@model COTHUYPRO.Models.ExamFormVm
+@{
+    ViewData["Title"] = "Chỉnh sửa bài Quiz";
+    var courses = ViewBag.Courses as List<COTHUYPRO.Models.Course> ?? new();
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Quiz</p>
+        <h2>Chỉnh sửa bài Quiz</h2>
+    </div>
+    <div class="quick-actions">
+        <a class="btn ghost" asp-action="Quiz">Quay lại danh sách</a>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head"><h4>Thông tin bài Quiz</h4></div>
+    <form asp-action="EditQuiz" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div class="col-md-6">
+            <label class="form-label">Tiêu đề (Tên bài Quiz)</label>
+            <input asp-for="Title" class="form-control" />
+            <span class="text-danger" asp-validation-for="Title"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Khóa học</label>
+            <select asp-for="CourseId" class="form-select">
+                @foreach (var c in courses) { <option value="@c.Id" selected="@(Model.CourseId==c.Id)">@c.CourseName</option> }
+            </select>
+            <span class="text-danger" asp-validation-for="CourseId"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Thời gian làm bài (Phút)</label>
+            <input asp-for="DurationMinutes" class="form-control" type="number" />
+            <span class="text-danger" asp-validation-for="DurationMinutes"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Điểm đỗ / qua môn (Ví dụ: 80)</label>
+            <input asp-for="PassingScore" class="form-control" type="number" />
+            <span class="text-danger" asp-validation-for="PassingScore"></span>
+        </div>
+        <div class="col-12">
+            <label class="form-label">Mô tả thêm / Ghi chú</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span class="text-danger" asp-validation-for="Description"></span>
+        </div>
+        
+        <div class="col-md-4">
+            <label class="form-label">Số lần làm lại tối đa (0 = Vô hạn)</label>
+            <input asp-for="MaxAttempts" class="form-control" type="number" />
+            <span class="text-danger" asp-validation-for="MaxAttempts"></span>
+        </div>
+        <div class="col-md-4 mt-md-4">
+            <div class="form-check mt-3">
+                <input class="form-check-input" type="checkbox" asp-for="ShuffleQuestions">
+                <label class="form-check-label fw-bold">Trộn câu hỏi 🔀</label>
+            </div>
+        </div>
+        <div class="col-md-4 mt-md-4">
+            <div class="form-check mt-3">
+                <input class="form-check-input" type="checkbox" asp-for="ShowAnswers">
+                <label class="form-check-label fw-bold">Hiện đáp án khi kết thúc 👁️</label>
+            </div>
+        </div>
+        
+        <div class="col-12 d-flex gap-2 mt-4">
+            <button class="btn solid" type="submit">Lưu thay đổi</button>
+            <a class="btn ghost" asp-action="Quiz">Hủy bỏ</a>
+        </div>
+    </form>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="panel-card mb-4 p-4 border rounded">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">Bộ câu hỏi trắc nghiệm</h4>
+                <div class="d-flex gap-2">
+                    <input type="text" id="aiQuizTopic" class="form-control form-control-sm" placeholder="Nhập chủ đề cho AI..." style="width:200px;" />
+                    <button type="button" class="btn btn-sm btn-outline-info fw-bold" onclick="generateAiQuiz(event, @Model.Id)">✨ AI Tạo 5 Câu Hỏi</button>
+                </div>
+            </div>
+            
+            <form asp-action="CreateQuestion" method="post" class="d-flex gap-2 mb-3">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="examId" value="@Model.Id" />
+                <input type="text" name="content" class="form-control" placeholder="Nhập nội dung câu hỏi mới..." required />
+                <button type="submit" class="btn btn-primary" style="white-space: nowrap;">Thêm câu hỏi</button>
+            </form>
+        </div>
+
+        @{
+            var questions = ViewBag.Questions as List<COTHUYPRO.Models.Question> ?? new();
+            var allOptions = ViewBag.Options as List<COTHUYPRO.Models.QuestionOption> ?? new();
+        }
+
+        @if (!questions.Any())
+        {
+            <div class="text-center p-5 border rounded" style="background:#f8fafc;">
+                <p class="text-muted mb-0">Bài quiz này chưa có câu hỏi nào. Hãy thêm câu hỏi đầu tiên!</p>
+            </div>
+        }
+
+        @foreach (var (q, index) in questions.Select((item, idx) => (item, idx + 1)))
+        {
+            var qOptions = allOptions.Where(o => o.QuestionId == q.Id).ToList();
+
+            <div class="panel-card mb-4 p-4 border rounded shadow-sm">
+                <!-- Question Header -->
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="fw-bold mb-0">Câu @index: @q.Content</h5>
+                    <form asp-action="DeleteQuestion" method="post" onsubmit="return confirm('Xóa câu hỏi này và toàn bộ đáp án?');" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@q.Id" />
+                        <input type="hidden" name="examId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-sm text-danger" title="Xóa câu hỏi">🗑 Xóa</button>
+                    </form>
+                </div>
+                
+                <!-- Options List -->
+                <ul class="list-group mb-3">
+                    @foreach (var opt in qOptions)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center @(opt.IsCorrect ? "list-group-item-success" : "")">
+                            <div class="d-flex align-items-center gap-2">
+                                @if (opt.IsCorrect)
+                                {
+                                    <span class="badge bg-success rounded-pill">Đúng</span>
+                                }
+                                else
+                                {
+                                    <form asp-action="SetCorrectOption" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="optionId" value="@opt.Id" />
+                                        <input type="hidden" name="questionId" value="@q.Id" />
+                                        <input type="hidden" name="examId" value="@Model.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Chọn làm đáp án đúng">○</button>
+                                    </form>
+                                }
+                                <span>@opt.Content</span>
+                            </div>
+                            <form asp-action="DeleteOption" method="post" onsubmit="return confirm('Xóa đáp án này?');" class="m-0">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@opt.Id" />
+                                <input type="hidden" name="examId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm btn-link text-danger p-0" style="text-decoration:none;">✖</button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+
+                <!-- Add Option Form -->
+                <form asp-action="CreateOption" method="post" class="row g-2 align-items-center">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="examId" value="@Model.Id" />
+                    <input type="hidden" name="questionId" value="@q.Id" />
+                    <div class="col-8 col-md-9">
+                        <input type="text" name="content" class="form-control form-control-sm" placeholder="Nhập đáp án mới..." required />
+                    </div>
+                    <div class="col-auto">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="isCorrect" value="true" id="check_@q.Id">
+                            <label class="form-check-label" for="check_@q.Id"><small>Là đáp án đúng</small></label>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-sm btn-primary">+ Thêm</button>
+                    </div>
+                </form>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+    async function generateAiQuiz(e, examId) {
+        var topic = document.getElementById('aiQuizTopic').value;
+        if(!topic) { alert("Vui lòng nhập chủ đề để AI tạo câu hỏi!"); return; }
+        
+        var btn = e.target;
+        var originalText = btn.innerHTML;
+        btn.innerHTML = "⏳ AI đang sinh câu hỏi (Mất vài giây)...";
+        btn.disabled = true;
+        
+        try {
+            var res = await fetch('/Admin/GenerateExamQuestions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic: topic, examId: examId, count: 5 })
+            });
+            var data = await res.json();
+            if(data.success) {
+                alert("✨ Khởi tạo xong! Giao diện sẽ được load lại để hiển thị câu hỏi.");
+                window.location.reload();
+            }
+        } catch(err) {
+            alert("Lỗi kết nối nền tảng AI.");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+    </script>
+}

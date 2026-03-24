@@ -1,0 +1,73 @@
+@model COTHUYPRO.Models.ExamFormVm
+@{
+    ViewData["Title"] = "Tạo bài Quiz";
+    var courses = ViewBag.Courses as List<COTHUYPRO.Models.Course> ?? new();
+}
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Quiz</p>
+        <h2>Tạo bài Quiz</h2>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-head"><h4>Thông tin bài Quiz</h4></div>
+    <form asp-action="CreateQuiz" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+        <div class="col-md-6">
+            <label class="form-label">Tiêu đề (Tên bài Quiz)</label>
+            <input asp-for="Title" class="form-control" />
+            <span class="text-danger" asp-validation-for="Title"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Khóa học</label>
+            <select asp-for="CourseId" class="form-select">
+                @foreach (var c in courses) { <option value="@c.Id">@c.CourseName</option> }
+            </select>
+            <span class="text-danger" asp-validation-for="CourseId"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Thời gian làm bài (Phút)</label>
+            <input asp-for="DurationMinutes" class="form-control" type="number" />
+            <span class="text-danger" asp-validation-for="DurationMinutes"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Điểm đỗ / qua môn (Ví dụ: 80)</label>
+            <input asp-for="PassingScore" class="form-control" type="number" />
+            <span class="text-danger" asp-validation-for="PassingScore"></span>
+        </div>
+        <div class="col-12">
+            <label class="form-label">Mô tả thêm / Ghi chú</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span class="text-danger" asp-validation-for="Description"></span>
+        </div>
+        
+        <div class="col-md-4">
+            <label class="form-label">Số lần làm lại tối đa (0 = Vô hạn)</label>
+            <input asp-for="MaxAttempts" class="form-control" type="number" />
+            <span class="text-danger" asp-validation-for="MaxAttempts"></span>
+        </div>
+        <div class="col-md-4 mt-md-4">
+            <div class="form-check mt-3">
+                <input class="form-check-input" type="checkbox" asp-for="ShuffleQuestions">
+                <label class="form-check-label fw-bold">Trộn câu hỏi 🔀</label>
+            </div>
+        </div>
+        <div class="col-md-4 mt-md-4">
+            <div class="form-check mt-3">
+                <input class="form-check-input" type="checkbox" asp-for="ShowAnswers">
+                <label class="form-check-label fw-bold">Hiện đáp án khi kết thúc 👁️</label>
+            </div>
+        </div>
+        
+        <div class="col-12 d-flex gap-2 mt-4">
+            <button class="btn solid" type="submit">Tạo mới</button>
+            <a class="btn ghost" asp-action="Quiz">Hủy bỏ</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

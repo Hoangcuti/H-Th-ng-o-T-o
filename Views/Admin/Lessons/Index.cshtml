@@ -25,6 +25,8 @@
                     <th>ID</th>
                     <th>Tiêu đề</th>
                     <th>Khóa học</th>
+                    <th>Thứ tự</th>
+                    <th>Tài liệu</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -35,6 +37,17 @@
                     <td class="fw-semibold">@l.Id</td>
                     <td>@l.Title</td>
                     <td>@l.CourseName</td>
+                    <td>@l.OrderIndex</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(l.DocumentUrl))
+                        {
+                            <a href="@l.DocumentUrl" target="_blank" class="btn btn-sm ghost">Xem</a>
+                        }
+                        else
+                        {
+                            <span class="muted">-</span>
+                        }
+                    </td>
                     <td class="d-flex gap-2">
                         <a class="btn ghost btn-sm" asp-action="EditLesson" asp-route-id="@l.Id">✏</a>
                         <form asp-action="DeleteLesson" method="post" onsubmit="return confirm('Xóa bài giảng này?');">

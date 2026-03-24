@@ -9,6 +9,9 @@
         <h2>Quản lý bài Quiz</h2>
         <p class="muted">Dữ liệu từ bảng Exams (gắn với Course).</p>
     </div>
+    <div class="quick-actions">
+        <a class="btn solid" asp-action="CreateQuiz">+ Thêm bài Quiz</a>
+    </div>
 </div>
 
 <div class="panel-card">
@@ -21,8 +24,9 @@
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Tiêu đề</th>
                     <th>Khóa học</th>
-                    <th>CourseId</th>
+                    <th>Hành động</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,8 +34,16 @@
             {
                 <tr>
                     <td class="fw-semibold">@q.Id</td>
+                    <td class="fw-semibold">@q.Title</td>
                     <td>@q.Course?.CourseName</td>
-                    <td>@q.CourseId</td>
+                    <td class="d-flex gap-2">
+                        <a class="btn ghost btn-sm" asp-action="EditQuiz" asp-route-id="@q.Id">✏ Sửa</a>
+                        <form asp-action="DeleteQuiz" method="post" onsubmit="return confirm('Xóa bài quiz này?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@q.Id" />
+                            <button class="btn btn-sm" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecdd3;">🗑 Xóa</button>
+                        </form>
+                    </td>
                 </tr>
             }
             </tbody>

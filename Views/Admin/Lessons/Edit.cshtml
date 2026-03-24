@@ -27,6 +27,50 @@
                 @foreach (var c in courses) { <option value="@c.Id" selected="@(Model.CourseId==c.Id)">@c.CourseName</option> }
             </select>
         </div>
+        <div class="col-md-6">
+            <label class="form-label">Thứ tự bài giảng (Order Index)</label>
+            <input asp-for="OrderIndex" class="form-control" type="number" />
+            <span class="text-danger" asp-validation-for="OrderIndex"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Thời lượng (Phút)</label>
+            <input asp-for="Duration" class="form-control" type="number" />
+            <span class="text-danger" asp-validation-for="Duration"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Link Tài Liệu (URL)</label>
+            <input asp-for="DocumentUrl" class="form-control" placeholder="https://..." />
+            <span class="text-danger" asp-validation-for="DocumentUrl"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Link Video (YouTube/Vimeo)</label>
+            <input asp-for="VideoUrl" class="form-control" placeholder="https://..." />
+            <span class="text-danger" asp-validation-for="VideoUrl"></span>
+        </div>
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-end mb-2">
+                <label class="form-label mb-0">Nội dung văn bản chi tiết</label>
+                <button type="button" class="btn btn-sm btn-outline-info fw-bold" onclick="generateAiLesson(event)">✨ AI Soạn Nội Dung</button>
+            </div>
+            <textarea asp-for="Content" class="form-control" rows="5" placeholder="Hỗ trợ HTML..."></textarea>
+            <span class="text-danger" asp-validation-for="Content"></span>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check mt-md-4">
+                <input class="form-check-input" type="checkbox" asp-for="IsFreePreview">
+                <label class="form-check-label text-success fw-bold">
+                    Cho phép học thử miễn phí (Free Preview)
+                </label>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check mt-md-4">
+                <input class="form-check-input" type="checkbox" asp-for="IsPublished">
+                <label class="form-check-label fw-bold">
+                    Xuất bản hiển thị (Publish)
+                </label>
+            </div>
+        </div>
         <div class="col-12 d-flex gap-2">
             <button class="btn solid" type="submit">Lưu</button>
             <a class="btn ghost" asp-action="Lessons">Hủy</a>
@@ -36,4 +80,33 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+    async function generateAiLesson(e) {
+        var topic = prompt("Nhập chủ đề bài giảng để Trợ lý AI tự động soạn thảo:");
+        if(!topic) return;
+        
+        var btn = e.target;
+        var originalText = btn.innerHTML;
+        btn.innerHTML = "⏳ Đang soạn...";
+        btn.disabled = true;
+        
+        try {
+            var res = await fetch('/Admin/GenerateLessonContent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic: topic })
+            });
+            var data = await res.json();
+            if(data.success) {
+                document.getElementById('Content').value = data.content;
+                alert("✨ Đã soạn xong bài! Vui lòng đọc qua và chỉnh sửa lại trước khi lưu nhé.");
+            }
+        } catch(err) {
+            alert("Lỗi kết nối AI trợ giảng.");
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+    </script>
 }

@@ -2,6 +2,7 @@ using COTHUYPRO.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using COTHUYPRO.Services;
 
 namespace COTHUYPRO.Controllers;
 
@@ -9,10 +10,12 @@ namespace COTHUYPRO.Controllers;
 public class AdminController : Controller
 {
     private readonly TrainingContext _context;
+    private readonly IAiService _aiService;
 
-    public AdminController(TrainingContext context)
+    public AdminController(TrainingContext context, IAiService aiService)
     {
         _context = context;
+        _aiService = aiService;
     }
 
     public IActionResult Index()
@@ -39,11 +42,31 @@ public class AdminController : Controller
             .Take(6)
             .ToList();
 
+        var learnerByCourse = _context.LearningProgress
+            .GroupBy(lp => lp.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count)
+            .Take(5)
+            .ToList();
+
+        var courseLookup = _context.Courses.ToDictionary(c => c.Id, c => c.CourseName);
+        const decimal MOCK_PRICE = 500000m; 
+
+        var topCourses = learnerByCourse
+            .Select(g => new RevenueCourseVm
+            {
+                CourseName = courseLookup.TryGetValue(g.CourseId, out var name) ? name : $"Course {g.CourseId}",
+                Learners = g.Count,
+                Revenue = g.Count * MOCK_PRICE
+            })
+            .ToList();
+
         var vm = new AdminIndexViewModel
         {
             Stats = stats,
             RecentUsers = latestUsers,
-            RecentCourses = latestCourses
+            RecentCourses = latestCourses,
+            TopCourses = topCourses
         };
         return View(vm);
     }
@@ -395,8 +418,11 @@ public class AdminController : Controller
             {
                 Id = l.Id,
                 Title = l.Title,
-                CourseName = l.Course != null ? l.Course.CourseName : ""
+                CourseName = l.Course != null ? l.Course.CourseName : "",
+                OrderIndex = l.OrderIndex,
+                DocumentUrl = l.DocumentUrl
             })
+            .OrderBy(l => l.CourseName).ThenBy(l => l.OrderIndex)
             .ToList();
         return View("Lessons/Index", new LessonsPageVm { Lessons = lessons });
     }
@@ -417,7 +443,18 @@ public class AdminController : Controller
             ViewBag.Courses = _context.Courses.ToList();
             return View("Lessons/Create", model);
         }
-        _context.Lessons.Add(new Lesson { Title = model.Title, CourseId = model.CourseId });
+        _context.Lessons.Add(new Lesson 
+        { 
+            Title = model.Title, 
+            CourseId = model.CourseId,
+            OrderIndex = model.OrderIndex,
+            DocumentUrl = model.DocumentUrl,
+            VideoUrl = model.VideoUrl,
+            Content = model.Content,
+            Duration = model.Duration,
+            IsFreePreview = model.IsFreePreview,
+            IsPublished = model.IsPublished
+        });
         _context.SaveChanges();
         TempData["Message"] = "Đã tạo bài giảng.";
         return RedirectToAction(nameof(Lessons));
@@ -429,7 +466,19 @@ public class AdminController : Controller
         var lesson = _context.Lessons.FirstOrDefault(l => l.Id == id);
         if (lesson == null) return NotFound();
         ViewBag.Courses = _context.Courses.ToList();
-        return View("Lessons/Edit", new LessonFormVm { Id = lesson.Id, Title = lesson.Title, CourseId = lesson.CourseId });
+        return View("Lessons/Edit", new LessonFormVm 
+        { 
+            Id = lesson.Id, 
+            Title = lesson.Title, 
+            CourseId = lesson.CourseId,
+            OrderIndex = lesson.OrderIndex,
+            DocumentUrl = lesson.DocumentUrl,
+            VideoUrl = lesson.VideoUrl,
+            Content = lesson.Content,
+            Duration = lesson.Duration,
+            IsFreePreview = lesson.IsFreePreview,
+            IsPublished = lesson.IsPublished
+        });
     }
 
     [HttpPost]
@@ -445,6 +494,13 @@ public class AdminController : Controller
         if (lesson == null) return NotFound();
         lesson.Title = model.Title;
         lesson.CourseId = model.CourseId;
+        lesson.OrderIndex = model.OrderIndex;
+        lesson.DocumentUrl = model.DocumentUrl;
+        lesson.VideoUrl = model.VideoUrl;
+        lesson.Content = model.Content;
+        lesson.Duration = model.Duration;
+        lesson.IsFreePreview = model.IsFreePreview;
+        lesson.IsPublished = model.IsPublished;
         _context.SaveChanges();
         TempData["Message"] = "Đã cập nhật bài giảng.";
         return RedirectToAction(nameof(Lessons));
@@ -468,6 +524,268 @@ public class AdminController : Controller
             .Include(e => e.Course)
             .ToList();
         return View("Quiz/Index", new QuizPageVm { Exams = exams });
+    }
+
+    [HttpGet]
+    public IActionResult CreateQuiz()
+    {
+        ViewBag.Courses = _context.Courses.ToList();
+        return View("Quiz/Create", new ExamFormVm());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateQuiz(ExamFormVm model)
+    {
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Courses = _context.Courses.ToList();
+            return View("Quiz/Create", model);
+        }
+        var newExam = new Exam 
+        { 
+            Title = model.Title, 
+            CourseId = model.CourseId,
+            DurationMinutes = model.DurationMinutes,
+            PassingScore = model.PassingScore,
+            Description = model.Description,
+            ShuffleQuestions = model.ShuffleQuestions,
+            MaxAttempts = model.MaxAttempts,
+            ShowAnswers = model.ShowAnswers
+        };
+        _context.Exams.Add(newExam);
+        _context.SaveChanges();
+        TempData["Message"] = "Đã tạo thông tin cơ bản của bài quiz. Xin mời thêm câu hỏi!";
+        return RedirectToAction(nameof(EditQuiz), new { id = newExam.Id });
+    }
+
+    [HttpGet]
+    public IActionResult EditQuiz(int id)
+    {
+        var exam = _context.Exams.FirstOrDefault(e => e.Id == id);
+        if (exam == null) return NotFound();
+        
+        var questions = _context.Questions
+            .Where(q => q.ExamId == id)
+            .ToList();
+            
+        var questionIds = questions.Select(q => q.Id).ToList();
+        var options = _context.QuestionOptions
+            .Where(o => questionIds.Contains(o.QuestionId))
+            .ToList();
+
+        ViewBag.Questions = questions;
+        ViewBag.Options = options;
+        ViewBag.Courses = _context.Courses.ToList();
+        
+        return View("Quiz/Edit", new ExamFormVm 
+        { 
+            Id = exam.Id, 
+            Title = exam.Title, 
+            CourseId = exam.CourseId,
+            DurationMinutes = exam.DurationMinutes,
+            PassingScore = exam.PassingScore,
+            Description = exam.Description,
+            ShuffleQuestions = exam.ShuffleQuestions,
+            MaxAttempts = exam.MaxAttempts,
+            ShowAnswers = exam.ShowAnswers
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult EditQuiz(ExamFormVm model)
+    {
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Courses = _context.Courses.ToList();
+            return View("Quiz/Edit", model);
+        }
+        var exam = _context.Exams.FirstOrDefault(e => e.Id == model.Id);
+        if (exam == null) return NotFound();
+        
+        exam.Title = model.Title;
+        exam.CourseId = model.CourseId;
+        exam.DurationMinutes = model.DurationMinutes;
+        exam.PassingScore = model.PassingScore;
+        exam.Description = model.Description;
+        exam.ShuffleQuestions = model.ShuffleQuestions;
+        exam.MaxAttempts = model.MaxAttempts;
+        exam.ShowAnswers = model.ShowAnswers;
+        _context.SaveChanges();
+        
+        TempData["Message"] = "Đã cập nhật bài quiz.";
+        return RedirectToAction(nameof(Quiz));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteQuiz(int id)
+    {
+        var exam = _context.Exams.FirstOrDefault(e => e.Id == id);
+        if (exam == null) return NotFound();
+        
+        // cascade delete questions will be handled by EF if configured, otherwise might fail
+        _context.Exams.Remove(exam);
+        _context.SaveChanges();
+        TempData["Message"] = "Đã xóa bài quiz.";
+        return RedirectToAction(nameof(Quiz));
+    }
+
+    [HttpGet]
+    public IActionResult QuizDetails(int id)
+    {
+        var exam = _context.Exams
+            .Include(e => e.Course)
+            .FirstOrDefault(e => e.Id == id);
+            
+        if (exam == null) return NotFound();
+
+        var questions = _context.Questions
+            .Where(q => q.ExamId == id)
+            .ToList();
+            
+        var questionIds = questions.Select(q => q.Id).ToList();
+        var options = _context.QuestionOptions
+            .Where(o => questionIds.Contains(o.QuestionId))
+            .ToList();
+
+        ViewBag.Questions = questions;
+        ViewBag.Options = options;
+        
+        return View("Quiz/Details", exam);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateQuestion(int examId, string content)
+    {
+        if (!string.IsNullOrWhiteSpace(content))
+        {
+            _context.Questions.Add(new Question { ExamId = examId, Content = content });
+            _context.SaveChanges();
+            TempData["Message"] = "Đã thêm câu hỏi.";
+        }
+        return RedirectToAction(nameof(EditQuiz), new { id = examId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult EditQuestion(int id, string content, int examId)
+    {
+        var question = _context.Questions.FirstOrDefault(q => q.Id == id);
+        if (question != null && !string.IsNullOrWhiteSpace(content))
+        {
+            question.Content = content;
+            _context.SaveChanges();
+            TempData["Message"] = "Đã sửa câu hỏi.";
+        }
+        return RedirectToAction(nameof(EditQuiz), new { id = examId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteQuestion(int id, int examId)
+    {
+        var question = _context.Questions.FirstOrDefault(q => q.Id == id);
+        if (question != null)
+        {
+            var options = _context.QuestionOptions.Where(o => o.QuestionId == id).ToList();
+            _context.QuestionOptions.RemoveRange(options);
+            _context.Questions.Remove(question);
+            _context.SaveChanges();
+            TempData["Message"] = "Đã xóa câu hỏi.";
+        }
+        return RedirectToAction(nameof(EditQuiz), new { id = examId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateOption(int questionId, int examId, string content, bool isCorrect = false)
+    {
+        if (!string.IsNullOrWhiteSpace(content))
+        {
+            _context.QuestionOptions.Add(new QuestionOption { QuestionId = questionId, Content = content, IsCorrect = isCorrect });
+            _context.SaveChanges();
+            TempData["Message"] = "Đã thêm đáp án.";
+        }
+        return RedirectToAction(nameof(EditQuiz), new { id = examId });
+    }
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult EditOption(int id, int examId, string content)
+    {
+        var option = _context.QuestionOptions.FirstOrDefault(o => o.Id == id);
+        if (option != null && !string.IsNullOrWhiteSpace(content))
+        {
+            option.Content = content;
+            _context.SaveChanges();
+            TempData["Message"] = "Đã sửa đáp án.";
+        }
+        return RedirectToAction(nameof(EditQuiz), new { id = examId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteOption(int id, int examId)
+    {
+        var option = _context.QuestionOptions.FirstOrDefault(o => o.Id == id);
+        if (option != null)
+        {
+            _context.QuestionOptions.Remove(option);
+            _context.SaveChanges();
+            TempData["Message"] = "Đã xóa đáp án.";
+        }
+        return RedirectToAction(nameof(EditQuiz), new { id = examId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult SetCorrectOption(int optionId, int questionId, int examId)
+    {
+        var options = _context.QuestionOptions.Where(o => o.QuestionId == questionId).ToList();
+        foreach (var opt in options)
+        {
+            opt.IsCorrect = opt.Id == optionId;
+        }
+        _context.SaveChanges();
+        TempData["Message"] = "Đã chọn đáp án đúng.";
+        return RedirectToAction(nameof(EditQuiz), new { id = examId });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> GenerateLessonContent([FromBody] AiRequestMsg req)
+    {
+        if (string.IsNullOrWhiteSpace(req.Topic)) return BadRequest();
+        var content = await _aiService.GenerateLessonContentAsync(req.Topic);
+        return Json(new { success = true, content });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> GenerateExamQuestions([FromBody] AiExamRequestMsg req)
+    {
+        if (string.IsNullOrWhiteSpace(req.Topic) || req.ExamId == 0) return BadRequest();
+        
+        var questions = await _aiService.GenerateQuizQuestionsAsync(req.Topic, req.Count);
+        foreach (var qDto in questions)
+        {
+            var dbQ = new Question { ExamId = req.ExamId, Content = qDto.Content };
+            _context.Questions.Add(dbQ);
+            _context.SaveChanges(); 
+            
+            foreach (var optDto in qDto.Options)
+            {
+                _context.QuestionOptions.Add(new QuestionOption 
+                { 
+                    QuestionId = dbQ.Id, 
+                    Content = optDto.Content, 
+                    IsCorrect = optDto.IsCorrect 
+                });
+            }
+        }
+        _context.SaveChanges();
+        return Json(new { success = true });
     }
 
     public IActionResult Discounts() => View("Discounts/Index");

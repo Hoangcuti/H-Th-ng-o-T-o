@@ -14,4 +14,5 @@ public class AdminIndexViewModel
     public AdminDashboardVm Stats { get; set; } = new();
     public List<User> RecentUsers { get; set; } = new();
     public List<Course> RecentCourses { get; set; } = new();
+    public List<RevenueCourseVm> TopCourses { get; set; } = new();
 }

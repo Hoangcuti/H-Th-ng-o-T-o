@@ -1,4 +1,5 @@
 using COTHUYPRO.Models;
+using COTHUYPRO.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IAiService, MockAiService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,116 @@
+@model COTHUYPRO.Models.Exam
+@{
+    ViewData["Title"] = "Chi tiết Quiz";
+    var questions = ViewBag.Questions as List<COTHUYPRO.Models.Question> ?? new();
+    var allOptions = ViewBag.Options as List<COTHUYPRO.Models.QuestionOption> ?? new();
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="eyebrow">Quiz Builder</p>
+        <h2>@Model.Title</h2>
+        <p class="text-muted">Khóa học: @Model.Course?.CourseName | Thời gian: @Model.DurationMinutes phút | Điểm đỗ: @Model.PassingScore</p>
+        <p class="text-muted">@Model.Description</p>
+    </div>
+    <div class="quick-actions">
+        <a class="btn ghost" asp-action="Quiz">Quay lại danh sách</a>
+    </div>
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel-card mb-4 p-4 border rounded">
+            <h4>Thêm câu hỏi mới</h4>
+            <form asp-action="CreateQuestion" method="post" class="d-flex gap-2 mt-3">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="examId" value="@Model.Id" />
+                <input type="text" name="content" class="form-control" placeholder="Nhập nội dung câu hỏi..." required />
+                <button type="submit" class="btn btn-primary" style="white-space: nowrap;">Thêm câu hỏi</button>
+            </form>
+        </div>
+
+        @if (!questions.Any())
+        {
+            <div class="text-center p-5 border rounded" style="background:#f8fafc;">
+                <p class="text-muted mb-0">Bài quiz này chưa có câu hỏi nào. Hãy thêm câu hỏi đầu tiên!</p>
+            </div>
+        }
+
+        @foreach (var (q, index) in questions.Select((item, idx) => (item, idx + 1)))
+        {
+            var qOptions = allOptions.Where(o => o.QuestionId == q.Id).ToList();
+
+            <div class="panel-card mb-4 p-4 border rounded shadow-sm">
+                <!-- Question Header -->
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="fw-bold mb-0">Câu @index: @q.Content</h5>
+                    <form asp-action="DeleteQuestion" method="post" onsubmit="return confirm('Xóa câu hỏi này và toàn bộ đáp án?');" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@q.Id" />
+                        <input type="hidden" name="examId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-sm text-danger" title="Xóa câu hỏi">🗑 Xóa</button>
+                    </form>
+                </div>
+                
+                <!-- Options List -->
+                <ul class="list-group mb-3">
+                    @foreach (var opt in qOptions)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center @(opt.IsCorrect ? "list-group-item-success" : "")">
+                            <div class="d-flex align-items-center gap-2">
+                                @if (opt.IsCorrect)
+                                {
+                                    <span class="badge bg-success rounded-pill">Đúng</span>
+                                }
+                                else
+                                {
+                                    <form asp-action="SetCorrectOption" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="optionId" value="@opt.Id" />
+                                        <input type="hidden" name="questionId" value="@q.Id" />
+                                        <input type="hidden" name="examId" value="@Model.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Chọn làm đáp án đúng">○</button>
+                                    </form>
+                                }
+                                <span>@opt.Content</span>
+                            </div>
+                            <form asp-action="DeleteOption" method="post" onsubmit="return confirm('Xóa đáp án này?');" class="m-0">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@opt.Id" />
+                                <input type="hidden" name="examId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm btn-link text-danger p-0" style="text-decoration:none;">✖</button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+
+                <!-- Add Option Form -->
+                <form asp-action="CreateOption" method="post" class="row g-2 align-items-center">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="examId" value="@Model.Id" />
+                    <input type="hidden" name="questionId" value="@q.Id" />
+                    <div class="col-8 col-md-9">
+                        <input type="text" name="content" class="form-control form-control-sm" placeholder="Nhập đáp án mới..." required />
+                    </div>
+                    <div class="col-auto">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="isCorrect" value="true" id="check_@q.Id">
+                            <label class="form-check-label" for="check_@q.Id"><small>Là đáp án đúng</small></label>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-sm btn-primary">+ Thêm</button>
+                    </div>
+                </form>
+            </div>
+        }
+    </div>
+</div>
