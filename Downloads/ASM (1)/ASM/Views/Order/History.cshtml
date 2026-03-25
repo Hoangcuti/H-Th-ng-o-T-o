@@ -1,0 +1,39 @@
+@model IEnumerable<ASM.Models.Order>
+
+@{
+    ViewData["Title"] = "Order History";
+}
+
+<div class="container mt-5">
+    <h2>Your Orders</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>#@item.Id</td>
+                    <td>@item.OrderDate.ToString("g")</td>
+                    <td>
+                        <span class="badge @(item.Status == ASM.Models.OrderStatus.Delivered ? "bg-success" : 
+                                            item.Status == ASM.Models.OrderStatus.Cancelled ? "bg-danger" : "bg-warning")">
+                            @item.Status
+                        </span>
+                    </td>
+                    <td>@item.TotalAmount.ToString("N0") VNĐ</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

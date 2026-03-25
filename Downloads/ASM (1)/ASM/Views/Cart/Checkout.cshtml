@@ -1,0 +1,45 @@
+@model List<ASM.Models.OrderDetail>
+
+@{
+    ViewData["Title"] = "Checkout";
+    decimal total = Model.Sum(x => x.Quantity * x.Price);
+}
+
+<div class="container mt-5">
+    <h2>Checkout Confirmation</h2>
+    <div class="row">
+         <div class="col-md-8">
+             <h4>Items</h4>
+             <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.FoodItem.Name</td>
+                            <td>@item.Quantity</td>
+                            <td>@((item.Price * item.Quantity).ToString("N0")) VNĐ</td>
+                        </tr>
+                    }
+                </tbody>
+             </table>
+             <h4 class="text-end">Total: @total.ToString("N0") VNĐ</h4>
+         </div>
+         <div class="col-md-4">
+             <h4>Shipping Info</h4>
+             <form asp-action="CheckoutConfirm" method="post">
+                 <div class="form-group mb-3">
+                     <label>Address</label>
+                     <input type="text" name="address" class="form-control" required />
+                 </div>
+                 <button type="submit" class="btn btn-primary w-100">Confirm Order</button>
+             </form>
+         </div>
+    </div>
+</div>

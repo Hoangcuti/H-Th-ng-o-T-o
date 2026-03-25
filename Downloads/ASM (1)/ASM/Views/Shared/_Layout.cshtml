@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - II SHOP</title>
+    <link rel="stylesheet" href="~/css/Layout.css" />
+    <script src="/js/Home/Layout.js"></script>
+
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+          integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <header>
+        <!-- Header -->
+        <div class="logo">
+            <div class="logoTrai">
+                <img src="/images/Logo_HiuGamer.png" alt="Logo" class="logo_taycam" />
+            </div>
+            <div class="khungTimKiem">
+                <form asp-controller="Menu" asp-action="Index" method="get" class="d-flex w-100">
+                    <div class="chonHangBox">
+                        <select class="chonHang" name="category">
+                            <option value="">Tất Cả</option>
+                            <option value="MyCay">Mỳ cay</option>
+                            <option value="DoAnNhanh">Đồ ăn nhanh</option>
+                            <option value="Combo">Combo</option>
+                            <option value="NuocGiaiKhat">Nước giải khát</option>
+                            <option value="MonKhac">Món khác</option>
+                        </select>
+                    </div>
+                    <input type="text" name="searchStr" placeholder="Tìm kiếm sản phẩm..." value="@Context.Request.Query["searchStr"]" />
+                    <button type="submit" style="background:none; border:none; padding:0;">
+                        <img src="~/images/Search.png" class="iconTimKiem" alt="search" />
+                    </button>
+                </form>
+            </div>
+
+            <!-- NÚT ĐĂNG NHẬP / TÊN NGƯỜI DÙNG -->
+            <div class="user">
+                @if (User.Identity is { IsAuthenticated: true })
+                {
+                    <div class="user-dropdown">
+                        <a href="javascript:void(0)" class="user-btn">
+                            <span class="user-name">@User.Identity.Name</span>
+                            <i class="fas fa-caret-down ms-2"></i>
+                        </a>
+                        <div class="dropdown-menu">
+                            <a href="@Url.Action("Profile", "Account")" class="dropdown-item">
+                                <i class="fas fa-user me-2"></i> Thông tin tài khoản
+                            </a>
+                            <hr class="dropdown-divider" />
+                            <form asp-action="Logout" asp-controller="Account" method="post" class="m-0">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <a href="@Url.Action("Login", "Account")" class="user-btn">
+                        Đăng Nhập / Đăng Ký
+                    </a>
+                }
+            </div>
+
+            <div class="pay">
+                <a href="@Url.Action("Index", "Cart")" class="pay-btn">
+                    Thanh Toán
+                </a>
+            </div>
+
+            <div class="gioHang">
+                <a href="@Url.Action("Index", "Cart")" class="gioHang-btn">
+                    <img src="~/images/Giỏ Hàng.png" alt="Giỏ hàng" />
+                    <span>Giỏ Hàng</span>
+                </a>
+                <div class="gioHangBe">
+                    <p>Giỏ hàng trống</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="menu-container">
+            <ul class="menu">
+                
+                <li class="@(Context.Request.Path.StartsWithSegments("/") && Context.Request.Path.Value == "/" ? "active" : "")">
+                    <a href="@Url.Action("Index", "Home")">TRANG CHỦ</a>
+                </li>
+
+                <li class="@(Context.Request.Path.StartsWithSegments("/Menu") ? "active" : "")">
+                    <a href="@Url.Action("Index", "Menu")">THỰC ĐƠN<span class="arrow">▼</span></a>
+                    <ul class="submenu">
+                        <li><a href="@Url.Action("Index", "Menu", new { category = "MyCay" })">Mỳ cay</a></li>
+                        <li><a href="@Url.Action("Index", "Menu", new { category = "DoAnNhanh" })">Đồ ăn nhanh</a></li>
+                        <li><a href="@Url.Action("Index", "Menu", new { category = "Combo" })">Combo</a></li>
+                        <li><a href="@Url.Action("Index", "Menu", new { category = "NuocGiaiKhat" })">Nước giải khát</a></li>
+                        <li><a href="@Url.Action("Index", "Menu", new { category = "MonKhac" })">Món khác</a></li>
+                    </ul>
+                </li>
+
+                <li class="@(Context.Request.Path.StartsWithSegments("/Home/About") ? "active" : "")">
+                    <a href="@Url.Action("About", "Home")">GIỚI THIỆU</a>
+                </li>
+
+                <li class="@(Context.Request.Path.StartsWithSegments("/Home/Careers") ? "active" : "")">
+                    <a href="@Url.Action("Careers", "Home")">TUYỂN DỤNG</a>
+                </li>
+
+                <li class="@(Context.Request.Path.StartsWithSegments("/Home/Contact") ? "active" : "")">
+                    <a href="@Url.Action("Contact", "Home")">LIÊN HỆ</a>
+                </li>
+
+                <li class="hotline">
+                    <img src="~/images/phone.png" alt="Hotline" class="phone-icon">
+                    <span>0123456789</span>   
+                </li>
+
+            </ul>
+        </div>
+
+    </header>
+
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+    <!--Thông tin-->
+    <!-- Views/Shared/_Footer.cshtml -->
+    <footer class="footer">
+        <div class="footer-container">
+
+            <div class="footer-bg"></div>
+
+
+
+            <div class="huygamer-banner">
+                <div class="glow-border">
+                    <div class="banner-content">
+
+                        <!-- Logo -->
+                        <img src="~/images/Logo_HiuGamer.png" alt="HUYGAMER SHOP" class="main-logo" />
+
+                        <!-- Title -->
+                        <h1 class="title">MÌ CAY ....</h1>
+
+                        <!-- Social -->
+                        <div class="social">
+                            <span>Theo dõi để biết thêm các khuyến mãi</span>
+                            <div class="icons">
+                                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                                <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                                <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                            </div>
+                        </div>
+
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+                              integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 4 Columns -->
+            <div class="footer-columns">
+
+                <div class="footer-col">
+                    <h3>LIÊN HỆ</h3>
+                    <ul>
+                        <li><strong>CÔNG TY TNHH .....</strong></li>
+                        <li>MST: 011135034</li>
+                        <li>Địa chỉ:</li>
+                        <li>1075/20/3 Đ.Bùi Hữu Nghĩa, Tổ 8B, KP.Đồng Nai, Biên Hòa, Đồng Nai</li>
+                        <li>Hotline: <a href="tel:0833122020">0382346121</a></li>
+                        <li>Email: <a href="mailto:hiugamershop@gmail.com">hiugamershop@gmail.com</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3>THỰC ĐƠN</h3>
+                    <ul>
+                        <li><a href="#">Mỳ cay</a></li>
+                        <li><a href="#">Đồ ăn nhanh</a></li>
+                        <li><a href="#">Combo</a></li>
+                        <li><a href="#">Nước giải khát</a></li>
+                        <li><a href="#">Món khác</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3>CHĂM SÓC KHÁCH HÀNG</h3>
+                    <ul>
+                        <li><a href="#">Phản Ánh Chất Lượng Sản Phẩm</a></li>
+                        <li><a href="#">Phản Ánh Chất Lượng Dịch Vụ</a></li>
+                        <li><a href="#">Chính Sách Mua Hàng</a></li>
+                        <li><a href="#">Thông Tin Khuyến Mãi</a></li>
+                        <li><a href="#">Liên Hệ</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3>ĐĂNG KÝ</h3>
+                    <p>Đăng ký để nhận ưu đãi độc quyền, tin tức và sản phẩm mới nhất!</p>
+                    <form class="newsletter" asp-controller="Home" asp-action="Subscribe" method="post">
+                        <input type="email" name="Email" placeholder="Your Email (required)" required>
+                        <button type="submit">SIGN UP</button>
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+    </footer>
+
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

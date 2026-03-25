@@ -1,0 +1,32 @@
+﻿@model IEnumerable<ASM.Models.FoodItem>
+
+@{
+    ViewData["Title"] = "Trang Chủ";
+}
+
+<div class="banner">
+    <div class="banner-content text-center text-white py-5" style="background-color: #343a40;">
+        <h1>Welcome to II SHOP</h1>
+        <p>Delicious Food, Fast Delivery</p>
+        <a asp-controller="Menu" asp-action="Index" class="btn btn-warning btn-lg">Order Now</a>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Featured Items</h2>
+    <div class="row">
+        @foreach (var item in Model)
+        {
+             <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                     <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/placeholder.png" : item.ImageUrl)" class="card-img-top" alt="@item.Name" style="height: 150px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Name</h5>
+                        <p class="card-text text-primary">@item.Price.ToString("N0") VNĐ</p>
+                        <a asp-controller="Menu" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">View</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

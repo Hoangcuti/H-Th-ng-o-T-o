@@ -1,0 +1,44 @@
+@model IEnumerable<ASM.Models.Order>
+
+@{
+    ViewData["Title"] = "Manage Orders";
+}
+
+<div class="container mt-5">
+    <h2>Manage Orders</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.User?.UserName</td>
+                    <td>@item.OrderDate</td>
+                    <td>@item.TotalAmount.ToString("N0")</td>
+                    <td>
+                        <form asp-action="UpdateOrderStatus" method="post" class="d-flex align-items-center">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <select name="status" class="form-select form-select-sm me-2" asp-items="Html.GetEnumSelectList<ASM.Models.OrderStatus>()" 
+                                    onchange="this.form.submit()">
+                                 <option selected disabled>@item.Status</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td>
+                        <a asp-controller="Order" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

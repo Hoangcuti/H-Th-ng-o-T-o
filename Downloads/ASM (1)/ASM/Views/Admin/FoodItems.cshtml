@@ -1,0 +1,36 @@
+@model IEnumerable<ASM.Models.FoodItem>
+
+@{
+    ViewData["Title"] = "Manage Food Items";
+}
+
+<div class="container mt-5">
+    <h2>Manage Food Items</h2>
+    <p>
+        <a asp-action="CreateFood" class="btn btn-primary">Create New</a>
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Price.ToString("N0")</td>
+                    <td>@item.Category</td>
+                    <td>
+                        <a asp-action="EditFood" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                        <a asp-action="DeleteFood" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
