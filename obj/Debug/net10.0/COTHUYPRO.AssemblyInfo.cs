@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("COTHUYPRO")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bc64924d0024e63595ef0ced2e8578e445fd7601")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b310113252f934a4cac91e0a7e31ab03ddfa8bd4")]
 [assembly: System.Reflection.AssemblyProductAttribute("COTHUYPRO")]
 [assembly: System.Reflection.AssemblyTitleAttribute("COTHUYPRO")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
