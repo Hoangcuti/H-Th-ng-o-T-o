@@ -28,13 +28,18 @@
                 @foreach (var c in categories) { <option value="@c.Id">@c.Name</option> }
             </select>
         </div>
-        <div class="col-md-6">
-            <label class="form-label">Cấp độ</label>
-            <select asp-for="LevelId" class="form-select">
-                <option value="">--Chọn--</option>
-                @foreach (var l in levels) { <option value="@l.Id">@l.Name</option> }
-            </select>
-        </div>
+    <div class="col-md-6">
+        <label class="form-label">Cấp độ</label>
+        <select asp-for="LevelId" class="form-select">
+            <option value="">--Chọn--</option>
+            @foreach (var l in levels) { <option value="@l.Id">@l.Name</option> }
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Giá khóa học (VNĐ)</label>
+        <input asp-for="Price" type="number" step="1000" class="form-control" placeholder="Ví dụ: 500000" />
+        <span class="text-danger" asp-validation-for="Price"></span>
+    </div>
         <div class="col-12 d-flex gap-2">
             <button class="btn solid" type="submit">Tạo</button>
             <a class="btn ghost" asp-action="Courses">Hủy</a>

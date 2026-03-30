@@ -32,31 +32,48 @@
         <span class="muted">Lịch học đã xếp</span>
     </div>
     <div class="stat-card">
-        <p>Bài giảng</p>
-        <h3>–</h3>
-        <span class="muted">Sẽ hiển thị khi tích hợp dữ liệu</span>
+        <p>Khóa đã bán</p>
+        <h3>@Model.Stats.SoldCourseCount</h3>
+        <span class="muted">Lượt học viên đăng ký</span>
     </div>
     <div class="stat-card accent">
         <p>Chứng chỉ chờ</p>
         <h3>@Model.Stats.PendingCertificates</h3>
         <span class="muted">Cần duyệt và cấp phát</span>
     </div>
-    <div class="stat-card">
+    <div class="stat-card primary">
         <p>Doanh thu</p>
-        <h3>—</h3>
-        <span class="muted">Đang cập nhật kết nối thanh toán</span>
+        <h3>@string.Format("{0:N0} đ", Model.Stats.TotalRevenue)</h3>
+        <span class="muted">Dựa trên giá khóa học thực tế</span>
     </div>
 </div>
 
-<div class="panel-card animate-fade-in delay-150" style="animation-fill-mode: both; margin: 24px 0;">
-    <div class="panel-head">
-        <div>
-            <p class="eyebrow">Phân tích</p>
-            <h4>Biểu đồ Người dùng & Khóa học (Tháng)</h4>
+<div class="row g-4 animate-fade-in delay-150" style="animation-fill-mode: both; margin: 24px 0;">
+    <div class="col-lg-8">
+        <div class="panel-card h-100">
+            <div class="panel-head">
+                <div>
+                    <p class="eyebrow">Phân tích</p>
+                    <h4>Biểu đồ Tăng trưởng (Người dùng & Khóa học)</h4>
+                </div>
+            </div>
+            <div style="height: 320px; width: 100%; position: relative;">
+                <canvas id="growthChart"></canvas>
+            </div>
         </div>
     </div>
-    <div style="height: 320px; width: 100%; position: relative;">
-        <canvas id="growthChart"></canvas>
+    <div class="col-lg-4">
+        <div class="panel-card h-100">
+            <div class="panel-head">
+                <div>
+                    <p class="eyebrow">Cơ cấu</p>
+                    <h4>Phân loại người dùng</h4>
+                </div>
+            </div>
+            <div style="height: 320px; width: 100%; position: relative; padding: 20px;">
+                <canvas id="userTypeChart"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -293,6 +310,44 @@
                     interaction: {
                         mode: 'index',
                         intersect: false
+                    }
+                }
+            new Chart(ctx, {
+                // ... (line 227)
+            });
+
+            // New User Type Pie Chart
+            const ctxPie = document.getElementById('userTypeChart').getContext('2d');
+            
+            // Lấy dữ liệu từ Table (tạm thời) hoặc từ Model
+            const studentCount = @Model.RecentUsers.Count(u => u.UserRoles.Any(ur => ur.Role!.Name == "Student"));
+            const instructorCount = @Model.RecentUsers.Count(u => u.UserRoles.Any(ur => ur.Role!.Name == "Instructor"));
+            const adminCount = @Model.RecentUsers.Count(u => u.UserRoles.Any(ur => ur.Role!.Name == "Admin"));
+
+            new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Học viên', 'Giảng viên', 'Admin'],
+                    datasets: [{
+                        data: [studentCount, instructorCount, adminCount],
+                        backgroundColor: ['#06b6d4', '#f59e0b', '#6366f1'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                padding: 20,
+                                font: { family: "'Space Grotesk', sans-serif", size: 12 }
+                            }
+                        }
                     }
                 }
             });

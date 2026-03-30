@@ -7,6 +7,8 @@ public class AdminDashboardVm
     public int ClassCount { get; set; }
     public int ExamCount { get; set; }
     public int PendingCertificates { get; set; }
+    public int SoldCourseCount { get; set; }
+    public decimal TotalRevenue { get; set; }
 }
 
 public class AdminIndexViewModel

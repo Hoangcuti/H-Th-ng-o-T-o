@@ -63,6 +63,7 @@ public class TrainingContext : DbContext
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
     public DbSet<ErrorLog> ErrorLogs => Set<ErrorLog>();
     public DbSet<Token> Tokens => Set<Token>();
+    public DbSet<InstructorCourseApplication> InstructorCourseApplications => Set<InstructorCourseApplication>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -75,6 +76,69 @@ public class TrainingContext : DbContext
         modelBuilder.Entity<CoursePrerequisite>().HasKey(x => new { x.CourseId, x.PrerequisiteId });
         modelBuilder.Entity<ClassStudent>().HasKey(x => new { x.ClassId, x.UserId });
         modelBuilder.Entity<UserNotification>().HasKey(x => new { x.UserId, x.NotificationId });
+        modelBuilder.Entity<LearningProgress>().HasKey(lp => new { lp.UserId, lp.LessonId });
+
+        // Ánh xạ chính xác các cột theo Database của bạn
+        modelBuilder.Entity<User>(entity => {
+            entity.ToTable("Users");
+            entity.Property(e => e.Id).HasColumnName("UserID");
+            entity.Property(e => e.StudentCode).HasColumnName("StudentCode");
+        });
+
+        modelBuilder.Entity<Course>(entity => {
+            entity.ToTable("Courses");
+            entity.Property(e => e.Id).HasColumnName("CourseID");
+            entity.Property(e => e.Price).HasColumnName("Price");
+        });
+
+        modelBuilder.Entity<Lesson>(entity => {
+            entity.ToTable("Lessons");
+            entity.Property(e => e.Id).HasColumnName("LessonID");
+            entity.Property(e => e.CourseId).HasColumnName("CourseID");
+        });
+
+        modelBuilder.Entity<Class>(entity => {
+            entity.ToTable("Classes");
+            entity.Property(e => e.Id).HasColumnName("ClassID");
+            entity.Property(e => e.CourseId).HasColumnName("CourseID");
+            entity.Property(e => e.InstructorId).HasColumnName("InstructorID");
+        });
+
+        modelBuilder.Entity<LearningProgress>(entity => {
+            entity.ToTable("LearningProgress");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+            entity.Property(e => e.LessonId).HasColumnName("LessonID");
+            entity.Property(e => e.Completed).HasColumnName("Completed");
+            entity.Property(e => e.CompletionDate).HasColumnName("CompletionDate");
+        });
+
+        modelBuilder.Entity<ClassStudent>(entity => {
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+            entity.Property(e => e.ClassId).HasColumnName("ClassID");
+        });
+
+        modelBuilder.Entity<CourseInstructor>(entity => {
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+            entity.Property(e => e.CourseId).HasColumnName("CourseID");
+        });
+
+        modelBuilder.Entity<InstructorCourseApplication>(entity => {
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+            entity.Property(e => e.CourseId).HasColumnName("CourseID");
+        });
+
+        modelBuilder.Entity<Exam>(entity => {
+            entity.Property(e => e.Id).HasColumnName("ExamID");
+            entity.Property(e => e.CourseId).HasColumnName("CourseID");
+        });
+
+        modelBuilder.Entity<ClassAttendance>(entity => {
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+        });
+
+        modelBuilder.Entity<UserCertificate>(entity => {
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+        });
 
         modelBuilder.Entity<Class>()
             .HasOne(c => c.Instructor)

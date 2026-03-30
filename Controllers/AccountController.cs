@@ -148,8 +148,16 @@ public class AccountController : Controller
 
         var user = await _context.Users
             .Include(u => u.UserProfiles)
-            .Include(u => u.LearningProgresses).ThenInclude(lp => lp.Course)
             .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+        
+        if (user == null) return NotFound();
+
+        var enrolledCourses = await _context.ClassStudents
+            .Include(cs => cs.Class)!.ThenInclude(c => c.Course)
+            .Where(cs => cs.UserId == user.Id)
+            .Select(cs => cs.Class!.Course!.CourseName)
+            .Distinct()
+            .ToListAsync();
 
         if (user == null) return NotFound();
 
@@ -159,7 +167,7 @@ public class AccountController : Controller
             Email = user.Email ?? "",
             Phone = user.UserProfiles?.FirstOrDefault()?.Phone,
             StudentCode = user.StudentCode,
-            EnrolledCourses = user.LearningProgresses.Where(lp => lp.Course != null).Select(lp => lp.Course!.CourseName).ToList()
+            EnrolledCourses = enrolledCourses
         };
         return View(vm);
     }
@@ -172,10 +180,15 @@ public class AccountController : Controller
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userIdStr)) {
-                var u = await _context.Users.Include(x => x.LearningProgresses).ThenInclude(x => x.Course).FirstOrDefaultAsync(x => x.Id.ToString() == userIdStr);
+                var u = await _context.Users.FirstOrDefaultAsync(x => x.Id.ToString() == userIdStr);
                 if (u != null) {
                     model.StudentCode = u.StudentCode;
-                    model.EnrolledCourses = u.LearningProgresses.Where(lp => lp.Course != null).Select(lp => lp.Course!.CourseName).ToList();
+                    model.EnrolledCourses = await _context.ClassStudents
+                        .Include(cs => cs.Class)!.ThenInclude(c => c.Course)
+                        .Where(cs => cs.UserId == u.Id)
+                        .Select(cs => cs.Class!.Course!.CourseName)
+                        .Distinct()
+                        .ToListAsync();
                 }
             }
             return View(model);

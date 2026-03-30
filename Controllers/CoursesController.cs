@@ -44,18 +44,25 @@ public class CoursesController : Controller
         
         var userId = int.Parse(userIdString);
 
-        var exists = _context.LearningProgress.Any(lp => lp.UserId == userId && lp.CourseId == id);
+        // Tìm lớp học đầu tiên của khóa này đang mở (StatusId=1) hoặc bất kỳ lớp nào
+        var targetClass = _context.Classes.FirstOrDefault(c => c.CourseId == id);
+        if (targetClass == null)
+        {
+            TempData["Error"] = "Khóa học hiện chưa có lớp học nào mở.";
+            return RedirectToAction("Details", new { id = id });
+        }
+
+        var exists = _context.ClassStudents.Any(cs => cs.UserId == userId && cs.ClassId == targetClass.Id);
         if (!exists) 
         {
-            var lp = new LearningProgress 
+            var cs = new ClassStudent 
             { 
                 UserId = userId, 
-                CourseId = id, 
-                Percent = 0 
+                ClassId = targetClass.Id 
             };
-            _context.LearningProgress.Add(lp);
+            _context.ClassStudents.Add(cs);
             _context.SaveChanges();
-            TempData["SuccessMessage"] = "Đăng ký khóa học thành công! Hệ thống đã ghi nhận doanh thu mới.";
+            TempData["SuccessMessage"] = "Đăng ký khóa học thành công! Bạn hiện đã có tên trong danh sách lớp.";
         }
         else 
         {

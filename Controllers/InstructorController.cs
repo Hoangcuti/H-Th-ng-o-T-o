@@ -51,6 +51,48 @@ public class InstructorController : Controller
             Classes = classes,
             Students = students
         };
+
+        // Danh sách các khóa học mà giảng viên chưa được gán và chưa đăng ký (hoặc đã bị từ chối)
+        var assignedCourseIds = courses.Select(c => c.Id).ToList();
+        var pendingApplicationCourseIds = _context.InstructorCourseApplications
+            .Where(a => a.UserId == userId && a.Status == "Pending")
+            .Select(a => a.CourseId)
+            .ToList();
+
+        ViewBag.AvailableCourses = _context.Courses
+            .Where(c => !assignedCourseIds.Contains(c.Id) && !pendingApplicationCourseIds.Contains(c.Id))
+            .ToList();
+
         return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ApplyForCourse(int courseId)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        
+        // Kiểm tra xem đã đăng ký chưa
+        var exists = _context.InstructorCourseApplications
+            .Any(a => a.UserId == userId && a.CourseId == courseId && a.Status == "Pending");
+
+        if (!exists)
+        {
+            _context.InstructorCourseApplications.Add(new InstructorCourseApplication
+            {
+                UserId = userId,
+                CourseId = courseId,
+                ApplyDate = DateTime.Now,
+                Status = "Pending"
+            });
+            _context.SaveChanges();
+            TempData["Message"] = "Đã gửi đơn đăng ký giảng dạy. Vui lòng chờ Admin phê duyệt.";
+        }
+        else
+        {
+            TempData["Error"] = "Bạn đã gửi đơn đăng kí cho khóa học này rồi.";
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 }

@@ -147,26 +147,8 @@ public static class DataSeeder
             }
         };
 
-        var progresses = new[]
-        {
-            new LearningProgress { User = student, Course = courses[0], Percent = 35 },
-            new LearningProgress { User = student, Course = courses[3], Percent = 10 }
-        };
-
-        context.Permissions.AddRange(permissions);
-        context.Departments.AddRange(departments);
-        context.Positions.AddRange(positions);
-        context.Users.AddRange(admin, instructor, student);
-        context.CourseCategories.AddRange(categories);
-        context.CourseLevels.AddRange(levels);
-        context.Courses.AddRange(courses);
-        context.CourseInstructors.AddRange(courseInstructors);
-        context.ClassRooms.AddRange(classRooms);
-        context.ClassStatus.AddRange(classStatus);
-        context.Classes.AddRange(marketingClass, dotnetClass);
         context.ClassSchedules.AddRange(marketingClass.Schedules);
         context.ClassSchedules.AddRange(dotnetClass.Schedules);
-        context.LearningProgress.AddRange(progresses);
 
         context.SaveChanges();
 

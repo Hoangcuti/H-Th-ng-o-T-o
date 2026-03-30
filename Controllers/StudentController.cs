@@ -19,10 +19,10 @@ public class StudentController : Controller
     public IActionResult Index()
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
+        
+        // Lấy tiến độ các bài học
         var learning = _context.LearningProgress
-            .Include(lp => lp.Course).ThenInclude(c => c.Level)
-            .Include(lp => lp.Course).ThenInclude(c => c.Category)
+            .Include(lp => lp.Lesson).ThenInclude(l => l!.Course)
             .Where(lp => lp.UserId == userId)
             .ToList();
 
@@ -61,12 +61,20 @@ public class StudentController : Controller
             .Where(l => l.CourseId == id)
             .ToList();
 
-        // Get student progress
-        var progress = _context.LearningProgress
-            .FirstOrDefault(lp => lp.UserId == userId && lp.CourseId == id);
+        // Calculate progress percentage
+        int totalLessons = lessons.Count;
+        int completedLessons = 0;
+        if (totalLessons > 0)
+        {
+            var lessonIds = lessons.Select(l => l.Id).ToList();
+            completedLessons = _context.LearningProgress
+                .Count(lp => lp.UserId == userId && lessonIds.Contains(lp.LessonId) && lp.Completed);
+        }
 
         ViewBag.Lessons = lessons;
-        ViewBag.Progress = progress?.Percent ?? 0;
+        ViewBag.Progress = totalLessons > 0 ? (completedLessons * 100 / totalLessons) : 0;
+        ViewBag.CompletedCount = completedLessons;
+        ViewBag.TotalCount = totalLessons;
 
         return View(course);
     }

@@ -39,7 +39,7 @@ public class HomeController : Controller
                 Category = c.Category?.Name ?? "N/A",
                 Level = c.Level?.Name ?? "N/A",
                 Instructors = c.Instructors.Select(i => i.User?.FullName ?? i.User?.Username ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList(),
-                Progress = c.LearningProgresses.FirstOrDefault()?.Percent ?? 0
+                Progress = 0
             }).ToList(),
             UpcomingClasses = classes
                 .Select(cls => new ClassCardVm

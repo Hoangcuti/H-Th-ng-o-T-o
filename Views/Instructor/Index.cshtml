@@ -36,6 +36,34 @@
         }
     </div>
 
+    @if (ViewBag.AvailableCourses != null)
+    {
+        var avail = ViewBag.AvailableCourses as List<COTHUYPRO.Models.Course> ?? new();
+        if (avail.Any())
+        {
+            <div class="panel mt-4 py-4 px-4 delay-150 animate-fade-in" style="animation-fill-mode: both; background: rgba(255,255,255,0.05); border: 1px border var(--primary-light);">
+                <div class="panel-header"><h3 class="m-0 text-white">Đăng ký dạy khóa học mới</h3></div>
+                <div class="course-grid">
+                    @foreach (var ac in avail)
+                    {
+                        <div class="course-card" style="border: 1px solid rgba(255,255,255,0.1);">
+                            <div class="course-meta">
+                                <span class="badge">@ac.Category?.Name</span>
+                            </div>
+                            <h5>@ac.CourseName</h5>
+                            <p class="muted small">Giá: @string.Format("{0:N0} đ", ac.Price)</p>
+                            <form asp-action="ApplyForCourse" method="post" style="margin-top: 12px;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="courseId" value="@ac.Id" />
+                                <button class="btn btn-sm solid w-100" type="submit">✍️ Đăng ký dạy</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+
     <div class="panel mt-4 py-4 px-4 delay-200 animate-fade-in" style="animation-fill-mode: both; background: rgba(255,255,255,0.02); box-shadow: none;">
         <div class="panel-header"><h3 class="m-0 text-white">Lịch lớp đang dạy</h3></div>
         <div class="table-responsive">

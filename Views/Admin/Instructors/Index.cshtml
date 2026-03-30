@@ -53,9 +53,76 @@
     </div>
 </div>
 
-<div class="panel-card">
+<div class="panel-card" style="margin-top: 24px;">
     <div class="panel-head">
-        <h4>Gán giảng viên vào khóa học</h4>
+        <h4>Đơn đăng ký giảng dạy</h4>
+        @{
+            var apps = ViewBag.Applications as List<COTHUYPRO.Models.InstructorCourseApplication> ?? new();
+        }
+        <span class="pill muted">@apps.Count(a => a.Status == "Pending") đơn chờ duyệt</span>
+    </div>
+    <div class="table-wrapper">
+        <table class="table table-borderless align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Giảng viên</th>
+                    <th>Khóa học đăng ký</th>
+                    <th>Ngày đăng ký</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var app in apps)
+            {
+                <tr>
+                    <td class="fw-semibold">@app.User?.FullName</td>
+                    <td>@app.Course?.CourseName</td>
+                    <td class="muted">@app.ApplyDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        <span class="pill @(app.Status == "Pending" ? "warning" : (app.Status == "Approved" ? "success" : "danger"))">
+                            @app.Status
+                        </span>
+                    </td>
+                    <td>
+                        @if (app.Status == "Pending")
+                        {
+                            <div class="d-flex gap-2">
+                                <form asp-action="HandleApplication" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@app.Id" />
+                                    <input type="hidden" name="action" value="Approve" />
+                                    <button class="btn btn-sm" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">Duyệt</button>
+                                </form>
+                                <form asp-action="HandleApplication" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@app.Id" />
+                                    <input type="hidden" name="action" value="Reject" />
+                                    <button class="btn btn-sm" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecdd3;">Từ chối</button>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="muted">—</span>
+                        }
+                    </td>
+                </tr>
+            }
+            @if (!apps.Any())
+            {
+                <tr>
+                    <td colspan="5" class="text-center muted">Chưa có đơn đăng ký nào.</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel-card" style="margin-top: 24px;">
+    <div class="panel-head">
+        <h4>Gán giảng viên vào khóa học (Thủ công)</h4>
     </div>
     <form asp-action="AssignInstructorToCourse" method="post" class="row g-3">
         @Html.AntiForgeryToken()
@@ -78,7 +145,7 @@
             </select>
         </div>
         <div class="col-12">
-            <button class="btn solid" type="submit">Gán</button>
+            <button class="btn solid" type="submit">Gán thủ công</button>
         </div>
     </form>
 </div>

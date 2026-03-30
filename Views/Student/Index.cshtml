@@ -8,19 +8,25 @@
     <p class="section-sub mb-4">Tiến độ học tập và lịch học sắp tới của bạn.</p>
 
     <div class="course-grid mb-5 delay-100 animate-fade-in" style="animation-fill-mode: both;">
-        @foreach (var p in Model.Learning)
+        @foreach (var cls in Model.Classes)
         {
-            <a asp-action="CourseDetail" asp-route-id="@p.CourseId" class="text-decoration-none" style="color: inherit;">
+            <a asp-action="CourseDetail" asp-route-id="@cls.CourseId" class="text-decoration-none" style="color: inherit;">
                 <div class="course-card">
                     <div class="course-meta">
-                        <span class="badge">@p.Course?.Category?.Name</span>
-                        <span class="level">@p.Course?.Level?.Name</span>
+                        <span class="badge">@cls.Course?.Category?.Name</span>
+                        <span class="level">@cls.Course?.Level?.Name</span>
                     </div>
-                    <h5>@p.Course?.CourseName</h5>
-                    <p class="progress-label mt-3 mb-1">Tiến độ: @(p.Percent)%</p>
-                    <div class="progress m-0"><div class="progress-bar" style="width:@(p.Percent)%"></div></div>
+                    <h5>@cls.Course?.CourseName</h5>
+                    <p class="muted small mt-2">Phòng: @cls.Room?.Name</p>
                 </div>
             </a>
+        }
+        @if (!Model.Classes.Any())
+        {
+            <div class="col-12 text-center py-5">
+                <p class="muted">Bạn chưa đăng ký khóa học nào.</p>
+                <a href="/" class="btn solid btn-sm">Khám phá khóa học</a>
+            </div>
         }
     </div>
 

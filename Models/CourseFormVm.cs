@@ -11,4 +11,5 @@ public class CourseFormVm
 
     public int? CategoryId { get; set; }
     public int? LevelId { get; set; }
+    public decimal Price { get; set; }
 }

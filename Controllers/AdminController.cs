@@ -26,7 +26,9 @@ public class AdminController : Controller
             CourseCount = _context.Courses.Count(),
             ClassCount = _context.Classes.Count(),
             ExamCount = _context.Exams.Count(),
-            PendingCertificates = _context.UserCertificates.Count()
+            PendingCertificates = _context.UserCertificates.Count(),
+            SoldCourseCount = _context.ClassStudents.Count(),
+            TotalRevenue = _context.ClassStudents.Include(cs => cs.Class).ThenInclude(c => c!.Course).Sum(cs => cs.Class != null && cs.Class.Course != null ? cs.Class.Course.Price : 0)
         };
 
         var latestUsers = _context.Users
@@ -35,30 +37,31 @@ public class AdminController : Controller
             .Take(8)
             .ToList();
 
-        var latestCourses = _context.Courses
-            .Include(c => c.Category)
-            .Include(c => c.Level)
-            .OrderByDescending(c => c.Id)
-            .Take(6)
-            .ToList();
-
-        var learnerByCourse = _context.LearningProgress
-            .GroupBy(lp => lp.CourseId)
+        var learnerByCourse = _context.ClassStudents
+            .Include(cs => cs.Class)
+            .GroupBy(cs => cs.Class!.CourseId)
             .Select(g => new { CourseId = g.Key, Count = g.Count() })
             .OrderByDescending(g => g.Count)
             .Take(5)
             .ToList();
 
-        var courseLookup = _context.Courses.ToDictionary(c => c.Id, c => c.CourseName);
-        const decimal MOCK_PRICE = 500000m; 
-
         var topCourses = learnerByCourse
-            .Select(g => new RevenueCourseVm
-            {
-                CourseName = courseLookup.TryGetValue(g.CourseId, out var name) ? name : $"Course {g.CourseId}",
-                Learners = g.Count,
-                Revenue = g.Count * MOCK_PRICE
+            .Select(g => {
+                var c = _context.Courses.FirstOrDefault(x => x.Id == g.CourseId);
+                return new RevenueCourseVm
+                {
+                    CourseName = c?.CourseName ?? $"Course {g.CourseId}",
+                    Learners = g.Count,
+                    Revenue = g.Count * (c?.Price ?? 0)
+                };
             })
+            .ToList();
+
+        var latestCourses = _context.Courses
+            .Include(c => c.Category)
+            .Include(c => c.Level)
+            .OrderByDescending(c => c.Id)
+            .Take(6)
             .ToList();
 
         var vm = new AdminIndexViewModel
@@ -116,7 +119,8 @@ public class AdminController : Controller
         {
             CourseName = model.CourseName,
             CategoryId = model.CategoryId,
-            LevelId = model.LevelId
+            LevelId = model.LevelId,
+            Price = model.Price
         };
         _context.Courses.Add(course);
         _context.SaveChanges();
@@ -136,7 +140,8 @@ public class AdminController : Controller
             Id = course.Id,
             CourseName = course.CourseName,
             CategoryId = course.CategoryId,
-            LevelId = course.LevelId
+            LevelId = course.LevelId,
+            Price = course.Price
         };
         return View("Courses/Edit", vm);
     }
@@ -156,6 +161,7 @@ public class AdminController : Controller
         course.CourseName = model.CourseName;
         course.CategoryId = model.CategoryId;
         course.LevelId = model.LevelId;
+        course.Price = model.Price;
         _context.SaveChanges();
         TempData["Message"] = "Đã cập nhật khóa học.";
         return RedirectToAction(nameof(Courses));
@@ -282,16 +288,17 @@ public class AdminController : Controller
             .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
             .Include(u => u.Department)
             .Include(u => u.Position)
-            .Include(u => u.LearningProgresses).ThenInclude(lp => lp.Course)
+            .Include(u => u.ClassStudents).ThenInclude(cs => cs.Class).ThenInclude(c => c!.Course)
             .Where(u => u.UserRoles.Any(r => r.Role!.Name == "Student"))
+            .ToList()
             .Select(u => new StudentVm
             {
                 User = u,
                 Department = u.Department != null ? u.Department.Name : "-",
                 Position = u.Position != null ? u.Position.Name : "-",
-                CompletedCourses = u.LearningProgresses.Count(lp => lp.Percent >= 100),
+                CompletedCourses = 0, // Tạm thời để 0, sẽ tính sau nếu cần
                 StudentCode = !string.IsNullOrEmpty(u.StudentCode) ? u.StudentCode : "Chưa cấp",
-                EnrolledCourses = u.LearningProgresses.Where(lp => lp.Course != null).Select(lp => lp.Course!.CourseName).ToList()
+                EnrolledCourses = u.ClassStudents.Where(cs => cs.Class != null && cs.Class.Course != null).Select(cs => cs.Class!.Course!.CourseName).Distinct().ToList()
             })
             .ToList();
         return View("Students/Index", new StudentsPageVm { Students = students });
@@ -309,8 +316,44 @@ public class AdminController : Controller
                 CourseCount = u.TeachingCourses.Count
             })
             .ToList();
+        
+        var applications = _context.InstructorCourseApplications
+            .Include(a => a.User)
+            .Include(a => a.Course)
+            .OrderByDescending(a => a.ApplyDate)
+            .ToList();
+
         var courses = _context.Courses.ToList();
+        ViewBag.Applications = applications;
         return View("Instructors/Index", new InstructorsPageVm { Instructors = instructors, Courses = courses });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult HandleApplication(int id, string action)
+    {
+        var app = _context.InstructorCourseApplications.FirstOrDefault(a => a.Id == id);
+        if (app == null) return NotFound();
+
+        if (action == "Approve")
+        {
+            app.Status = "Approved";
+            // Gán giảng viên vào khóa học luôn
+            var exists = _context.CourseInstructors.Any(ci => ci.CourseId == app.CourseId && ci.UserId == app.UserId);
+            if (!exists)
+            {
+                _context.CourseInstructors.Add(new CourseInstructor { CourseId = app.CourseId, UserId = app.UserId });
+            }
+            TempData["Message"] = "Đã phê duyệt đơn đăng ký giảng dạy.";
+        }
+        else if (action == "Reject")
+        {
+            app.Status = "Rejected";
+            TempData["Message"] = "Đã từ chối đơn đăng ký giảng dạy.";
+        }
+
+        _context.SaveChanges();
+        return RedirectToAction(nameof(Instructors));
     }
 
     [HttpGet]
@@ -801,36 +844,41 @@ public class AdminController : Controller
 
     public IActionResult Revenue()
     {
-        var learnerByCourse = _context.LearningProgress
-            .GroupBy(lp => lp.CourseId)
-            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+        var enrolled = _context.ClassStudents
+            .Include(cs => cs.Class).ThenInclude(c => c!.Course)
+            .ToList();
+
+        var learnerByCourse = enrolled
+            .GroupBy(cs => cs.Class?.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count(), Price = g.FirstOrDefault()?.Class?.Course?.Price ?? 0 })
             .OrderByDescending(g => g.Count)
             .ToList();
 
-        var courseLookup = _context.Courses.ToDictionary(c => c.Id, c => c.CourseName);
-        const decimal MOCK_PRICE = 500000m; // 500,000 VND per course enroll
-
         var top = learnerByCourse
             .Take(10)
-            .Select(g => new RevenueCourseVm
-            {
-                CourseName = courseLookup.TryGetValue(g.CourseId, out var name) ? name : $"Course {g.CourseId}",
-                Learners = g.Count,
-                Revenue = g.Count * MOCK_PRICE
+            .Select(g => {
+                var name = _context.Courses.FirstOrDefault(c => c.Id == g.CourseId)?.CourseName ?? $"Course {g.CourseId}";
+                return new RevenueCourseVm
+                {
+                    CourseName = name,
+                    Learners = g.Count,
+                    Revenue = g.Count * g.Price
+                };
             })
             .OrderByDescending(x => x.Revenue)
             .ToList();
 
-        int totalLearners = learnerByCourse.Sum(x => x.Count);
+        int totalLearners = enrolled.Count;
+        decimal totalRev = enrolled.Sum(cs => cs.Class?.Course?.Price ?? 0);
 
         var monthlyRev = new List<decimal> { 12000000, 18000000, 14000000, 25000000, 32000000, 28000000 };
-        monthlyRev.Add(totalLearners * MOCK_PRICE / 3); // Hiện tại giả lập
+        monthlyRev.Add(totalRev); 
 
         var vm = new RevenuePageVm
         {
             TotalLearners = totalLearners,
-            TotalCourses = courseLookup.Count,
-            TotalRevenue = totalLearners * MOCK_PRICE,
+            TotalCourses = _context.Courses.Count(),
+            TotalRevenue = totalRev,
             TopCourses = top,
             MonthlyRevenue = monthlyRev
         };
