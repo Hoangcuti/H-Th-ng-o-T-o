@@ -20,16 +20,35 @@
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
         <div class="col-md-6">
+            <label class="form-label">Loại bài kiểm tra / Đánh giá</label>
+            <select asp-for="ExamType" class="form-select">
+                <option value="Quiz" selected="@(Model.ExamType == "Quiz")">Trắc nghiệm bài học (Quiz)</option>
+                <option value="Final" selected="@(Model.ExamType == "Final")">Bài thi kết thúc khóa (Final Exam)</option>
+                <option value="Midterm" selected="@(Model.ExamType == "Midterm")">Kiểm tra giữa kỳ</option>
+            </select>
+            <span class="text-danger" asp-validation-for="ExamType"></span>
+        </div>
+        <div class="col-md-6">
             <label class="form-label">Tiêu đề (Tên bài Quiz)</label>
             <input asp-for="Title" class="form-control" />
             <span class="text-danger" asp-validation-for="Title"></span>
         </div>
         <div class="col-md-6">
             <label class="form-label">Khóa học</label>
-            <select asp-for="CourseId" class="form-select">
+            <select asp-for="CourseId" class="form-select" id="courseSelect" onchange="filterLessons(this.value)">
                 @foreach (var c in courses) { <option value="@c.Id" selected="@(Model.CourseId==c.Id)">@c.CourseName</option> }
             </select>
             <span class="text-danger" asp-validation-for="CourseId"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Gắn vào bài giảng (Tùy chọn)</label>
+            <select asp-for="LessonId" class="form-select" id="lessonSelect">
+                <option value="">-- Chọn bài giảng (Toàn bộ khóa) --</option>
+                @foreach (var l in (ViewBag.Lessons as List<COTHUYPRO.Models.Lesson> ?? new())) {
+                    <option value="@l.Id" data-course="@l.CourseId" selected="@(Model.LessonId == l.Id)">@l.Title</option>
+                }
+            </select>
+            <span class="text-danger" asp-validation-for="LessonId"></span>
         </div>
         <div class="col-md-6">
             <label class="form-label">Thời gian làm bài (Phút)</label>
@@ -203,5 +222,30 @@
             btn.disabled = false;
         }
     }
+
+    function filterLessons(courseId) {
+        const lessonSelect = document.getElementById('lessonSelect');
+        const options = lessonSelect.querySelectorAll('option');
+        const currentVal = lessonSelect.value;
+        
+        options.forEach(opt => {
+            if (opt.value === "") {
+                opt.style.display = 'block';
+                return;
+            }
+            const optCourseId = opt.getAttribute('data-course');
+            if (optCourseId == courseId) {
+                opt.style.display = 'block';
+            } else {
+                opt.style.display = 'none';
+                if (currentVal == opt.value) lessonSelect.value = "";
+            }
+        });
+    }
+
+    // Run on load
+    window.addEventListener('DOMContentLoaded', () => {
+        filterLessons(document.getElementById('courseSelect').value);
+    });
     </script>
 }

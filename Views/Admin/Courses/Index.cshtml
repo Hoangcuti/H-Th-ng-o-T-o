@@ -3,52 +3,98 @@
     ViewData["Title"] = "Quản lý khóa học";
 }
 
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <p class="eyebrow">Khóa học</p>
-        <h2>Quản lý khóa học</h2>
-        <p class="muted">Dữ liệu thật từ bảng Courses (Category, Level, Instructors, Classes).</p>
+        <h2 class="m-0">Quản lý khóa học</h2>
+        <p class="muted mt-1 mb-0">Dữ liệu thật từ bảng Courses (Category, Level, Instructors, Classes).</p>
     </div>
     <div class="quick-actions">
-        <a class="btn solid" asp-action="CreateCourse">+ Thêm khóa học</a>
+        <a class="btn btn-success" asp-action="CreateCourse">
+            <i class="bi bi-plus-circle-fill"></i> Thêm khóa học mới
+        </a>
     </div>
 </div>
 
-<div class="panel-card">
-    <div class="panel-head">
-        <h4>Danh sách khóa</h4>
-        <span class="pill muted">@Model.Courses.Count mục</span>
+<div class="panel-card animate-fade-in">
+    <div class="panel-head d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <h4 class="fw-bold m-0 text-dark">Danh sách khóa học quản lý</h4>
+            <span class="badge badge-primary">@Model.Courses.Count hoạt động</span>
+        </div>
+        <div class="search-container" style="width: 320px;">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;"><i class="bi bi-search"></i></span>
+                <input type="text" id="courseSearch" class="form-control border-start-0" placeholder="Tìm tên khóa học, giảng viên..." style="border-radius: 0 12px 12px 0;">
+            </div>
+        </div>
     </div>
     <div class="table-wrapper">
-        <table class="table table-borderless align-middle admin-table">
+        <table id="courseTable" class="table table-borderless align-middle admin-table m-0">
+            <colgroup>
+                <col class="w-info" />
+                <col class="w-price" />
+                <col class="w-category" />
+                <col class="w-stats" />
+                <col class="w-actions" />
+            </colgroup>
             <thead>
-                <tr>
-                    <th>Tên khóa</th>
-                    <th>Danh mục</th>
-                    <th>Cấp độ</th>
-                    <th>Giảng viên</th>
-                    <th>Lớp</th>
-                    <th>Học viên</th>
-                    <th>Hành động</th>
+                <tr class="table-header-row small fw-bold">
+                    <th class="px-4">THÔNG TIN KHÓA HỌC</th>
+                    <th>HỌC PHÍ</th>
+                    <th class="text-center">PHÂN LOẠI</th>
+                    <th class="text-center">LỚP / H.VIÊN</th>
+                    <th class="text-end px-4">QUẢN TRỊ</th>
                 </tr>
             </thead>
             <tbody>
             @foreach (var c in Model.Courses)
             {
-                <tr>
-                    <td class="fw-semibold">@c.Course.CourseName</td>
-                    <td>@c.CategoryName</td>
-                    <td>@c.LevelName</td>
-                    <td>@string.Join(", ", c.Instructors)</td>
-                    <td>@c.ClassCount</td>
-                    <td>@c.LearnerCount</td>
-                    <td class="d-flex gap-2">
-                        <a class="btn ghost btn-sm" asp-action="EditCourse" asp-route-id="@c.Course.Id">✏</a>
-                        <form asp-action="DeleteCourse" method="post" onsubmit="return confirm('Xóa khóa học này?');">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@c.Course.Id" />
-                            <button class="btn btn-sm" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecdd3;">🗑</button>
-                        </form>
+                <tr style="border-bottom: 2px solid rgba(0,0,0,0.02);">
+                    <td class="px-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 70px; height: 50px; border-radius: 12px; overflow: hidden; background: #e2e8f0; border: 1px solid rgba(0,0,0,0.05);">
+                                @if (!string.IsNullOrEmpty(c.Course.ImageUrl))
+                                {
+                                    <img src="@c.Course.ImageUrl" style="width: 100%; height: 100%; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-items-center justify-content-center h-100 text-slate-400 small" style="font-size: 10px;">No Image</div>
+                                }
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark mb-0">@c.Course.CourseName</div>
+                                <div class="text-muted small" style="font-size: 0.75rem;">ID: #@c.Course.Id · GV: @string.Join(", ", c.Instructors)</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fw-bold" style="font-size: 1.1rem; color: #4338ca !important;">@c.Course.Price.ToString("N0") ₫</div>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column align-items-center gap-1">
+                            <span class="badge badge-success mb-1">@c.CategoryName</span>
+                            <span class="badge badge-primary">@c.LevelName</span>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="fw-bold text-dark">@c.ClassCount Lớp</div>
+                        <div class="text-muted small">@c.LearnerCount Học viên</div>
+                    </td>
+                    <td class="text-end px-4">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a class="btn btn-info btn-sm" asp-action="EditCourse" asp-route-id="@c.Course.Id" title="Chỉnh sửa">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <form asp-action="DeleteCourse" method="post" onsubmit="return confirm('Xóa khóa học này?');" class="m-0">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@c.Course.Id" />
+                                <button class="btn btn-danger btn-sm" type="submit" title="Xóa">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             }
@@ -56,3 +102,10 @@
         </table>
     </div>
 </div>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            applyLiveSearch('courseSearch', 'courseTable');
+        });
+    </script>
+}

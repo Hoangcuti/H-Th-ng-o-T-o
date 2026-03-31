@@ -3,116 +3,87 @@
     ViewData["Title"] = "Quản lý giảng viên";
 }
 
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <p class="eyebrow">Giảng viên</p>
-        <h2>Quản lý giảng viên</h2>
-        <p class="muted">Phân công giảng dạy (CourseInstructors liên kết Users).</p>
+        <h2 class="m-0">Quản lý giảng viên</h2>
+        <p class="muted mt-1 mb-0">Phân công giảng dạy (CourseInstructors liên kết Users).</p>
+    </div>
+    <div class="quick-actions">
+        <a class="btn btn-primary" asp-action="CreateInstructor">
+            <i class="bi bi-person-plus-fill me-1"></i> Thêm giảng viên
+        </a>
     </div>
 </div>
 
-<div class="panel-card">
-    <div class="panel-head">
-        <h4>Danh sách giảng viên</h4>
-        <span class="pill muted">@Model.Instructors.Count người</span>
-        <a class="btn solid" asp-action="CreateInstructor">➕ Thêm</a>
+<div class="panel-card animate-fade-in">
+    <div class="panel-head d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <h4 class="fw-bold m-0 text-dark">Danh sách đội ngũ giảng viên</h4>
+            <span class="badge badge-primary">@Model.Instructors.Count nhân sự</span>
+        </div>
+        <div class="search-container" style="width: 320px;">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;"><i class="bi bi-search"></i></span>
+                <input type="text" id="instructorSearch" class="form-control border-start-0" placeholder="Tìm tên, email..." style="border-radius: 0 12px 12px 0;">
+            </div>
+        </div>
     </div>
     <div class="table-wrapper">
-        <table class="table table-borderless align-middle admin-table">
+        <table id="instructorTable" class="table table-borderless align-middle admin-table m-0">
             <thead>
-                <tr>
-                    <th>Họ tên</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Số khóa phụ trách</th>
-                    <th>Ngày tạo</th>
-                    <th>Hành động</th>
+                <tr class="text-muted small fw-bold" style="border-bottom: 2px solid var(--surface-muted);">
+                    <th class="pb-3 px-4">GIẢNG VIÊN</th>
+                    <th class="pb-3">LIÊN HỆ</th>
+                    <th class="pb-3">CÁC KHÓA ĐANG PHỤ TRÁCH</th>
+                    <th class="pb-3 text-end px-4">HÀNH ĐỘNG</th>
                 </tr>
             </thead>
             <tbody>
             @foreach (var ins in Model.Instructors)
             {
-                <tr>
-                    <td class="fw-semibold">@ins.User.FullName</td>
-                    <td>@ins.User.Username</td>
-                    <td>@ins.User.Email</td>
-                    <td>@ins.CourseCount</td>
-                    <td class="muted">@ins.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
-                    <td class="d-flex gap-2">
-                        <a class="btn ghost btn-sm" asp-action="EditInstructor" asp-route-id="@ins.User.Id">✏</a>
-                        <form asp-action="DeleteInstructor" method="post" onsubmit="return confirm('Xóa giảng viên này?');">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@ins.User.Id" />
-                            <button class="btn btn-sm" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecdd3;">🗑</button>
-                        </form>
+                <tr style="border-bottom: 1px solid var(--surface-muted);">
+                    <td class="py-4 px-4">
+                        <div class="fw-bold text-dark">@ins.User.FullName</div>
+                        <div class="text-muted small">@("@")@ins.User.Username</div>
                     </td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="panel-card" style="margin-top: 24px;">
-    <div class="panel-head">
-        <h4>Đơn đăng ký giảng dạy</h4>
-        @{
-            var apps = ViewBag.Applications as List<COTHUYPRO.Models.InstructorCourseApplication> ?? new();
-        }
-        <span class="pill muted">@apps.Count(a => a.Status == "Pending") đơn chờ duyệt</span>
-    </div>
-    <div class="table-wrapper">
-        <table class="table table-borderless align-middle admin-table">
-            <thead>
-                <tr>
-                    <th>Giảng viên</th>
-                    <th>Khóa học đăng ký</th>
-                    <th>Ngày đăng ký</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var app in apps)
-            {
-                <tr>
-                    <td class="fw-semibold">@app.User?.FullName</td>
-                    <td>@app.Course?.CourseName</td>
-                    <td class="muted">@app.ApplyDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>
-                        <span class="pill @(app.Status == "Pending" ? "warning" : (app.Status == "Approved" ? "success" : "danger"))">
-                            @app.Status
-                        </span>
+                    <td class="py-4">
+                        <div class="text-dark fw-semibold" style="font-size: 0.9rem;">@ins.User.Email</div>
+                        <div class="text-muted small">Ngày tạo: @ins.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</div>
                     </td>
-                    <td>
-                        @if (app.Status == "Pending")
+                    <td class="py-4">
+                        @if (ins.TaughtCourses != null && ins.TaughtCourses.Any())
                         {
-                            <div class="d-flex gap-2">
-                                <form asp-action="HandleApplication" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@app.Id" />
-                                    <input type="hidden" name="action" value="Approve" />
-                                    <button class="btn btn-sm" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">Duyệt</button>
-                                </form>
-                                <form asp-action="HandleApplication" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@app.Id" />
-                                    <input type="hidden" name="action" value="Reject" />
-                                    <button class="btn btn-sm" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecdd3;">Từ chối</button>
-                                </form>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var c in ins.TaughtCourses)
+                                {
+                                    <div class="badge-neon d-flex align-items-center gap-2 py-2 px-3" style="background: rgba(14, 165, 233, 0.05); color: #0369a1; border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 10px;">
+                                        <span class="fw-bold small">@c.CourseName</span>
+                                        <form asp-action="RemoveInstructorFromCourse" method="post" class="m-0 d-inline" onsubmit="return confirm('Gỡ giảng viên khỏi khóa học này?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="courseId" value="@c.Id" />
+                                            <input type="hidden" name="userId" value="@ins.User.Id" />
+                                            <button type="submit" class="p-0 border-0 bg-transparent text-danger opacity-50" style="cursor:pointer;" title="Gỡ bỏ">
+                                                <i class="fa-solid fa-circle-xmark"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
                             </div>
                         }
                         else
                         {
-                            <span class="muted">—</span>
+                            <span class="text-muted small italic opacity-50">Chưa được phân công khóa nào</span>
                         }
                     </td>
-                </tr>
-            }
-            @if (!apps.Any())
-            {
-                <tr>
-                    <td colspan="5" class="text-center muted">Chưa có đơn đăng ký nào.</td>
+                    <td class="py-4 text-end px-4">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a class="btn ghost btn-sm" asp-action="EditInstructor" asp-route-id="@ins.User.Id" title="Sửa thông tin"><i class="bi bi-pencil"></i></a>
+                            <a class="btn danger btn-sm" asp-action="InstructorCourses" asp-route-id="@ins.User.Id" title="Gỡ khỏi khóa học (không xóa tài khoản)">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
                 </tr>
             }
             </tbody>
@@ -120,32 +91,105 @@
     </div>
 </div>
 
-<div class="panel-card" style="margin-top: 24px;">
-    <div class="panel-head">
-        <h4>Gán giảng viên vào khóa học (Thủ công)</h4>
+<div class="row g-4 mt-2 mb-5">
+    <div class="col-lg-7">
+        <div class="panel-card h-100 animate-fade-in" style="animation-delay: 0.1s;">
+            @{
+                var apps = ViewBag.Applications as List<COTHUYPRO.Models.InstructorCourseApplication> ?? new();
+            }
+            <div class="panel-head mb-4">
+                <h4 class="fw-bold m-0 text-dark">Đơn đăng ký giảng dạy</h4>
+                <span class="badge badge-warning">@apps.Count(a => a.Status == "Pending") Chờ duyệt</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-borderless align-middle m-0">
+                    <thead>
+                        <tr class="text-muted small fw-bold" style="border-bottom: 1px solid var(--surface-muted);">
+                            <th class="pb-3">ỨNG VIÊN</th>
+                            <th class="pb-3">KHÓA HỌC</th>
+                            <th class="pb-3">TRẠNG THÁI</th>
+                            <th class="pb-3 text-end">XỬ LÝ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var app in apps)
+                    {
+                        <tr style="border-bottom: 1px solid var(--surface-muted);">
+                            <td class="py-3">
+                                <div class="fw-bold text-dark">@app.User?.FullName</div>
+                                <div class="text-muted small">@app.ApplyDate.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                            </td>
+                            <td class="py-3 fw-semibold text-primary">@app.Course?.CourseName</td>
+                            <td class="py-3">
+                                <span class="badge @(app.Status == "Pending" ? "badge-warning" : (app.Status == "Approved" ? "badge-success" : "badge-danger"))">
+                                    @app.Status
+                                </span>
+                            </td>
+                            <td class="py-3 text-end">
+                                @if (app.Status == "Pending")
+                                {
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <form asp-action="HandleApplication" method="post" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@app.Id" />
+                                            <input type="hidden" name="action" value="Approve" />
+                                            <button class="btn solid btn-sm" style="padding: 6px 12px; font-size: 0.75rem;">Duyệt</button>
+                                        </form>
+                                        <form asp-action="HandleApplication" method="post" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@app.Id" />
+                                            <input type="hidden" name="action" value="Reject" />
+                                            <button class="btn danger btn-sm" style="padding: 6px 12px; font-size: 0.75rem;">Từ chối</button>
+                                        </form>
+                                    </div>
+                                }
+                                else { <span class="text-muted small">Đã xong</span> }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <form asp-action="AssignInstructorToCourse" method="post" class="row g-3">
-        @Html.AntiForgeryToken()
-        <div class="col-md-6">
-            <label class="form-label">Giảng viên</label>
-            <select name="instructorId" class="form-select">
-                @foreach (var ins in Model.Instructors)
-                {
-                    <option value="@ins.User.Id">@ins.User.FullName (@ins.User.Username)</option>
-                }
-            </select>
+    
+    <div class="col-lg-5">
+        <div class="panel-card h-100 animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="panel-head mb-4">
+                <h4 class="fw-bold m-0 text-dark">Gán giảng viên thủ công</h4>
+            </div>
+            <form asp-action="AssignInstructorToCourse" method="post" class="row g-3">
+                @Html.AntiForgeryToken()
+                <div class="col-12 mb-3">
+                    <label class="form-label">Chọn giảng viên</label>
+                    <select name="instructorId" class="form-select">
+                        @foreach (var ins in Model.Instructors)
+                        {
+                            <option value="@ins.User.Id">@ins.User.FullName (@@@ins.User.Username)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 mb-4">
+                    <label class="form-label">Chọn khóa học phụ trách</label>
+                    <select name="courseId" class="form-select">
+                        @foreach (var c in Model.Courses)
+                        {
+                            <option value="@c.Id">@c.CourseName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button class="btn solid w-100 py-3" type="submit">Xác nhận phân công</button>
+                    <p class="text-muted small mt-3 text-center">Giảng viên sẽ có quyền quản lý nội dung khóa học được gán.</p>
+                </div>
+            </form>
         </div>
-        <div class="col-md-6">
-            <label class="form-label">Khóa học</label>
-            <select name="courseId" class="form-select">
-                @foreach (var c in Model.Courses)
-                {
-                    <option value="@c.Id">@c.CourseName</option>
-                }
-            </select>
-        </div>
-        <div class="col-12">
-            <button class="btn solid" type="submit">Gán thủ công</button>
-        </div>
-    </form>
+    </div>
 </div>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            applyLiveSearch('instructorSearch', 'instructorTable');
+        });
+    </script>
+}

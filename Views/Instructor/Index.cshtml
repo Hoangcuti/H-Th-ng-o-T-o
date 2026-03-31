@@ -3,103 +3,235 @@
     ViewData["Title"] = "Bảng điều khiển Giảng viên";
 }
 
-<div class="panel container-xxl animate-fade-in">
-    <h1 class="section-title">Giảng dạy của tôi</h1>
-    <p class="section-sub mb-4">Khóa học phụ trách, lịch lớp và học viên đang tham gia.</p>
-
-    <div class="hero-stats" style="margin:0 0 24px;">
-        <div class="stat">
-            <p class="label">Khóa đang phụ trách</p>
-            <h2>@Model.Courses.Count</h2>
-        </div>
-        <div class="stat">
-            <p class="label">Lớp đang dạy</p>
-            <h2>@Model.Classes.Count</h2>
-        </div>
-        <div class="stat">
-            <p class="label">Học viên</p>
-            <h2>@Model.Students.Count</h2>
-        </div>
-    </div>
-
-    <div class="panel-header mt-2"><h3 class="m-0 text-white">Khóa học phụ trách</h3></div>
-    <div class="course-grid mb-5 delay-100 animate-fade-in" style="animation-fill-mode: both;">
-        @foreach (var c in Model.Courses)
-        {
-            <div class="course-card">
-                <div class="course-meta">
-                    <span class="badge">@c.Category?.Name</span>
-                    <span class="level">@c.Level?.Name</span>
-                </div>
-                <h5>@c.CourseName</h5>
+<!-- STATS ROW -->
+<div class="row g-4 mb-4 animate-fade-in">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 position-relative overflow-hidden">
+            <div class="position-absolute opacity-10 end-0 bottom-0 mb-n3 me-n3" style="font-size: 5rem;">
+                <i class="bi bi-book-half"></i>
             </div>
-        }
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="bi bi-journal-bookmark-fill fs-4"></i>
+                </div>
+                <h6 class="m-0 text-muted fw-bold">Khóa đang phụ trách</h6>
+            </div>
+            <h2 class="display-5 fw-800 m-0 text-dark">@Model.Courses.Count</h2>
+            <div class="mt-2 small text-success">
+                <i class="bi bi-arrow-up-short"></i> Đang giảng dạy trực tiếp
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 position-relative overflow-hidden">
+            <div class="position-absolute opacity-10 end-0 bottom-0 mb-n3 me-n3" style="font-size: 5rem;">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="bi bi-person-video3 fs-4"></i>
+                </div>
+                <h6 class="m-0 text-muted fw-bold">Lớp đang dạy</h6>
+            </div>
+            <h2 class="display-5 fw-800 m-0 text-dark">@Model.Classes.Count</h2>
+            <div class="mt-2 small text-muted">
+                Theo dõi lịch trình lớp học
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 position-relative overflow-hidden" style="background: linear-gradient(135deg, #0ea5e9, #10b981);">
+            <div class="position-absolute opacity-20 end-0 bottom-0 mb-n3 me-n3 text-white" style="font-size: 5rem;">
+                <i class="bi bi-mortarboard"></i>
+            </div>
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="bg-white bg-opacity-20 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="bi bi-people-fill fs-4"></i>
+                </div>
+                <h6 class="m-0 text-white fw-bold opacity-75">Tổng học viên</h6>
+            </div>
+            <h2 class="display-5 fw-800 m-0 text-white">@Model.Students.Count</h2>
+            <div class="mt-2 small text-white opacity-75">
+                Số lượng học viên hiện tại
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- KHÓA HỌC PHỤ TRÁCH -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+            <div class="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="m-0 fw-bold text-dark"><i class="bi bi-collection-play me-2 text-primary"></i>Khóa học phụ trách</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                @if (!Model.Courses.Any())
+                {
+                    <div class="text-center py-5">
+                        <img src="~/images/empty.svg" alt="Empty" style="width: 120px; opacity: 0.5;" />
+                        <p class="text-muted mt-3 italic">Bạn chưa được phân công quản lý khóa học nào.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-3">
+                        @foreach (var c in Model.Courses)
+                        {
+                            <div class="col-md-6">
+                                <div class="course-mini-card p-3 rounded-4 border hover-shadow-sm transition-all" style="background: #f8fafc;">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill px-2" style="font-size: 0.65rem;">@c.Category?.Name</span>
+                                        <span class="text-muted style-italic small">@c.Level?.Name</span>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-3">@c.CourseName</h6>
+                                    <div class="d-flex gap-2">
+                                        <a asp-action="CourseLessons" asp-route-courseId="@c.Id" class="btn btn-sm btn-white border w-100 rounded-3 shadow-sm py-2">
+                                            <i class="bi bi-gear-fill me-1"></i> Quản lý nội dung
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- LỊCH LỚP HỌC -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white">
+            <div class="card-header bg-white border-0 py-4 px-4">
+                <h5 class="m-0 fw-bold text-dark"><i class="bi bi-calendar-event me-2 text-success"></i>Lịch lớp đang dạy</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light small text-muted text-uppercase">
+                            <tr>
+                                <th class="ps-4">Khóa học</th>
+                                <th>Phòng</th>
+                                <th>Trạng thái</th>
+                                <th>Khai giảng</th>
+                            </tr>
+                        </thead>
+                    <tbody>
+                    @foreach (var cls in Model.Classes)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">@cls.Course?.CourseName</td>
+                            <td><span class="badge bg-info-subtle text-info rounded-pill px-3">@cls.Room?.Name</span></td>
+                            <td>
+                                @{
+                                    var statusClass = cls.Status?.Name == "Đang diễn ra" ? "bg-success" : "bg-warning";
+                                }
+                                <span class="badge @statusClass text-white rounded-pill px-3">@cls.Status?.Name</span>
+                            </td>
+                            <td class="text-muted small">@cls.Schedules.OrderBy(s => s.ScheduleDate).FirstOrDefault()?.ScheduleDate.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
     </div>
 
-    @if (ViewBag.AvailableCourses != null)
-    {
-        var avail = ViewBag.AvailableCourses as List<COTHUYPRO.Models.Course> ?? new();
-        if (avail.Any())
+    <!-- SIDE PANEL: QUẢN LÝ & HỌC VIÊN -->
+    <div class="col-lg-4">
+        <!-- PHÍM TẮT QUẢN LÝ -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+            <div class="card-header bg-white border-0 py-4 px-4 pb-0">
+                <h5 class="m-0 fw-bold text-dark"><i class="bi bi-grid-fill me-2 text-primary"></i>Phím tắt quản lý</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a asp-action="Exams" class="btn btn-outline-primary border-0 rounded-4 p-3 w-100 h-100 d-flex flex-column align-items-center gap-2 bg-light bg-opacity-50 hover-bg-primary-subtle transition-all">
+                            <i class="bi bi-patch-question fs-3"></i>
+                            <span class="small fw-bold">QUẢN LÝ QUIZ</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a asp-action="Assignments" class="btn btn-outline-success border-0 rounded-4 p-3 w-100 h-100 d-flex flex-column align-items-center gap-2 bg-light bg-opacity-50 hover-bg-success-subtle transition-all">
+                            <i class="bi bi-file-earmark-arrow-up fs-3"></i>
+                            <span class="small fw-bold">BÀI TẬP</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ĐĂNG KÝ HỆ THỐNG -->
+        @if (ViewBag.AvailableCourses != null)
         {
-            <div class="panel mt-4 py-4 px-4 delay-150 animate-fade-in" style="animation-fill-mode: both; background: rgba(255,255,255,0.05); border: 1px border var(--primary-light);">
-                <div class="panel-header"><h3 class="m-0 text-white">Đăng ký dạy khóa học mới</h3></div>
-                <div class="course-grid">
-                    @foreach (var ac in avail)
+            var avail = ViewBag.AvailableCourses as List<COTHUYPRO.Models.Course> ?? new();
+            if (avail.Any())
+            {
+                <div class="card border-0 shadow-sm rounded-4 bg-dark text-white mb-4 overflow-hidden">
+                    <div class="card-header bg-transparent border-0 py-4 px-4">
+                        <h5 class="m-0 fw-bold"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Cơ hội giảng dạy mới</h5>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var ac in avail.Take(3))
+                            {
+                                <div class="bg-white bg-opacity-10 rounded-4 p-3 border border-white border-opacity-10 position-relative">
+                                    <div class="small text-warning fw-bold mb-1">@ac.Category?.Name</div>
+                                    <h6 class="mb-3 text-truncate pe-5">@ac.CourseName</h6>
+                                    <form asp-action="ApplyForCourse" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="courseId" value="@ac.Id" />
+                                        <button class="btn btn-sm btn-warning w-100 rounded-pill fw-bold" type="submit">✍️ Đăng ký ngay</button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        <!-- DANH SÁCH HỌC VIÊN -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white">
+            <div class="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="m-0 fw-bold text-dark">Học viên của tôi</h5>
+                <span class="badge bg-light text-muted border rounded-pill">Top 5</span>
+            </div>
+            <div class="card-body p-0 px-3 pb-3">
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var st in Model.Students.Take(5))
                     {
-                        <div class="course-card" style="border: 1px solid rgba(255,255,255,0.1);">
-                            <div class="course-meta">
-                                <span class="badge">@ac.Category?.Name</span>
+                        <div class="d-flex align-items-center gap-3 p-2 rounded-3 hover-bg-light transition-all">
+                            <div class="avatar-sm rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">
+                                @st.FullName.Substring(0, 1).ToUpper()
                             </div>
-                            <h5>@ac.CourseName</h5>
-                            <p class="muted small">Giá: @string.Format("{0:N0} đ", ac.Price)</p>
-                            <form asp-action="ApplyForCourse" method="post" style="margin-top: 12px;">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="courseId" value="@ac.Id" />
-                                <button class="btn btn-sm solid w-100" type="submit">✍️ Đăng ký dạy</button>
-                            </form>
+                            <div class="overflow-hidden">
+                                <div class="fw-bold text-dark text-truncate">@st.FullName</div>
+                                <div class="text-muted small text-truncate">@st.Email</div>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.Students.Count > 5)
+                    {
+                        <div class="text-center mt-2">
+                            <button class="btn btn-sm btn-link text-primary text-decoration-none small">Xem tất cả @Model.Students.Count học viên</button>
                         </div>
                     }
                 </div>
             </div>
-        }
-    }
-
-    <div class="panel mt-4 py-4 px-4 delay-200 animate-fade-in" style="animation-fill-mode: both; background: rgba(255,255,255,0.02); box-shadow: none;">
-        <div class="panel-header"><h3 class="m-0 text-white">Lịch lớp đang dạy</h3></div>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead><tr><th>Khóa học</th><th>Phòng</th><th>Trạng thái</th><th>Khai giảng</th></tr></thead>
-                <tbody>
-                @foreach (var cls in Model.Classes)
-                {
-                    <tr>
-                        <td class="font-weight-bold">@cls.Course?.CourseName</td>
-                        <td><span class="badge" style="background: rgba(6,182,212,0.1); color: var(--primary);">@cls.Room?.Name</span></td>
-                        <td><span class="pill" style="background: rgba(245,158,11,0.1); color: var(--accent); border:none;">@cls.Status?.Name</span></td>
-                        <td class="muted">@cls.Schedules.OrderBy(s => s.ScheduleDate).FirstOrDefault()?.ScheduleDate.ToLocalTime().ToString("dd/MM/yyyy")</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="panel mt-4 py-4 px-4 delay-300 animate-fade-in" style="animation-fill-mode: both; background: rgba(255,255,255,0.02); box-shadow: none;">
-        <div class="panel-header"><h3 class="m-0 text-white">Danh sách học viên</h3></div>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead><tr><th>Họ tên</th><th>Username</th><th>Email</th></tr></thead>
-                <tbody>
-                @foreach (var st in Model.Students)
-                {
-                    <tr>
-                        <td class="font-weight-bold">@st.FullName</td>
-                        <td>@st.Username</td>
-                        <td>@st.Email</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
         </div>
     </div>
 </div>
+
+<style>
+    .hover-shadow-sm:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transform: translateY(-2px); }
+    .transition-all { transition: all 0.3s ease; }
+    .bg-primary-subtle { background-color: rgba(14, 165, 233, 0.1) !important; }
+    .bg-success-subtle { background-color: rgba(16, 185, 129, 0.1) !important; }
+    .bg-info-subtle { background-color: rgba(6, 182, 212, 0.1) !important; }
+    .display-5 { font-size: 2.5rem; letter-spacing: -1px; }
+    .fw-800 { font-weight: 800; }
+    .hover-bg-light:hover { background-color: #f8fafc; }
+    .btn-white { background: #fff; color: #1e293b; }
+    .btn-white:hover { background: #f1f5f9; }
+</style>

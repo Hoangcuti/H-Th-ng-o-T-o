@@ -1,0 +1,226 @@
+@{
+    ViewData["Title"] = "Phê duyệt Nội dung & Giảng viên";
+    var pendingLessons = ViewBag.PendingLessons as List<COTHUYPRO.Models.Lesson> ?? new();
+    var pendingExams = ViewBag.PendingExams as List<COTHUYPRO.Models.Exam> ?? new();
+    var pendingAssignments = ViewBag.PendingAssignments as List<COTHUYPRO.Models.Assignment> ?? new();
+    var pendingApps = ViewBag.PendingApplications as List<COTHUYPRO.Models.InstructorCourseApplication> ?? new();
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="eyebrow text-muted small">Quản trị / Kiểm duyệt</p>
+        <h2 class="m-0 text-dark fw-bold text-uppercase" style="letter-spacing: -0.5px;">📋 Trung tâm Phê duyệt</h2>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="ContentHistory" class="btn btn-outline-secondary rounded-pill px-4 bg-white shadow-sm fw-bold">
+            <i class="bi bi-clock-history me-1"></i> Lịch sử thao tác
+        </a>
+    </div>
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4 animate-fade-in">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+            <div>@TempData["Message"]</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- CỘT TRÁI: NỘI DUNG HỌC TẬP -->
+    <div class="col-xl-8">
+        <!-- BÀI GIẢNG CHỜ DUYỆT -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+            <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-journal-text text-primary fs-5"></i>
+                    <h5 class="m-0 fw-bold">Bài Giảng Chờ Phê Duyệt</h5>
+                </div>
+                <span class="badge bg-primary rounded-pill px-3">@pendingLessons.Count</span>
+            </div>
+            <div class="card-body p-0">
+                @if (!pendingLessons.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-check2-all display-6 d-block mb-2 opacity-25"></i>
+                        <p class="m-0 small fw-medium">Tất cả bài giảng đã được xử lý</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light small text-muted text-uppercase fw-bold">
+                                <tr>
+                                    <th class="ps-4">Tên bài giảng</th>
+                                    <th>Khóa học</th>
+                                    <th>Người tạo</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var l in pendingLessons)
+                                {
+                                    <tr>
+                                        <td class="ps-4 fw-bold text-dark">@l.Title</td>
+                                        <td class="text-muted small">@(l.Course?.CourseName ?? "—")</td>
+                                        <td>
+                                            @if (l.CreatedByUser != null)
+                                            {
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="avatar-sm bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center" style="width:24px; height:24px; font-size:10px;">@l.CreatedByUser.FullName.Substring(0,1)</div>
+                                                    <span class="small fw-medium">@l.CreatedByUser.FullName</span>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex gap-1 justify-content-center">
+                                                <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm" onclick="approveLesson(@l.Id)">Duyệt</button>
+                                                <button class="btn btn-sm btn-outline-danger border-0 rounded-pill px-3 fw-bold" onclick="rejectLesson(@l.Id)">Từ chối</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- QUIZ & ASSIGNMENTS CHỜ DUYỆT -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                    <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+                        <h6 class="m-0 fw-bold"><i class="bi bi-patch-question me-2 text-warning"></i>Quiz Chờ Duyệt</h6>
+                        <span class="badge bg-warning text-dark rounded-pill">@pendingExams.Count</span>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (!pendingExams.Any())
+                        {
+                            <p class="text-center py-4 text-muted small">Trống</p>
+                        }
+                        else
+                        {
+                            @foreach (var e in pendingExams)
+                            {
+                                <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center hover-bg-light">
+                                    <div>
+                                        <div class="fw-bold small text-dark">@e.Title</div>
+                                        <div class="text-muted" style="font-size: 11px;">@e.Course?.CourseName</div>
+                                    </div>
+                                    <div class="d-flex gap-1">
+                                        <button class="btn btn-sm btn-success p-1 rounded-circle" onclick="approveExam(@e.Id)" title="Duyệt"><i class="bi bi-check"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger p-1 rounded-circle border-0" onclick="rejectExam(@e.Id)" title="Từ chối"><i class="bi bi-x"></i></button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                    <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+                        <h6 class="m-0 fw-bold"><i class="bi bi-file-earmark-arrow-up me-2 text-info"></i>Bài Tập Chờ Duyệt</h6>
+                        <span class="badge bg-info rounded-pill">@pendingAssignments.Count</span>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (!pendingAssignments.Any())
+                        {
+                            <p class="text-center py-4 text-muted small">Trống</p>
+                        }
+                        else
+                        {
+                            @foreach (var a in pendingAssignments)
+                            {
+                                <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center hover-bg-light">
+                                    <div>
+                                        <div class="fw-bold small text-dark">@a.Title</div>
+                                        <div class="text-muted" style="font-size: 11px;">@a.Course?.CourseName</div>
+                                    </div>
+                                    <div class="d-flex gap-1">
+                                        <button class="btn btn-sm btn-success p-1 rounded-circle" onclick="approveAssignment(@a.Id)" title="Duyệt"><i class="bi bi-check"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger p-1 rounded-circle border-0" onclick="rejectAssignment(@a.Id)" title="Từ chối"><i class="bi bi-x"></i></button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CỘT PHẢI: YÊU CẦU GIẢNG DẠY -->
+    <div class="col-xl-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+            <div class="card-header bg-dark text-white border-0 py-3 px-4">
+                <h6 class="m-0 fw-bold"><i class="bi bi-person-plus me-2"></i>Yêu cầu Phân công giảng dạy</h6>
+            </div>
+            <div class="card-body p-0 bg-white">
+                @if (!pendingApps.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-check display-6 d-block mb-2 text-light"></i>
+                        <p class="text-muted small">Không có yêu cầu mới</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var app in pendingApps)
+                    {
+                        <div class="p-4 border-bottom">
+                            <div class="d-flex align-items-start gap-3 mb-3">
+                                <div class="bg-primary text-white rounded-4 d-flex align-items-center justify-content-center shadow-sm" style="width:48px; height:48px; font-weight:800;">
+                                    @app.User?.FullName.Substring(0,1)
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold m-0 text-dark">@app.User?.FullName</h6>
+                                    <p class="text-muted small m-0">Đăng ký dạy khóa:</p>
+                                    <span class="text-primary small fw-bold">@app.Course?.CourseName</span>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <form asp-action="HandleApplication" method="post" class="d-grid">
+                                    <input type="hidden" name="id" value="@app.Id" />
+                                    <button type="submit" name="action" value="Approve" class="btn btn-primary rounded-pill fw-bold">Phê duyệt ngay</button>
+                                    <button type="submit" name="action" value="Reject" class="btn btn-link text-decoration-none text-muted small mt-1">Từ chối yêu cầu</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="card-footer bg-light border-0 py-3 px-4 text-center">
+                <small class="text-muted">Các yêu cầu này sẽ giúp giảng viên có quyền quản lý khóa học.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-bg-light:hover { background-color: #f8fafc; }
+    .avatar-sm { font-weight: 700; }
+</style>
+
+@section Scripts {
+    <script>
+        async function post(url) {
+            const res = await fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (res.ok) location.reload();
+            else alert('Thao tác thất bại. Vui lòng thử lại.');
+        }
+        const approveLesson = (id) => { if(confirm('Phê duyệt bài giảng này?')) post(`/Admin/ApproveLesson/${id}`); };
+        const rejectLesson  = (id) => { if(confirm('Từ chối bài giảng này?')) post(`/Admin/RejectLesson/${id}`); };
+        const approveExam   = (id) => { if(confirm('Phê duyệt quiz này?')) post(`/Admin/ApproveExam/${id}`); };
+        const rejectExam    = (id) => { if(confirm('Từ chối quiz này?')) post(`/Admin/RejectExam/${id}`); };
+        const approveAssignment = (id) => { if(confirm('Phê duyệt bài tập này?')) post(`/Admin/ApproveAssignment/${id}`); };
+        const rejectAssignment  = (id) => { if(confirm('Từ chối bài tập này?')) post(`/Admin/RejectAssignment/${id}`); };
+    </script>
+    @Html.AntiForgeryToken()
+}

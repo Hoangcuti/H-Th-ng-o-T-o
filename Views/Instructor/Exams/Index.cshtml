@@ -1,0 +1,91 @@
+@model List<COTHUYPRO.Models.Exam>
+@{
+    ViewData["Title"] = "Quản lý Quiz";
+}
+
+<div class="instructor-exams animate-fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <p class="text-muted small m-0">Giảng viên / Đánh giá</p>
+            <h4 class="fw-bold m-0 text-dark">BÀI KIỂM TRA (QUIZ)</h4>
+        </div>
+        <a asp-action="CreateExam" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold border-0" style="background: linear-gradient(135deg, #0ea5e9, #0284c7);">
+            <i class="bi bi-plus-lg me-2"></i>Tạo Quiz mới
+        </a>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light small text-muted text-uppercase fw-bold">
+                    <tr>
+                        <th class="ps-4">Tiêu đề Quiz</th>
+                        <th>Khóa học</th>
+                        <th class="text-center">Số câu</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-patch-question display-4 d-block mb-3 opacity-25"></i>
+                                Bạn chưa tạo bài kiểm tra nào.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var e in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">@e.Title</div>
+                                <div class="text-muted small">Thời gian: @e.DurationMinutes phút</div>
+                            </td>
+                            <td class="small fw-medium">@e.Course?.CourseName</td>
+                            <td class="text-center fw-bold text-primary">0</td> @* Sẽ tính sau *@
+                            <td class="text-center">
+                                @if (e.Status == "Approved")
+                                {
+                                    <span class="badge bg-success-subtle text-success rounded-pill px-3 border border-success">Đang mở</span>
+                                }
+                                else if (e.Status == "Pending")
+                                {
+                                    <span class="badge bg-warning-subtle text-warning rounded-pill px-3 border border-warning">Chờ duyệt</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-muted rounded-pill px-3 border">Bản nháp</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group">
+                                    <a class="btn btn-sm btn-outline-info rounded-pill px-3 me-2" href="#">
+                                        <i class="bi bi-list-ol me-1"></i> Câu hỏi
+                                    </a>
+                                    <a class="btn btn-sm btn-light rounded-pill px-2" href="#">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-success-subtle { background-color: rgba(16, 185, 129, 0.1); }
+    .bg-warning-subtle { background-color: rgba(245, 158, 11, 0.1); }
+</style>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Giảng Viên · SmartHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <style>
+        /* Override accent color cho Instructor = xanh lá/teal khác với tím của Admin */
+        .instructor-layout {
+            --primary: #0ea5e9;
+            --primary-glow: rgba(14, 165, 233, 0.2);
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.2);
+        }
+        .instructor-layout .admin-sidebar { border-right-color: rgba(14,165,233,0.15); }
+        .instructor-layout .brand-mark { background: linear-gradient(135deg, #0ea5e9, #10b981); box-shadow: 0 8px 16px rgba(14,165,233,0.3); }
+        .instructor-layout .nav-link.active { background: linear-gradient(90deg, rgba(14,165,233,0.12), transparent); color: #0ea5e9; border-left-color: #0ea5e9; }
+        .instructor-layout .nav-link.active .icon { background: rgba(14,165,233,0.12); color: #0ea5e9; }
+        .instructor-layout .user-avatar { background: linear-gradient(135deg, #0ea5e9, #10b981); }
+        .pending-badge { 
+            position: absolute; top: -4px; right: -4px;
+            background: #ef4444; color: #fff; border-radius: 50%;
+            width: 18px; height: 18px; font-size: 10px;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+        .nav-link-wrap { position: relative; display: block; }
+    </style>
+</head>
+<body class="admin-body instructor-layout">
+    <div class="admin-shell">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-mark">GV</div>
+                <div>
+                    <div class="brand-title" style="font-size:1.1rem;">Giảng Viên</div>
+                    <div style="font-size:0.65rem; color:var(--text-muted);">SmartHub Portal</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-label">Tổng quan</div>
+                <a class="nav-link @((ViewContext.RouteData.Values["action"]?.ToString() == "Index") ? "active" : "")"
+                   asp-controller="Instructor" asp-action="Index">
+                    <span class="icon"><i class="bi bi-grid-fill"></i></span>
+                    <span class="text">Bảng điều khiển</span>
+                </a>
+
+                <div class="nav-label">Nội dung Của Tôi</div>
+                <a class="nav-link @((ViewContext.RouteData.Values["action"]?.ToString() is "CourseLessons" or "CreateLesson" or "EditLesson") ? "active" : "")"
+                   asp-controller="Instructor" asp-action="Index">
+                    <span class="icon"><i class="bi bi-journals"></i></span>
+                    <span class="text">Quản lý Bài giảng</span>
+                </a>
+                <a class="nav-link" asp-controller="Chat" asp-action="Index">
+                    <span class="icon"><i class="bi bi-robot"></i></span>
+                    <span class="text">Trợ lý AI</span>
+                </a>
+
+                <div class="nav-label">Hệ thống</div>
+                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                    <span class="icon"><i class="bi bi-house-door-fill"></i></span>
+                    <span class="text">Trang chủ</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer pt-4 border-top">
+                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn w-100 ghost text-danger fw-bold">
+                        <i class="bi bi-box-arrow-left me-2"></i> Đăng xuất
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="admin-main">
+            <header class="admin-toolbar">
+                <div>
+                    <div class="breadcrumb" style="color:var(--text-muted); font-size:0.75rem;">
+                        Giảng viên <i class="bi bi-chevron-right small"></i> @ViewData["Title"]
+                    </div>
+                    <h1 class="page-title">@ViewData["Title"]</h1>
+                </div>
+                <div class="toolbar-right">
+                    <div class="noti-bell">
+                        <i class="bi bi-bell-fill"></i>
+                        <span class="noti-dot"></span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar shadow-sm">
+                            @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "G")
+                        </div>
+                        <div class="user-info d-none d-md-block">
+                            <div class="fw-bold small">@User.Identity?.Name</div>
+                            <div class="text-muted" style="font-size:0.6rem;">Giảng viên</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="admin-content">
+                @RenderBody()
+            </section>
+        </main>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="admin-toast-container" id="toastContainer">
+        @if (TempData["Message"] != null)
+        {
+            <div class="admin-toast success shadow-lg">
+                <div class="icon-box"><i class="bi bi-check2-circle"></i></div>
+                <div class="toast-content">
+                    <h5>Thành công</h5>
+                    <p>@TempData["Message"]</p>
+                </div>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="admin-toast danger shadow-lg">
+                <div class="icon-box"><i class="bi bi-exclamation-triangle"></i></div>
+                <div class="toast-content">
+                    <h5>Lỗi</h5>
+                    <p>@TempData["Error"]</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.querySelectorAll('.admin-toast').forEach(toast => {
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -3,59 +3,88 @@
     ViewData["Title"] = "Quản lý học viên";
 }
 
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <p class="eyebrow">Học viên</p>
-        <h2>Quản lý học viên</h2>
-        <p class="muted">Theo dõi tiến độ, điểm và chứng chỉ (LearningProgress).</p>
+        <h2 class="m-0">Quản lý học viên</h2>
+        <p class="muted mt-1 mb-0">Theo dõi tiến độ, điểm và chứng chỉ (LearningProgress).</p>
     </div>
 </div>
 
-<div class="panel-card">
-    <div class="panel-head">
-        <h4>Danh sách học viên</h4>
-        <span class="pill muted">@Model.Students.Count học viên</span>
+<div class="panel-card animate-fade-in">
+    <div class="panel-head d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <h4 class="fw-bold m-0 text-dark">Theo dõi học viên</h4>
+            <span class="badge badge-success">@Model.Students.Count người học</span>
+        </div>
+        <div class="search-container" style="width: 320px;">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;"><i class="bi bi-search"></i></span>
+                <input type="text" id="studentSearch" class="form-control border-start-0" placeholder="Tìm tên, mã số, email..." style="border-radius: 0 12px 12px 0;">
+            </div>
+        </div>
     </div>
     <div class="table-wrapper">
-        <table class="table table-borderless align-middle admin-table">
+        <table id="studentTable" class="table table-borderless align-middle admin-table m-0">
             <thead>
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <th>Mã SV</th>
-                    <th>Họ tên</th>
-                    <th>Các khóa đang học</th>
-                    <th class="text-center">Số khóa HT</th>
-                    <th class="text-end">Ngày tạo</th>
+                <tr class="table-header-row small fw-bold">
+                    <th class="px-4">MÃ SV</th>
+                    <th>HỌ TÊN & TÀI KHOẢN</th>
+                    <th>KHÓA HỌC ĐANG THEO ĐUỔI</th>
+                    <th class="text-center">HOÀN THÀNH</th>
+                    <th class="text-center">NGÀY GIA NHẬP</th>
+                    <th class="text-end px-4">HÀNH ĐỘNG</th>
                 </tr>
             </thead>
             <tbody>
             @foreach (var s in Model.Students)
             {
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
-                    <td><span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">@s.StudentCode</span></td>
-                    <td class="fw-semibold">
-                        @s.User.FullName
-                        <div class="muted" style="font-size: 0.8rem; font-weight: normal;">@s.User.Username</div>
+                <tr style="border-bottom: 1px solid var(--surface-muted);">
+                    <td class="py-4 px-4">
+                        <span class="badge badge-primary">@s.StudentCode</span>
                     </td>
-                    <td>
+                    <td class="py-4">
+                        <div class="fw-bold text-dark">@s.User.FullName</div>
+                        <div class="text-muted small">@("@")@s.User.Username</div>
+                    </td>
+                    <td class="py-4">
                         @if (s.EnrolledCourses.Any())
                         {
                             <div class="d-flex flex-wrap gap-1">
                                 @foreach (var c in s.EnrolledCourses)
                                 {
-                                    <span class="badge" style="background: rgba(6,182,212,0.1); color: var(--primary); font-size: 0.75rem;">@c</span>
+                                    <span class="badge badge-info">@c</span>
                                 }
                             </div>
                         }
                         else
                         {
-                            <span class="muted" style="font-size: 0.85rem;">Chưa đăng ký</span>
+                            <span class="text-muted small">Chưa đăng ký khóa nào</span>
                         }
                     </td>
-                    <td class="text-center">@s.CompletedCourses</td>
-                    <td class="text-end muted" style="font-size: 0.85rem;">@s.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                    <td class="py-4 text-center">
+                        <div class="fw-extrabold text-dark" style="font-size: 1.1rem;">@s.CompletedCourses</div>
+                        <div class="text-muted small">Khóa học</div>
+                    </td>
+                    <td class="py-4 text-center text-muted small">
+                        @s.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")
+                    </td>
+                    <td class="py-4 text-end px-4">
+                        <a class="btn ghost btn-sm text-primary fw-bold" asp-action="StudentDetails" asp-route-id="@s.User.Id">
+                            <i class="bi bi-eye-fill me-1"></i> Xem chi tiết
+                        </a>
+                    </td>
                 </tr>
             }
             </tbody>
         </table>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            applyLiveSearch('studentSearch', 'studentTable');
+        });
+    </script>
+}

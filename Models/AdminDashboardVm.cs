@@ -9,6 +9,7 @@ public class AdminDashboardVm
     public int PendingCertificates { get; set; }
     public int SoldCourseCount { get; set; }
     public decimal TotalRevenue { get; set; }
+    public double AvgStudentProgress { get; set; }
 }
 
 public class AdminIndexViewModel
@@ -17,4 +18,10 @@ public class AdminIndexViewModel
     public List<User> RecentUsers { get; set; } = new();
     public List<Course> RecentCourses { get; set; } = new();
     public List<RevenueCourseVm> TopCourses { get; set; } = new();
+
+    // Chart Data
+    public string[] RevenueLabels { get; set; } = Array.Empty<string>();
+    public decimal[] RevenueData { get; set; } = Array.Empty<decimal>();
+    public string[] CourseLabels { get; set; } = Array.Empty<string>();
+    public int[] CourseData { get; set; } = Array.Empty<int>();
 }

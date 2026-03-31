@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +9,8 @@ public class Exam
     public int Id { get; set; }
     public int CourseId { get; set; }
     public Course? Course { get; set; }
+    public int? LessonId { get; set; }
+    public Lesson? Lesson { get; set; }
     [MaxLength(200)]
     public string Title { get; set; } = string.Empty;
     public int DurationMinutes { get; set; }
@@ -19,5 +21,18 @@ public class Exam
     public bool ShuffleQuestions { get; set; } = true;
     public int MaxAttempts { get; set; } = 0;
     public bool ShowAnswers { get; set; } = true;
-}
+    
+    [MaxLength(20)]
+    public string ExamType { get; set; } = "Quiz"; // Quiz, Final
 
+    [MaxLength(20)]
+    public string Status { get; set; } = "Approved";
+
+    public int? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public int? UpdatedByUserId { get; set; }
+    public User? UpdatedByUser { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}

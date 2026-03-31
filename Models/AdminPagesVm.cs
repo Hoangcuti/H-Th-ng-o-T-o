@@ -49,6 +49,7 @@ public class InstructorVm
 {
     public User User { get; set; } = null!;
     public int CourseCount { get; set; }
+    public List<Course> TaughtCourses { get; set; } = new();
 }
 
 public class InstructorsPageVm
@@ -79,6 +80,7 @@ public class LessonRow
     public string CourseName { get; set; } = string.Empty;
     public int OrderIndex { get; set; }
     public string? DocumentUrl { get; set; }
+    public string Status { get; set; } = "Approved";
 }
 
 public class RevenueCourseVm
@@ -95,4 +97,42 @@ public class RevenuePageVm
     public decimal TotalRevenue { get; set; }
     public List<RevenueCourseVm> TopCourses { get; set; } = new();
     public List<decimal> MonthlyRevenue { get; set; } = new();
+}
+
+public class CourseChapterRow
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public int OrderIndex { get; set; }
+    public List<LessonRow> Lessons { get; set; } = new();
+}
+
+public class CourseLessonsVm
+{
+    public int CourseId { get; set; }
+    public string CourseName { get; set; } = string.Empty;
+    public List<CourseChapterRow> Chapters { get; set; } = new();
+    public List<LessonRow> PendingLessons { get; set; } = new();
+}
+
+public class BulkLessonEntry
+{
+    public string Title { get; set; } = string.Empty;
+    public string? VideoUrl { get; set; } = string.Empty;
+    public int OrderIndex { get; set; }
+    public int Duration { get; set; }
+    public string? DocumentUrl { get; set; }
+    public string? ContentHtml { get; set; }
+    public bool IsFreePreview { get; set; }
+    public bool IsPublished { get; set; } = true;
+    public string Status { get; set; } = "Pending";
+    public string? QuizTitle { get; set; } = string.Empty;
+}
+
+public class CreateBulkVm
+{
+    public int CourseId { get; set; }
+    public string ChapterTitle { get; set; } = string.Empty;
+    public List<BulkLessonEntry> Lessons { get; set; } = new();
+    public List<Course> AvailableCourses { get; set; } = new();
 }

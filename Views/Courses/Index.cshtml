@@ -1,32 +1,64 @@
 @model IEnumerable<COTHUYPRO.Models.Course>
 @{
-    ViewData["Title"] = "Khóa học";
+    ViewData["Title"] = "Thư viện Khóa học";
+    bool isAdmin = ViewBag.IsAdmin == true;
 }
 
-<section class="panel container-xxl animate-fade-in">
-    <div class="panel-header">
-        <div>
-            <p class="label">Catalog</p>
-            <h2 class="section-title">Chọn khóa học & đăng ký</h2>
-            <p class="section-sub">Thanh toán online (demo). Chat AI đã tách sang trang riêng.</p>
+<div class="container-xxl py-5 animate-fade-in">
+    <!-- PANEL HEADER -->
+    <header class="panel p-5 mb-5 h-vignette" style="border-radius: 32px;">
+        <div class="row align-items-end">
+            <div class="col-lg-8">
+                <p class="label mb-2">Thư viện</p>
+                <h2 class="display-5 fw-bold text-gradient m-0">@(isAdmin ? "QUẢN TRỊ NỘI DUNG" : "Khám phá tri thức mới")</h2>
+                <p class="section-sub mt-3 mb-0">Hệ thống đào tạo nội bộ cung cấp các lộ trình học tập từ cơ bản đến nâng cao.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <span class="chip"><i class="fa-solid fa-layer-group me-1"></i> @Model.Count() Khóa học</span>
+            </div>
         </div>
-    </div>
-    <div class="course-grid delay-100 animate-fade-in" style="animation-fill-mode: both;">
+    </header>
+
+    <!-- COURSE GRID -->
+    <div class="course-grid reveal active">
         @foreach (var c in Model)
         {
-            var price = 1200000 + c.Id * 150000;
-            <div class="course-card">
+            <div class="course-card reveal active">
                 <div class="course-meta">
-                    <span class="badge">@c.Category?.Name ?? "Danh mục"</span>
-                    <span class="level">@c.Level?.Name ?? "Cấp độ"</span>
+                    <span class="badge">@c.Category?.Name</span>
+                    <span class="level">@c.Level?.Name</span>
                 </div>
+                
+                <div class="course-thumb-wrap mb-4 overflow-hidden" style="border-radius: 20px; aspect-ratio: 16/10;">
+                    <img src="@(string.IsNullOrEmpty(c.ImageUrl) ? "https://images.unsplash.com/photo-1454165833767-027ffea9e77b?w=400" : c.ImageUrl)" 
+                         class="w-100 h-100 object-fit-cover scale-hover-img" alt="@c.CourseName" />
+                </div>
+
                 <h3>@c.CourseName</h3>
-                <p class="muted">Giảng viên: @string.Join(", ", c.Instructors.Select(i => i.User?.FullName ?? i.User?.Username ?? "N/A"))</p>
-                <div class="price-tag big mt-2 mb-3 text-gradient">@String.Format("{0:#,0} đ", price)</div>
+                
+                <div class="price-tag big mt-3 mb-4 text-gradient">@String.Format("{0:#,0} đ", c.Price)</div>
+
                 <div class="card-actions mt-auto">
-                    <a class="btn solid w-100" asp-action="Details" asp-route-id="@c.Id">Xem & đăng ký</a>
+                    @if (isAdmin)
+                    {
+                        <a class="btn solid w-100 py-2 h-shadow border-0" style="background: linear-gradient(135deg, #0ea5e9, #2563eb);" asp-action="Details" asp-route-id="@c.Id">
+                            TRUY CẬP (ADMIN) <i class="fa-solid fa-shield-halved ms-1"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="btn solid w-100 py-2 h-shadow" asp-action="Details" asp-route-id="@c.Id">
+                            Xem & đăng ký <i class="fa-solid fa-arrow-right ms-1"></i>
+                        </a>
+                    }
                 </div>
             </div>
         }
     </div>
-</section>
+</div>
+
+<style>
+    .scale-hover-img { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    .course-card:hover .scale-hover-img { transform: scale(1.1); }
+    .h-shadow:hover { box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.3); }
+</style>

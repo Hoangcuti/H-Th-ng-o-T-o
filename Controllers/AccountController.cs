@@ -153,7 +153,7 @@ public class AccountController : Controller
         if (user == null) return NotFound();
 
         var enrolledCourses = await _context.ClassStudents
-            .Include(cs => cs.Class)!.ThenInclude(c => c.Course)
+            .Include(cs => cs.Class)!.ThenInclude(c => c!.Course)
             .Where(cs => cs.UserId == user.Id)
             .Select(cs => cs.Class!.Course!.CourseName)
             .Distinct()
@@ -184,9 +184,9 @@ public class AccountController : Controller
                 if (u != null) {
                     model.StudentCode = u.StudentCode;
                     model.EnrolledCourses = await _context.ClassStudents
-                        .Include(cs => cs.Class)!.ThenInclude(c => c.Course)
+                        .Include(cs => cs.Class)!.ThenInclude(c => c!.Course)
                         .Where(cs => cs.UserId == u.Id)
-                        .Select(cs => cs.Class!.Course!.CourseName)
+                        .Select(cs => cs.Class != null && cs.Class.Course != null ? cs.Class.Course.CourseName : "Khóa học không xác định")
                         .Distinct()
                         .ToListAsync();
                 }

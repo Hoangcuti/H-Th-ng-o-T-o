@@ -1,0 +1,180 @@
+@{
+    ViewData["Title"] = "Kết quả bài kiểm tra";
+    // Tỷ lệ phần trăm đạt được (0-100)
+    var scorePctVal = (Model.Score / 10.0) * 100.0;
+    // Điểm đạt yêu cầu (Mặc định 50 nếu không có trong DB)
+    var requiredScore = Model.Attempt?.Exam?.PassingScore ?? 50;
+    
+    bool isPassed = scorePctVal >= requiredScore;
+    var scorePct = Math.Round(Model.Score * 10, 0); // Dùng cho hiệu ứng vòng tròn
+}
+
+<style>
+    /* --- SILICON LIGHT RESULT PAGE --- */
+    .res-canvas {
+        background: #f8fafc;
+        min-height: 90vh;
+        display: flex; align-items: center; justify-content: center;
+        padding: 40px 20px;
+    }
+
+    .res-panel {
+        background: #fff;
+        border-radius: 40px;
+        padding: 60px;
+        max-width: 650px;
+        width: 100%;
+        box-shadow: 0 30px 100px rgba(15, 23, 42, 0.1);
+        border: 1px solid #eef2f6;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .res-header-icon {
+        width: 120px; height: 120px;
+        border-radius: 40px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 3.5rem;
+        margin-bottom: 30px;
+        animation: bouncePop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .res-header-icon.pass { background: #ecfdf5; color: #10b981; border: 2px solid #d1fae5; }
+    .res-header-icon.fail { background: #fff1f2; color: #f43f5e; border: 2px solid #ffe4e6; }
+
+    .score-box {
+        position: relative;
+        width: 200px; height: 200px;
+        margin: 40px auto;
+    }
+    .score-circle-svg { transform: rotate(-90deg); width: 200px; height: 200px; }
+    .score-circle-bg { fill: none; stroke: #f1f5f9; stroke-width: 12; }
+    .score-circle-val {
+        fill: none; stroke: @(isPassed ? "#10b981" : "#0ea5e9");
+        stroke-width: 12; stroke-linecap: round;
+        stroke-dasharray: 590; 
+        stroke-dashoffset: 590; /* Start empty */
+        transition: stroke-dashoffset 2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stat-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+    .stat-card:hover { transform: translateY(-3px); border-color: #0ea5e9; background: #fff; }
+
+    @@keyframes bouncePop { 0% { transform: scale(0); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    
+    .nav-btn-group {
+        display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-top: 40px;
+    }
+
+    .confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+</style>
+
+<div class="res-canvas">
+    <canvas id="confetti" class="confetti-canvas"></canvas>
+    
+    <div class="res-panel reveal active">
+        <!-- ICON -->
+        @if (isPassed) {
+            <div class="res-header-icon pass"><i class="fa-solid fa-trophy"></i></div>
+            <h2 class="fw-bold display-6 mb-2" style="background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">XUẤT SẮC! BẠN ĐÃ ĐẠT</h2>
+            <p class="text-muted">Chúc mừng bạn đã hoàn thành thử thách với kết quả tốt!</p>
+        } else {
+            <div class="res-header-icon fail"><i class="fa-solid fa-graduation-cap"></i></div>
+            <h2 class="fw-bold display-6 mb-2 text-danger">CHƯA ĐẠT! CỐ GẮNG LÊN</h2>
+            <p class="text-muted">Đừng nản lòng, hãy xem lại đáp án và thử lại một lần nữa nhé.</p>
+        }
+
+        <!-- SCORE -->
+        <div class="score-box">
+            <svg class="score-circle-svg">
+                <circle class="score-circle-bg" cx="100" cy="100" r="94"></circle>
+                <circle id="scoreProgress" class="score-circle-val" cx="100" cy="100" r="94"></circle>
+            </svg>
+            <div class="position-absolute top-50 start-50 translate-middle text-center" style="margin-top: -5px;">
+                <div class="display-3 fw-bold mb-0">@Model.Score</div>
+                <div class="text-muted fw-bold small">ĐIỂM</div>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="row g-3">
+            <div class="col-6">
+                <div class="stat-card">
+                    <div class="small fw-bold text-success mb-1">TRẢ LỜI ĐÚNG</div>
+                    <div class="h4 fw-bold m-0">@Model.CorrectCount câu</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="stat-card">
+                    <div class="small fw-bold text-danger mb-1">TRẢ LỜI SAI</div>
+                    <div class="h4 fw-bold m-0">@(Model.TotalQuestions - Model.CorrectCount) câu</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="mt-5">
+            <a asp-action="Review" asp-route-id="@Model.Id" class="btn btn-outline-primary w-100 rounded-pill py-3 fw-bold border-2">
+                <i class="fa-solid fa-magnifying-glass-chart me-2"></i> XEM CHI TIẾT ĐÁP ÁN
+            </a>
+            
+            <div class="nav-btn-group">
+                <a asp-action="Take" asp-route-id="@Model.Attempt?.ExamId" class="btn btn-light rounded-pill py-3 fw-bold text-muted border">
+                    <i class="fa-solid fa-rotate-left me-2"></i> THI LẠI
+                </a>
+                <a asp-controller="Student" asp-action="Index" class="btn btn-primary rounded-pill py-3 fw-bold shadow-lg" style="background: linear-gradient(135deg, #0ea5e9, #6366f1); border:none;">
+                    VỀ KHÓA HỌC <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate Circle
+            const circle = document.getElementById('scoreProgress');
+            const pct = @scorePct;
+            const offset = 590 - (590 * pct / 100);
+            
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 300);
+
+            // Celebration if passed
+            if (@(isPassed ? "true" : "false")) {
+                const duration = 3 * 1000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 3,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: ['#0ea5e9', '#10b981', '#ffffff']
+                    });
+                    confetti({
+                        particleCount: 3,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: ['#0ea5e9', '#10b981', '#ffffff']
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+            }
+        });
+    </script>
+}

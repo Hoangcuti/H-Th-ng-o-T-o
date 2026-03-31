@@ -6,15 +6,16 @@ namespace COTHUYPRO.Models;
 
 public class LearningProgress
 {
+    [Key]
+    public int Id { get; set; }
+    
     public int UserId { get; set; }
     public User? User { get; set; }
 
     public int LessonId { get; set; }
     public Lesson? Lesson { get; set; }
 
-    [Column("Completed")]
-    public bool Completed { get; set; }
+    [Column("Status")]
+    public string Status { get; set; } = "Incomplete";
 
-    [Column("CompletionDate")]
-    public DateTime? CompletionDate { get; set; }
 }

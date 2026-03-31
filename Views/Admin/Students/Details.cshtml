@@ -1,0 +1,160 @@
+@model COTHUYPRO.Models.StudentDetailsVm
+@{
+    ViewData["Title"] = "Tiến độ học viên - " + Model.User.FullName;
+}
+
+<style>
+    /* --- SILICON LIGHT DETAILS UI --- */
+    .sd-header {
+        background: white; padding: 40px; border-radius: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;
+        margin-bottom: 40px; display: flex; align-items: center; gap: 30px;
+        animation: slideDown 0.5s ease;
+    }
+    .sd-avatar {
+        width: 100px; height: 100px; border-radius: 30px;
+        background: linear-gradient(135deg, #6366f1, #0ea5e9);
+        color: white; display: flex; align-items: center; justify-content: center;
+        font-size: 3rem; font-weight: 800; box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+    }
+    .sd-info h2 { font-weight: 800; margin-bottom: 5px; color: #1e293b; }
+    .sd-info p { color: #64748b; margin: 0; font-weight: 500; }
+
+    .sl-section-card {
+        background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 25px;
+        padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        margin-bottom: 30px;
+    }
+
+    .progress-track { margin-bottom: 25px; }
+    .progress-meta { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .progress-meta span { font-weight: 700; color: #334155; }
+    .sl-progress-bar {
+        height: 12px; background: #f1f5f9; border-radius: 10px; overflow: hidden;
+    }
+    .sl-progress-fill {
+        height: 100%; background: linear-gradient(90deg, #0ea5e9, #6366f1);
+        border-radius: 10px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .badge-status {
+        padding: 6px 14px; border-radius: 10px; font-weight: 800; font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+    .status-pass { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .status-fail { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    .admin-table-clean { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+    .admin-table-clean th { color: #94a3b8; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; padding: 15px 20px; }
+    .admin-table-clean td { background: white; padding: 20px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+    .admin-table-clean td:first-child { border-left: 1px solid #f1f5f9; border-radius: 15px 0 0 15px; }
+    .admin-table-clean td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 15px 15px 0; }
+
+    @("@")keyframes slideDown { 0% { transform: translateY(-20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <a asp-action="Students" class="btn btn-link text-decoration-none p-0 text-muted fw-bold">
+            <i class="bi bi-arrow-left me-2"></i> TRỞ LẠI DANH SÁCH
+        </a>
+    </div>
+
+    <!-- HEADER PROFILE -->
+    <div class="sd-header animate-fade-in">
+        <div class="sd-avatar">@Model.User.FullName.Substring(0,1).ToUpper()</div>
+        <div class="sd-info">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-primary rounded-pill px-3">HỌC VIÊN</span>
+                @if(!string.IsNullOrEmpty(Model.User.StudentCode)) {
+                    <span class="text-muted fw-bold small">#@Model.User.StudentCode</span>
+                }
+            </div>
+            <h2>@Model.User.FullName</h2>
+            <p><i class="bi bi-envelope me-2"></i>@Model.User.Email</p>
+            <p class="mt-1 small opacity-75">Gia nhập từ: @Model.User.CreatedAt.ToString("dd/MM/yyyy")</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- LEFT: COURSE PROGRESS -->
+        <div class="col-lg-7">
+            <div class="sl-section-card">
+                <h4 class="fw-bold mb-4 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-mortarboard-fill text-primary"></i> TIẾN ĐỘ KHÓA HỌC
+                </h4>
+                
+                @if(!Model.CourseProgresses.Any()) {
+                    <div class="text-center py-5 opacity-50">
+                        <i class="bi bi-journal-x display-4"></i>
+                        <p class="fw-bold mt-2">HỌC VIÊN CHƯA ĐĂNG KÝ KHÓA HỌC NÀO</p>
+                    </div>
+                }
+
+                @foreach(var cp in Model.CourseProgresses) {
+                    <div class="progress-track">
+                        <div class="progress-meta">
+                            <span>@cp.CourseName</span>
+                            <span class="text-primary">@cp.ProgressPercent%</span>
+                        </div>
+                        <div class="sl-progress-bar">
+                            <div class="sl-progress-fill" style="width: @cp.ProgressPercent%"></div>
+                        </div>
+                        <div class="text-muted x-small mt-2">
+                            Hoàn thành <b>@cp.CompletedLessons</b> / @cp.TotalLessons bài giảng
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- RIGHT: QUIZ RESULTS -->
+        <div class="col-lg-5">
+            <div class="sl-section-card h-100">
+                <h4 class="fw-bold mb-4 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-patch-check-fill text-success"></i> KẾT QUẢ THI
+                </h4>
+
+                @if(!Model.QuizResults.Any()) {
+                    <div class="text-center py-5 opacity-50">
+                        <i class="bi bi-clipboard2-x display-4"></i>
+                        <p class="fw-bold mt-2">CHƯA THAM GIA BÀI THI NÀO</p>
+                    </div>
+                } else {
+                    <div class="table-responsive">
+                        <table class="admin-table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Bài thi</th>
+                                    <th class="text-center">Điểm</th>
+                                    <th class="text-end">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var q in Model.QuizResults) {
+                                    <tr>
+                                        <td class="fw-bold small">
+                                            @q.ExamTitle
+                                            <div class="text-muted x-small fw-normal">@q.AttemptDate.ToString("dd/MM/yyyy HH:mm")</div>
+                                        </td>
+                                        <td class="text-center fw-extrabold h5 mb-0 @(q.IsPassed ? "text-success" : "text-danger")">
+                                            @q.Score.ToString("0.0")
+                                        </td>
+                                        <td class="text-end">
+                                            @if(q.IsPassed) {
+                                                <span class="badge-status status-pass">ĐẠT</span>
+                                            } else {
+                                                <span class="badge-status status-fail">TRƯỢT</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

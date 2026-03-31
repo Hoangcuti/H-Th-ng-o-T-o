@@ -7,6 +7,7 @@ public class CourseCardVm
     public string Level { get; set; } = string.Empty;
     public List<string> Instructors { get; set; } = new();
     public int Progress { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public class ClassCardVm

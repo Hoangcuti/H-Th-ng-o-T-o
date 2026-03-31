@@ -1,0 +1,288 @@
+@model List<COTHUYPRO.Models.Question>
+@{
+    ViewData["Title"] = "Làm bài kiểm tra";
+    var attempt = ViewBag.Attempt as COTHUYPRO.Models.ExamAttempt;
+}
+
+<div class="container-xxl py-5 animate-fade-in">
+    <!-- TOP PROGRESS & TIMER -->
+    <header class="panel p-4 mb-4 h-vignette" style="border-radius: 20px;">
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="mark sm"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div>
+                        <h4 class="fw-bold m-0">@attempt?.Exam?.Title</h4>
+                        <div class="x-small text-muted mt-1">
+                            <i class="fa-solid fa-circle-info text-primary me-1"></i>
+                            Hãy kiểm tra kỹ câu trả lời trước khi nộp bài
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end d-flex justify-content-md-end gap-4 align-items-center">
+                <div class="timer-box p-3 bg-light rounded-4 border d-flex align-items-center gap-3" style="min-width: 150px;">
+                    <i class="fa-solid fa-hourglass-start text-primary fs-4 animate-pulse"></i>
+                    <div>
+                        <div class="x-small fw-bold opacity-50">THỜI GIAN CÒN LẠI</div>
+                        <div id="timerDisplay" class="fw-bold fs-4 m-0 text-gradient">--:--</div>
+                    </div>
+                </div>
+                <div class="progress-info" style="min-width: 120px;">
+                    <div class="d-flex justify-content-between x-small fw-bold mb-1">
+                        <span>TIẾN ĐỘ</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div id="mainProgressBar" class="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="row g-4">
+        <!-- LEFT: QUESTION ENGINE -->
+        <div class="col-lg-9">
+            <div id="questionContainer">
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    var q = Model[i];
+                    <div class="question-block reveal active mb-5" data-qid="@q.Id" id="q-block-@i" style="display: @(i == 0 ? "block" : "none");">
+                        <div class="panel p-5 h-shadow-lg" style="border-radius: 32px;">
+                            <div class="d-flex align-items-baseline gap-3 mb-5">
+                                <div class="badge bg-primary text-white p-3 d-flex align-items-center justify-content-center fw-bold" 
+                                     style="width: 48px; height: 48px; border-radius: 12px; font-size: 1.2rem;">
+                                    @(i + 1)
+                                </div>
+                                <h3 class="fw-bold m-0">@q.Content</h3>
+                            </div>
+
+                            <div class="options-list">
+                                @{ int optIdx = 0; }
+                                @foreach (var opt in q.Options)
+                                {
+                                    <button class="option-btn border-2 mb-3 text-start d-flex align-items-center gap-3" 
+                                            data-oid="@opt.Id" 
+                                            onclick="selectOption(this, @q.Id, @opt.Id)">
+                                        <div class="option-marker border d-flex align-items-center justify-content-center fw-bold" 
+                                             style="width: 28px; height: 28px; border-radius: 6px; font-size: 0.8rem;">
+                                            @((char)('A' + optIdx++))
+                                        </div>
+                                        <div class="option-text">@opt.Content</div>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- ENGINE CONTROLS -->
+            <div class="d-flex align-items-center justify-content-between py-4">
+                <button id="prevBtn" class="btn ghost lg" onclick="changeQuestion(-1)" disabled>
+                    <i class="fa-solid fa-arrow-left"></i> Câu trước
+                </button>
+                <div class="d-flex gap-3">
+                    <button id="nextBtn" class="btn solid lg" onclick="changeQuestion(1)">
+                        Câu tiếp theo <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                    <button id="finishBtn" class="btn accent lg h-shadow" style="display:none;" onclick="submitQuiz()">
+                        NỘP BÀI THI <i class="fa-solid fa-paper-plane ms-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: QUESTION MAP -->
+        <div class="col-lg-3">
+            <div class="panel p-4 reveal active sticky-top" style="border-radius: 24px; top: 100px;">
+                <h5 class="fw-bold mb-4 border-bottom pb-2">Bản đồ câu hỏi</h5>
+                <div class="question-map grid-map">
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        <div class="map-item d-flex align-items-center justify-content-center fw-bold cursor-pointer transition-all" 
+                             id="map-@i" onclick="jumpToQuestion(@i)">
+                            @(i + 1)
+                        </div>
+                    }
+                </div>
+                <div class="mt-4 pt-3 border-top x-small">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="map-item sm bg-primary text-white border-0"></div>
+                        <span class="text-muted">Đang làm</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="map-item sm border-primary bg-primary-glow border-0"></div>
+                        <span class="text-muted">Đã trả lời</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="map-item sm bg-light border-0"></div>
+                        <span class="text-muted">Chưa trả lời</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="submitForm" asp-action="Submit" method="post" style="display:none;">
+    <input type="hidden" name="attemptId" value="@attempt?.Id" />
+    <input type="hidden" id="finalAnswersJson" name="finalAnswersJson" />
+</form>
+
+<style>
+    .grid-map { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .map-item { width: 100%; aspect-ratio: 1; border-radius: 10px; background: #f8fafc; border: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
+    .map-item:hover { border-color: var(--primary); color: var(--primary); }
+    .map-item.current { background: var(--primary) !important; color: #fff !important; border-color: var(--primary) !important; box-shadow: 0 4px 12px var(--primary-glow); }
+    .map-item.answered { background: var(--primary-glow) !important; border-color: var(--primary) !important; color: var(--primary) !important; }
+    .map-item.sm { width: 16px; height: 16px; aspect-ratio: 1; pointer-events: none; }
+    
+    .option-btn { width: 100%; border: 1px solid var(--border); border-radius: 16px; padding: 16px 24px; transition: all 0.2s; background: #fff; cursor: pointer; }
+    .option-btn:hover { border-color: var(--primary); background: var(--surface-muted); }
+    .option-btn.selected { border-color: var(--primary); background: var(--primary-glow); color: var(--primary); border-width: 2px; }
+    .option-btn.selected .option-marker { background: var(--primary); color: #fff; border-color: var(--primary); }
+    
+    .cursor-pointer { cursor: pointer; }
+    .transition-all { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+</style>
+
+@section Scripts {
+    <script>
+        let currentIdx = 0;
+        let totalQuestions = @Model.Count;
+        let remainingSeconds = @(attempt?.RemainingSeconds ?? 0);
+        let userAnswers = @(Html.Raw(attempt?.AnswersJson ?? "{}"));
+        let attemptId = @(attempt?.Id ?? 0);
+
+        function initQuiz() {
+            startTimer();
+            restoreAnswers();
+            updateProgress();
+            updateMap(0);
+            
+            // Auto-save every 10 seconds
+            setInterval(saveProgress, 10000);
+        }
+
+        function restoreAnswers() {
+            Object.keys(userAnswers).forEach(qid => {
+                const oid = userAnswers[qid];
+                const block = document.querySelector(`.question-block[data-qid="${qid}"]`);
+                if (block) {
+                    const opt = block.querySelector(`.option-btn[data-oid="${oid}"]`);
+                    if (opt) opt.classList.add('selected');
+                }
+                const idx = Array.from(document.querySelectorAll('.question-block')).findIndex(b => b.dataset.qid == qid);
+                if (idx !== -1) {
+                    document.getElementById(`map-${idx}`).classList.add('answered');
+                }
+            });
+        }
+
+        function selectOption(el, qid, oid) {
+            const block = el.closest('.question-block');
+            block.querySelectorAll('.option-btn').forEach(x => x.classList.remove('selected'));
+            el.classList.add('selected');
+            userAnswers[qid] = oid;
+            
+            const idx = Array.from(document.querySelectorAll('.question-block')).findIndex(b => b.dataset.qid == qid);
+            document.getElementById(`map-${idx}`).classList.add('answered');
+            
+            updateProgress();
+            
+            // Optional: Auto move to next after selection (commented out for UX)
+            // setTimeout(() => { if (currentIdx < totalQuestions - 1) changeQuestion(1); }, 300);
+        }
+
+        function updateProgress() {
+            const answered = Object.keys(userAnswers).length;
+            const pct = Math.round((answered / totalQuestions) * 100);
+            document.getElementById('mainProgressBar').style.width = pct + '%';
+            document.getElementById('progressText').innerText = pct + '%';
+        }
+
+        function jumpToQuestion(idx) {
+            const blocks = document.querySelectorAll('.question-block');
+            blocks[currentIdx].style.display = 'none';
+            currentIdx = idx;
+            blocks[currentIdx].style.display = 'block';
+            updateStates();
+            updateMap(idx);
+        }
+
+        function changeQuestion(dir) {
+            const nextIdx = currentIdx + dir;
+            if (nextIdx >= 0 && nextIdx < totalQuestions) {
+                jumpToQuestion(nextIdx);
+            }
+        }
+
+        function updateStates() {
+            document.getElementById('prevBtn').disabled = (currentIdx === 0);
+            const isLast = (currentIdx === totalQuestions - 1);
+            document.getElementById('nextBtn').style.display = isLast ? 'none' : 'block';
+            document.getElementById('finishBtn').style.display = isLast ? 'block' : 'none';
+        }
+
+        function updateMap(activeIdx) {
+            document.querySelectorAll('.map-item').forEach(m => m.classList.remove('current'));
+            document.getElementById(`map-${activeIdx}`).classList.add('current');
+        }
+
+        function startTimer() {
+            const display = document.getElementById('timerDisplay');
+            const interval = setInterval(() => {
+                if (remainingSeconds <= 0) {
+                    clearInterval(interval);
+                    submitQuiz();
+                    return;
+                }
+                remainingSeconds--;
+                const m = Math.floor(remainingSeconds / 60);
+                const s = remainingSeconds % 60;
+                display.innerText = `${m}:${s < 10 ? '0' + s : s}`;
+                
+                if (remainingSeconds < 60) display.classList.add('text-danger');
+            }, 1000);
+        }
+
+        async function saveProgress(isExiting = false) {
+            const data = new FormData();
+            data.append('attemptId', attemptId);
+            data.append('answersJson', JSON.stringify(userAnswers));
+            data.append('remaining', remainingSeconds);
+
+            try {
+                // Use keepalive: true to ensure the request completes even if the page is closed
+                await fetch('/StudentQuiz/SaveProgress', { 
+                    method: 'POST', 
+                    body: data,
+                    keepalive: true 
+                });
+            } catch (e) { console.error("Save failed:", e); }
+        }
+
+        function submitQuiz() {
+            saveProgress().then(() => {
+                document.getElementById('finalAnswersJson').value = JSON.stringify(userAnswers);
+                document.getElementById('submitForm').submit();
+            });
+        }
+
+        // Save immediately when the user leaves the page or switches tabs
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                saveProgress(true);
+            }
+        });
+
+        // Backup for some browsers
+        window.addEventListener('pagehide', () => {
+            saveProgress(true);
+        });
+
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+}

@@ -14,6 +14,8 @@ public class LessonFormVm
 
     public int OrderIndex { get; set; }
     
+    public IFormFile? DocumentFile { get; set; }
+    
     [MaxLength(500)]
     public string? DocumentUrl { get; set; }
 

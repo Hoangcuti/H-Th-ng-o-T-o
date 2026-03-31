@@ -1,0 +1,231 @@
+@model COTHUYPRO.Models.CreateBulkVm
+@{
+    ViewData["Title"] = "Thêm nội dung hàng loạt";
+}
+
+<style>
+    .instructor-bulk .lesson-card {
+        background: white; border: 0; border-radius: 24px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03); transition: all 0.3s ease;
+        margin-bottom: 25px; overflow: hidden;
+    }
+    .instructor-bulk .lesson-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
+    .instructor-bulk .card-num {
+        width: 38px; height: 38px; background: #0ea5e9; color: white;
+        border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+    }
+    .instructor-bulk .form-label { font-weight: 700; color: #64748b; font-size: 0.75rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .instructor-bulk .form-control, .instructor-bulk .form-select {
+        border-radius: 14px; border: 2px solid #f1f5f9; padding: 12px 16px;
+        font-size: 0.95rem; transition: all 0.2s; background: #f8fafc;
+    }
+    .instructor-bulk .form-control:focus, .instructor-bulk .form-select:focus { 
+        border-color: #0ea5e9; background: white; box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); outline: none;
+    }
+    .instructor-bulk .btn-remove { 
+        width: 42px; height: 42px; border-radius: 14px; color: #ef4444; 
+        background: #fef2f2; display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s; border: none;
+    }
+    .instructor-bulk .btn-remove:hover { background: #fee2e2; color: #b91c1c; transform: scale(1.05); }
+    .instructor-bulk .section-tag { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; padding: 4px 14px; border-radius: 10px; font-weight: 700; font-size: 0.7rem; }
+    .instructor-bulk .switch-label { font-weight: 600; color: #475569; cursor: pointer; user-select: none; font-size: 0.9rem; }
+</style>
+
+<div class="instructor-bulk container-fluid p-0 animate-fade-in">
+    <form asp-action="CreateBulk" method="post" id="bulkForm">
+        @Html.AntiForgeryToken()
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold m-0 text-dark">Thêm nội dung hàng loạt</h4>
+                <p class="text-muted small m-0">Tạo nhiều bài học cùng lúc trong một mục chương trình</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary rounded-pill px-4 bg-white shadow-sm fw-bold" onclick="addCard()">
+                    <i class="bi bi-plus-lg me-2"></i>Thêm bài học
+                </button>
+                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold border-0" style="background: linear-gradient(135deg, #0ea5e9, #0284c7);">
+                    <i class="bi bi-cloud-check-fill me-2"></i>Lưu tất cả
+                </button>
+            </div>
+        </div>
+
+        <!-- Chapter Info Header -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white p-4">
+            <div class="row g-4 align-items-end">
+                <div class="col-lg-7">
+                    <label class="form-label">Tên Chương / Phân mục</label>
+                    <input asp-for="ChapterTitle" class="form-control form-control-lg bg-light border-0 shadow-none fw-bold" placeholder="Ví dụ: Chương 1: Kiến thức nền tảng" required />
+                </div>
+                <div class="col-lg-5">
+                    <label class="form-label">Chọn Khóa học áp dụng</label>
+                    <select asp-for="CourseId" class="form-select form-control-lg bg-light border-0 shadow-none">
+                        @foreach (var course in Model.AvailableCourses)
+                        {
+                            <option value="@course.Id">@course.CourseName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="cardsContainer">
+            <!-- Cards will be injected here -->
+        </div>
+
+        <div id="emptyState" class="text-center py-5 rounded-4 border-2 border-dashed bg-white" style="display: none;">
+            <div class="py-5">
+                <i class="bi bi-journals display-3 text-muted opacity-25"></i>
+                <h5 class="fw-bold text-dark mt-3">Chưa soạn thảo lộ trình</h5>
+                <p class="text-muted mb-4">Mỗi bài học bạn thêm sẽ tạo thành một bài giảng mới.</p>
+                <button type="button" class="btn btn-primary rounded-pill px-5 fw-bold" onclick="addCard()">BẮT ĐẦU NGAY</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Template for Lesson Card -->
+<template id="cardTemplate">
+    <div class="lesson-card animate-fade-in-up shadow-sm">
+        <div class="p-4 bg-white border-bottom d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="card-num">{index}</div>
+                <h5 class="fw-bold m-0 text-dark">Bài học #{index}</h5>
+                <span class="section-tag">CHI TIẾT NỘI DUNG</span>
+            </div>
+            <button type="button" class="btn-remove" onclick="removeCard(this)">
+                <i class="bi bi-trash3-fill"></i>
+            </button>
+        </div>
+        <div class="p-4">
+            <div class="row g-3 mb-4">
+                <div class="col-lg-6">
+                    <label class="form-label">Tiêu đề bài học</label>
+                    <input name="Lessons[{rowIndex}].Title" class="form-control" placeholder="Nhập tên bài học..." required />
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label">Thứ tự</label>
+                    <input type="number" name="Lessons[{rowIndex}].OrderIndex" class="form-control" value="{order}" />
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label">Thời lượng (Phút)</label>
+                    <div class="input-group">
+                        <input type="number" name="Lessons[{rowIndex}].Duration" class="form-control" value="10" />
+                        <span class="input-group-text bg-white border-0"><i class="bi bi-clock"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-lg-4">
+                    <label class="form-label">Video URL</label>
+                    <input name="Lessons[{rowIndex}].VideoUrl" class="form-control" placeholder="YouTube/Vimeo link..." />
+                </div>
+                <div class="col-lg-4">
+                    <label class="form-label">Tài liệu đính kèm (Link)</label>
+                    <input name="Lessons[{rowIndex}].DocumentUrl" class="form-control" placeholder="Dán link PDF/Drive..." />
+                </div>
+                <div class="col-lg-4">
+                    <label class="form-label">Tạo thêm Quiz (Tiêu đề)</label>
+                    <input name="Lessons[{rowIndex}].QuizTitle" class="form-control" placeholder="Nếu có bài kiểm tra..." />
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label m-0">Văn bản chi tiết</label>
+                    <span class="text-primary small fw-bold ai-btn cursor-pointer py-1 px-2 rounded-2 hover-bg-light" style="cursor: pointer;" onclick="generateAiContent(this)">
+                        <i class="bi bi-stars me-1 text-info"></i>AI Soạn bài này
+                    </span>
+                </div>
+                <textarea name="Lessons[{rowIndex}].ContentHtml" class="form-control" rows="5" placeholder="Nhập mô tả bài học hoặc để AI hỗ trợ..."></textarea>
+            </div>
+
+            <div class="d-flex gap-4 pt-2 border-top mt-2 pt-3">
+                <div class="form-check form-switch d-flex align-items-center gap-2">
+                    <input class="form-check-input" type="checkbox" name="Lessons[{rowIndex}].IsFreePreview" value="true" id="free_{rowIndex}">
+                    <label class="switch-label m-0" for="free_{rowIndex}">Học thử miễn phí</label>
+                </div>
+                <div class="form-check form-switch d-flex align-items-center gap-2">
+                    <input class="form-check-input" type="checkbox" name="Lessons[{rowIndex}].IsPublished" value="true" checked id="pub_{rowIndex}">
+                    <label class="switch-label m-0" for="pub_{rowIndex}">Cho phép hiển thị</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    <script>
+        let rowIndex = 0;
+
+        function addCard() {
+            const container = document.getElementById('cardsContainer');
+            const emptyState = document.getElementById('emptyState');
+            const template = document.getElementById('cardTemplate').innerHTML;
+            
+            emptyState.style.display = 'none';
+
+            let html = template
+                .replace(/{rowIndex}/g, rowIndex)
+                .replace(/{index}/g, rowIndex + 1)
+                .replace(/{order}/g, rowIndex + 1);
+
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            container.appendChild(div.firstElementChild);
+            
+            rowIndex++;
+        }
+
+        function removeCard(btn) {
+            btn.closest('.lesson-card').remove();
+            if (document.getElementById('cardsContainer').children.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+            }
+        }
+
+        async function generateAiContent(btn) {
+            const card = btn.closest('.lesson-card');
+            const titleInput = card.querySelector('input[name*=".Title"]');
+            const contentArea = card.querySelector('textarea[name*=".ContentHtml"]');
+            const topic = titleInput.value;
+
+            if (!topic) {
+                alert('Bạn cần nhập tiêu đề bài học để AI biết cần soạn thảo gì.');
+                return;
+            }
+
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang soạn...';
+            btn.style.pointerEvents = 'none';
+
+            try {
+                const response = await fetch('/Instructor/GenerateLessonContent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: topic })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    contentArea.value = data.content;
+                } else {
+                    alert('Lỗi hệ thống AI. Vui lòng thử lại sau.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Không thể kết nối dịch vụ AI.');
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.style.pointerEvents = 'auto';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            addCard();
+        });
+    </script>
+}

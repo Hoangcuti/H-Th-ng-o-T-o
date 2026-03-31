@@ -1,0 +1,101 @@
+:root {
+  /* --- SILICON NEON SCOPED --- */
+  --bg-deep: #0a0c10;
+  --bg-panel: rgba(18, 22, 35, 0.8);
+  --primary-neon: #0ea5e9;
+  --secondary-neon: #a855f7;
+  --accent-neon: #10b981;
+  --text-bright: #f8fafc;
+  --text-dim: #94a3b8;
+  --border-glass: rgba(255, 255, 255, 0.05);
+  --glow-primary: 0 0 20px rgba(14, 165, 233, 0.4);
+}
+
+.neon-theme {
+  background-color: var(--bg-deep) !important;
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(14, 165, 233, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.1) 0%, transparent 40%) !important;
+  color: var(--text-bright) !important;
+  font-family: 'Inter', 'Space Grotesk', system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* Animations */
+@keyframes slideUpNeon { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes neonPulse { 0%, 100% { box-shadow: 0 0 15px rgba(14, 165, 233, 0.3); } 50% { box-shadow: 0 0 30px rgba(14, 165, 233, 0.6); } }
+
+.neon-theme .reveal { animation: slideUpNeon 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards !important; opacity: 1 !important; }
+.neon-theme .animate-neon { animation: neonPulse 3s infinite ease-in-out !important; }
+
+/* Components Scoped */
+.neon-theme .glass-panel {
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.neon-theme .glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  color: var(--text-bright);
+}
+.neon-theme .glass-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--primary-neon);
+  transform: translateY(-5px);
+  box-shadow: var(--glow-primary);
+}
+
+.neon-theme .topbar {
+  background: rgba(10, 12, 16, 0.85);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--border-glass);
+  position: sticky; top: 0; z-index: 1000;
+  padding: 10px 0;
+}
+
+.neon-theme .btn-neon {
+  background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+  color: #fff;
+  font-weight: 700;
+  padding: 10px 24px;
+  border-radius: 12px;
+  border: none;
+  box-shadow: var(--glow-primary);
+  transition: all 0.3s;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.neon-theme .btn-neon:hover { transform: scale(1.03) translateY(-2px); box-shadow: 0 0 30px rgba(14, 165, 233, 0.6); color: #fff; }
+
+.neon-theme .text-gradient {
+  background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.neon-theme .footer-neon {
+  background: #000;
+  border-top: 1px solid var(--border-glass);
+  padding: 40px 0;
+  color: var(--text-dim);
+  margin-top: 80px;
+}
+
+.neon-theme .nav-link-custom {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  transition: all 0.3s;
+  border-radius: 10px;
+}
+.neon-theme .nav-link-custom:hover { color: var(--primary-neon); background: rgba(14, 165, 233, 0.1); }

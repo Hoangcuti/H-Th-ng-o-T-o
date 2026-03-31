@@ -3,87 +3,84 @@
     ViewData["Title"] = "Training Portal";
 }
 
-<section class="hero-alt container-xxl animate-fade-in">
-    <div class="hero-card">
-        <div class="hero-copy">
-            <span class="pill">Nội bộ nhanh · Trải nghiệm mượt</span>
-            <h1 class="text-gradient">Học tập, quản trị và báo cáo trong một màn hình.</h1>
-            <p class="lead delay-100 animate-fade-in" style="animation-fill-mode: both;">Khởi tạo lớp, gán giảng viên, theo dõi tiến độ và cấp chứng chỉ cho học viên chỉ với vài cú nhấp.</p>
-            <div class="hero-actions delay-200 animate-fade-in" style="animation-fill-mode: both;">
-                <a class="btn solid lg" href="#courses">Bắt đầu học</a>
-                <a class="btn ghost lg" href="#classes">Xem lịch</a>
-                @if (User.Identity?.IsAuthenticated == true)
-                {
-                    if (User.IsInRole("Admin")) { <a class="btn accent lg" asp-controller="Admin" asp-action="Index">Bảng quản trị</a>; }
-                    else if (User.IsInRole("Instructor")) { <a class="btn accent lg" asp-controller="Instructor" asp-action="Index">Vào lớp giảng</a>; }
-                    else if (User.IsInRole("Student")) { <a class="btn accent lg" asp-controller="Student" asp-action="Index">Vào học ngay</a>; }
-                }
-            </div>
-            <div class="feature-grid">
-                <div class="feature-chip">✔ Theo dõi tiến độ</div>
-                <div class="feature-chip">✔ Chấm Quiz tự động</div>
-                <div class="feature-chip">✔ Cấp chứng chỉ</div>
-                <div class="feature-chip">✔ Báo cáo theo khóa</div>
-            </div>
-        </div>
-        <div class="hero-stats delay-300 animate-fade-in" style="animation-fill-mode: both;">
-            <div class="stat">
-                <p class="label">Khóa học</p>
-                <h2>@Model.TotalCourses</h2>
-            </div>
-            <div class="stat">
-                <p class="label">Lớp mở</p>
-                <h2>@Model.ActiveClasses</h2>
-            </div>
-            <div class="stat">
-                <p class="label">Học viên</p>
-                <h2>@Model.TotalStudents</h2>
-            </div>
-            <div class="stat timeline-tiny">
-                <p class="label">Lịch sắp tới</p>
-                @foreach (var cls in Model.UpcomingClasses.Take(2))
-                {
-                    <div class="timeline-row compact">
-                        <div>
-                            <div class="t-title">@cls.CourseName</div>
-                            <div class="t-sub">@cls.Instructor · @cls.Room</div>
-                        </div>
-                        <span class="t-date">@cls.Schedule.ToLocalTime().ToString("dd/MM")</span>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-</section>
+<div class="h-vignette overflow-hidden position-relative">
+    <!-- DECORATIVE BLOBS -->
+    <div class="position-absolute top-0 start-0 translate-middle opacity-25 animate-float" style="width: 400px; height: 400px; background: radial-gradient(circle, var(--primary) 0%, transparent 70%); z-index: -1;"></div>
+    <div class="position-absolute bottom-0 end-0 translate-middle opacity-25 animate-float" style="width: 600px; height: 600px; background: radial-gradient(circle, #6366f1 0%, transparent 70%); z-index: -1; animation-delay: -3s;"></div>
 
-<section id="courses" class="panel container-xxl animate-fade-in delay-200" style="animation-fill-mode: both;">
+    <!-- HERO SECTION -->
+    <header class="container-xxl py-5 mt-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7 reveal">
+                <span class="pill"><i class="fa-solid fa-bolt me-1"></i> Hệ thống đào tạo nội bộ tối ưu</span>
+                <h1 class="text-gradient display-3 fw-bold">Học tập, quản trị và báo cáo tập trung.</h1>
+                <p class="lead delay-100 animate-fade-in" style="animation-fill-mode: both;">Khởi tạo lớp, gán giảng viên, theo dõi tiến độ và cấp chứng chỉ cho học viên chỉ với vài cú nhấp chuột.</p>
+                <div class="hero-actions delay-200 animate-fade-in" style="animation-fill-mode: both;">
+                    <a class="btn solid lg" href="#courses"><i class="fa-solid fa-rocket"></i> Bắt đầu học</a>
+                    <a class="btn ghost lg" href="#classes"><i class="fa-solid fa-calendar"></i> Xem lịch</a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        if (User.IsInRole("Admin")) { <a class="btn accent lg" asp-controller="Admin" asp-action="Index"><i class="fa-solid fa-gauge-high"></i> Quản trị</a>; }
+                        else if (User.IsInRole("Instructor")) { <a class="btn accent lg" asp-controller="Instructor" asp-action="Index"><i class="fa-solid fa-chalkboard"></i> Vào lớp</a>; }
+                        else if (User.IsInRole("Student")) { <a class="btn accent lg" asp-controller="Student" asp-action="Index"><i class="fa-solid fa-graduation-cap"></i> Học tập</a>; }
+                    }
+                </div>
+            </div>
+            <div class="col-lg-5 hero-stats delay-300 animate-fade-in" style="animation-fill-mode: both;">
+                <div class="stat">
+                    <p class="label"><i class="fa-solid fa-book text-primary me-1"></i> Khóa học</p>
+                    <h2>@Model.TotalCourses</h2>
+                </div>
+                <div class="stat">
+                    <p class="label"><i class="fa-solid fa-door-open text-success me-1"></i> Lớp mở</p>
+                    <h2>@Model.ActiveClasses</h2>
+                </div>
+                <div class="stat">
+                    <p class="label"><i class="fa-solid fa-users text-warning me-1"></i> Học viên</p>
+                    <h2>@Model.TotalStudents</h2>
+                </div>
+            </div>
+        </div>
+    </header>
+</div>
+
+<section id="courses" class="panel container-xxl animate-fade-in delay-200 reveal" style="animation-fill-mode: both;">
     <div class="panel-header">
         <div>
-            <p class="label">Khóa học</p>
-            <h2 class="section-title">Lộ trình theo ngành</h2>
-            <p class="section-sub">Sắp xếp theo danh mục và cấp độ, hiển thị tiến độ học viên.</p>
+            <p class="label">Khám phá</p>
+            <h2 class="section-title">Lộ trình học tập</h2>
+            <p class="section-sub">Các khóa học được thiết kế chuyên sâu theo từng vị trí và kỹ năng chuyên môn.</p>
         </div>
-        <span class="chip">Admin · Giảng viên · Học viên</span>
+        <div class="auth-actions">
+            <span class="chip"><i class="fa-solid fa-users-gear me-1"></i> Đa vai trò</span>
+        </div>
     </div>
     <div class="course-grid">
         @foreach (var course in Model.Courses)
         {
             <div class="course-card">
                 <div class="course-meta">
-                    <span class="badge">@course.Category</span>
-                    <span class="level">@course.Level</span>
+                    <span class="badge"><i class="fa-solid fa-tag fa-xs me-1"></i> @course.Category</span>
+                    <span class="level"><i class="fa-solid fa-medal fa-xs me-1"></i> @course.Level</span>
                 </div>
                 <h3>@course.Title</h3>
-                <p class="muted">Giảng viên: @string.Join(", ", course.Instructors)</p>
-                <div class="progress">
-                    <div class="progress-bar" role="progressbar" style="width:@course.Progress%" aria-valuenow="@course.Progress" aria-valuemin="0" aria-valuemax="100"></div>
+                <p class="text-muted small"><i class="fa-solid fa-chalkboard-user me-1"></i> @string.Join(", ", course.Instructors)</p>
+                
+                <div class="progress-wrap">
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width:@course.Progress%" aria-valuenow="@course.Progress" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>Tiến độ học viên</span>
+                        <span>@course.Progress%</span>
+                    </div>
                 </div>
-                <div class="progress-label">@course.Progress% tiến độ mẫu (học viên)</div>
+
                 <div class="card-actions">
-                    <a class="btn ghost btn-sm" href="#classes">Xem lịch</a>
+                    <a class="btn ghost btn-sm" href="#classes"><i class="fa-solid fa-calendar-day"></i> Lịch học</a>
                     @if (User.IsInRole("Instructor") || User.IsInRole("Admin"))
                     {
-                        <a class="btn solid btn-sm" asp-controller="Instructor" asp-action="Index">Quản lý nội dung</a>
+                        <a class="btn solid btn-sm" asp-controller="Instructor" asp-action="Index"><i class="fa-solid fa-pen-to-square"></i> Quản lý</a>
                     }
                 </div>
             </div>
@@ -94,11 +91,11 @@
 <section id="classes" class="panel container-xxl animate-fade-in delay-300" style="animation-fill-mode: both;">
     <div class="panel-header">
         <div>
-            <p class="label">Lịch học</p>
-            <h2 class="section-title">Lớp sắp diễn ra</h2>
-            <p class="section-sub">Thời gian, phòng học và giảng viên phụ trách.</p>
+            <p class="label">Lịch giảng dạy</p>
+            <h2 class="section-title">Các lớp sắp bắt đầu</h2>
+            <p class="section-sub">Theo dõi thời gian, địa điểm và giảng viên phụ trách để sắp xếp thời gian hợp lý.</p>
         </div>
-        <span class="chip">@Model.UpcomingClasses.Count lớp</span>
+        <span class="chip"><i class="fa-solid fa-layer-group me-1"></i> @Model.UpcomingClasses.Count lớp</span>
     </div>
     <div class="timeline">
         @foreach (var cls in Model.UpcomingClasses)
@@ -106,10 +103,14 @@
             <div class="timeline-row">
                 <div>
                     <div class="t-title">@cls.CourseName</div>
-                    <div class="t-sub">@cls.Instructor · @cls.Room</div>
+                    <div class="t-sub">
+                        <span class="me-3"><i class="fa-solid fa-chalkboard-user text-primary me-1"></i> @cls.Instructor</span>
+                        <span><i class="fa-solid fa-location-dot text-primary me-1"></i> @cls.Room</span>
+                    </div>
                 </div>
-                <span class="t-date">@cls.Schedule.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                <span class="t-date"><i class="fa-regular fa-clock me-1"></i> @cls.Schedule.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
             </div>
         }
     </div>
 </section>
+

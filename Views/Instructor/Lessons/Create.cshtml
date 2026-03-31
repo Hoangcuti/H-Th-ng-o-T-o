@@ -1,0 +1,205 @@
+@model COTHUYPRO.Models.LessonFormVm
+@{
+    ViewData["Title"] = "Thêm bài học mới";
+    var courses = ViewBag.Courses as List<COTHUYPRO.Models.Course> ?? new();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 animate-fade-in">
+    <div>
+        <h4 class="fw-bold m-0 text-dark">Soạn thảo bài học</h4>
+        <p class="text-muted small m-0">Thêm nội dung mới vào chương trình giảng dạy</p>
+    </div>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill px-4 bg-white shadow-sm">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
+
+<form asp-action="CreateLesson" method="post" enctype="multipart/form-data" class="animate-fade-in delay-100">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <!-- LEFT COL: CONTENT -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Tiêu đề bài học</label>
+                        <input asp-for="Title" class="form-control form-control-lg border-2 shadow-none" 
+                               placeholder="Ví dụ: Giới thiệu về ASP.NET Core" style="border-color: #f1f5f9; font-weight: 500;" />
+                        <span class="text-danger small" asp-validation-for="Title"></span>
+                    </div>
+
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold text-dark m-0">Nội dung chi tiết</label>
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold" onclick="generateAiLesson(event)">
+                                <i class="bi bi-stars me-1 text-primary"></i> Trợ lý AI gợi ý nội dung
+                            </button>
+                        </div>
+                        <textarea asp-for="Content" class="form-control border-2 shadow-none" rows="12" 
+                                  placeholder="Nhập nội dung bài giảng tại đây (hỗ trợ HTML)..." style="border-color: #f1f5f9;"></textarea>
+                        <span class="text-danger small" asp-validation-for="Content"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                    <h6 class="fw-bold m-0 text-dark">Học liệu đính kèm & Video</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Link Video (YouTube/Vimeo)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-play-circle-fill text-danger"></i></span>
+                                <input asp-for="VideoUrl" class="form-control border-0 bg-light" placeholder="https://www.youtube.com/watch?v=..." oninput="updateVideoPreview(this.value)" />
+                            </div>
+                            <span class="text-danger small" asp-validation-for="VideoUrl"></span>
+                            
+                            <div id="videoPreviewContainer" class="mt-3" style="display:none;">
+                                <div class="ratio ratio-16x9 border-0 rounded-4 overflow-hidden shadow-sm">
+                                    <iframe id="videoPreviewFrame" src="" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 mt-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Tài liệu học tập (PDF/DOCX)</label>
+                            <div class="p-4 rounded-4 border-2 border-dashed bg-light text-center position-relative hover-bg-light-blue transition-all">
+                                <i class="bi bi-cloud-arrow-up fs-2 text-primary"></i>
+                                <div class="mt-2 text-dark fw-bold">Kéo thả hoặc chọn file</div>
+                                <p class="text-muted small">Tối đa 20MB. Định dạng hỗ trợ: .pdf, .docx, .zip</p>
+                                <input type="file" asp-for="DocumentFile" class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer" accept=".pdf,.doc,.docx,.zip" />
+                                <input asp-for="DocumentUrl" type="hidden" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COL: SETTINGS -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                    <h6 class="fw-bold m-0 text-dark">Thiết lập lộ trình</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Thuộc khóa học</label>
+                        <select asp-for="CourseId" class="form-select border-0 bg-light rounded-3">
+                            @foreach (var c in courses) { <option value="@c.Id">@c.CourseName</option> }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Thứ tự hiển thị</label>
+                        <input asp-for="OrderIndex" class="form-control border-0 bg-light rounded-3" type="number" />
+                        <span class="text-danger small" asp-validation-for="OrderIndex"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Thời lượng ước tính (Phút)</label>
+                        <input asp-for="Duration" class="form-control border-0 bg-light rounded-3" type="number" />
+                        <span class="text-danger small" asp-validation-for="Duration"></span>
+                    </div>
+
+                    <hr class="my-4 opacity-5" />
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" asp-for="IsFreePreview">
+                        <label class="form-check-label fw-bold text-dark">Học thử miễn phí</label>
+                    </div>
+
+                    <div class="form-check form-switch mb-4 text-primary">
+                        <input class="form-check-input shadow-none" type="checkbox" asp-for="IsPublished" checked>
+                        <label class="form-check-label fw-bold">Công khai bài học</label>
+                    </div>
+
+                    <div class="alert alert-info border-0 rounded-4 p-3 mb-0" style="background-color: rgba(14, 165, 233, 0.08);">
+                        <div class="d-flex gap-2 text-primary">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <div class="small">Sau khi tạo, bài giảng sẽ ở trạng thái **Chờ duyệt** bởi Quản trị viên trước khi hiển thị chính thức.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+                <button class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-sm py-3 mb-2" type="submit">
+                    Gửi yêu cầu khởi tạo
+                </button>
+                <a class="btn btn-link text-muted text-decoration-none w-100 small" asp-action="Index">Hủy bỏ và quay lại</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+    .cursor-pointer { cursor: pointer; }
+    .hover-bg-light-blue:hover { background-color: rgba(14, 165, 233, 0.05) !important; border-color: var(--primary) !important; }
+    .form-control:focus, .form-select:focus { background-color: #fff; box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); border-color: var(--primary); }
+    .btn-outline-info { border-color: #e2e8f0; color: #64748b; }
+    .btn-outline-info:hover { background-color: #f1f5f9; border-color: #cbd5e1; color: #334155; }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+    async function generateAiLesson(e) {
+        var topic = prompt("Nhập chủ đề bài giảng để Trợ lý AI tự động soạn thảo:");
+        if(!topic) return;
+        
+        var btn = e.target;
+        var originalText = btn.innerHTML;
+        btn.innerHTML = "<span class='spinner-border spinner-border-sm me-2'></span>Đang soạn...";
+        btn.disabled = true;
+        
+        try {
+            var res = await fetch('/Instructor/GenerateLessonContent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic: topic })
+            });
+            var data = await res.json();
+            if(data.success) {
+                document.getElementById('Content').value = data.content;
+                alert("✨ Đã soạn xong bài! Vui lòng đọc qua và chỉnh sửa lại nhé.");
+            }
+        } catch(err) {
+            alert("Lỗi kết nối AI trợ giảng.");
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    function updateVideoPreview(url) {
+        const container = document.getElementById('videoPreviewContainer');
+        const iframe = document.getElementById('videoPreviewFrame');
+        if (!url) { container.style.display = 'none'; return; }
+
+        let embedUrl = "";
+        if (url.includes("youtube.com/watch?v=")) {
+            const id = url.split("v=")[1].split("&")[0];
+            embedUrl = `https://www.youtube.com/embed/${id}`;
+        } else if (url.includes("youtu.be/")) {
+            const id = url.split("youtu.be/")[1].split("?")[0];
+            embedUrl = `https://www.youtube.com/embed/${id}`;
+        } else if (url.includes("vimeo.com/")) {
+            const id = url.split("vimeo.com/")[1].split("?")[0];
+            embedUrl = `https://player.vimeo.com/video/${id}`;
+        }
+
+        if (embedUrl) {
+            iframe.src = embedUrl;
+            container.style.display = 'block';
+        } else { container.style.display = 'none'; }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const val = document.getElementById('VideoUrl').value;
+        if (val) updateVideoPreview(val);
+    });
+    </script>
+}

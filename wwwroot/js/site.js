@@ -1,57 +1,70 @@
-// Execute when document is ready
-document.addEventListener("DOMContentLoaded", function () {
-    // 1. Initialize Toasts from TempData
+document.addEventListener('DOMContentLoaded', function() {
+    // SCROLL REVEAL ANIMATION
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach(el => {
+        observer.observe(el);
+    });
+
+    // SMOOTH SCROLL FOR ANCHORS
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // TOAST NOTIFICATIONS (IF ELEMENTS EXIST)
     const toasts = document.querySelectorAll('.system-toast');
     toasts.forEach(toast => {
         const type = toast.getAttribute('data-type');
         const msg = toast.getAttribute('data-msg');
-        showToast(type, msg);
-    });
-
-    // 2. Global interactive elements
-    const securityToggles = document.querySelectorAll('.security-toggle');
-    securityToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            // Check if clicking inside label to avoid double trigger
-            if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL' && e.target.tagName !== 'SPAN') {
-                const cb = this.querySelector('input[type="checkbox"]');
-                if(cb) cb.checked = !cb.checked;
-            }
-            if(e.target.tagName === 'INPUT') {
-                const isChecked = e.target.checked;
-                showToast('success', isChecked ? 'Đã BẬT thông báo bảo mật qua Gmail!' : 'Đã TẮT thông báo bảo mật qua Gmail!');
-            }
-        });
+        console.log(`[${type}] ${msg}`);
     });
 });
 
-function showToast(type, message) {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
+/**
+ * Live Search functionality for tables
+ * @@param {string} inputId - ID of the search input element
+ * @@param {string} tableId - ID of the table element
+ */
+function applyLiveSearch(inputId, tableId) {
+    const searchInput = document.getElementById(inputId);
+    const table = document.getElementById(tableId);
+    
+    if (!searchInput || !table) return;
 
-    const toast = document.createElement('div');
-    toast.className = `custom-toast toast-${type}`;
-    
-    // Icon based on type
-    const icon = type === 'success' ? '✅' : '❌';
-    
-    toast.innerHTML = `
-        <div class="toast-icon">${icon}</div>
-        <div class="toast-content">
-            <div class="toast-title">${type === 'success' ? 'Thành công' : 'Lỗi'}</div>
-            <div class="toast-message">${message}</div>
-        </div>
-        <div class="toast-close" onclick="this.parentElement.remove()">✕</div>
-    `;
-    
-    container.appendChild(toast);
-    
-    // Animate in
-    setTimeout(() => toast.classList.add('show'), 10);
-    
-    // Auto remove after 4s
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    // Use 'input' event for real-time filtering as user types or pastes
+    searchInput.addEventListener('input', function() {
+        const filter = searchInput.value.toLowerCase().trim();
+        const tbody = table.querySelector('tbody') || table;
+        const rows = tbody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            // Check if any cell in the row contains the filter text
+            const text = row.textContent.toLowerCase();
+            if (text.includes(filter)) {
+                row.style.display = ""; // Restore default display
+                row.classList.add('animate-fade-in');
+            } else {
+                row.style.setProperty('display', 'none', 'important');
+            }
+        });
+    });
 }

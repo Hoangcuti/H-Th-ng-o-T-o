@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,5 +26,18 @@ public class Lesson
     public bool IsFreePreview { get; set; }
 
     public bool IsPublished { get; set; } = true;
-}
 
+    public int? ChapterId { get; set; }
+    public CourseChapter? Chapter { get; set; }
+
+    [MaxLength(20)]
+    public string Status { get; set; } = "Approved";
+
+    public int? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public int? UpdatedByUserId { get; set; }
+    public User? UpdatedByUser { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}

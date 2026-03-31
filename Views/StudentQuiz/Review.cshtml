@@ -1,0 +1,151 @@
+@model List<COTHUYPRO.Models.Question>
+@{
+    ViewData["Title"] = "Xem lại đáp án";
+    var userAnswers = ViewBag.UserAnswers as Dictionary<string, object>;
+}
+
+<style>
+    /* --- REVIEW FILTER STYLES --- */
+    .filter-tabs {
+        background: #fff; border: 1px solid #eef2f6; border-radius: 20px;
+        padding: 8px; display: inline-flex; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+    .filter-tab {
+        padding: 10px 20px; border-radius: 14px; border: none; background: transparent;
+        font-weight: 700; color: #64748b; transition: all 0.3s; cursor: pointer;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .filter-tab:hover { background: #f8fafc; color: #0ea5e9; }
+    .filter-tab.active { background: #0ea5e9; color: #fff; box-shadow: 0 8px 20px rgba(14, 165, 233, 0.2); }
+    .filter-tab span { font-size: 0.75rem; opacity: 0.8; background: rgba(0,0,0,0.1); padding: 2px 8px; border-radius: 6px; }
+    .filter-tab.active span { background: rgba(255,255,255,0.2); }
+
+    .q-panel { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .q-panel.hidden { display: none; opacity: 0; transform: scale(0.95); }
+</style>
+
+<div class="container-xxl py-5 animate-fade-in">
+    <!-- HEADER -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-5 gap-4">
+        <div class="d-flex align-items-center gap-3">
+            <a onclick="history.back()" class="btn btn-light rounded-pill px-3">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <h1 class="h2 fw-bold m-0 text-gradient">Chi tiết bài làm</h1>
+        </div>
+
+        <div class="filter-tabs">
+            @{
+                int correct = 0, wrong = 0, empty = 0;
+                foreach(var q in Model) {
+                    var ans = userAnswers?.GetValueOrDefault(q.Id.ToString())?.ToString();
+                    if (string.IsNullOrEmpty(ans)) empty++;
+                    else {
+                        var opt = q.Options.FirstOrDefault(o => o.Id.ToString() == ans);
+                        if (opt?.IsCorrect == true) correct++; else wrong++;
+                    }
+                }
+            }
+            <button class="filter-tab active" onclick="filterQuestions('all')">Tất cả <span>@Model.Count</span></button>
+            <button class="filter-tab" onclick="filterQuestions('correct')">Đúng <span>@correct</span></button>
+            <button class="filter-tab" onclick="filterQuestions('wrong')">Sai <span>@wrong</span></button>
+            <button class="filter-tab" onclick="filterQuestions('empty')">Bỏ qua <span>@empty</span></button>
+        </div>
+    </div>
+
+    <!-- REVIEW LIST -->
+    <div id="reviewContainer">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var q = Model[i];
+            var userSelectedIdObj = userAnswers?.GetValueOrDefault(q.Id.ToString());
+            var userSelectedIdStr = userSelectedIdObj?.ToString();
+            int? userSelectedId = !string.IsNullOrEmpty(userSelectedIdStr) ? int.Parse(userSelectedIdStr) : null;
+            
+            var correctOpt = q.Options.FirstOrDefault(o => o.IsCorrect);
+            string status = "empty";
+            if (userSelectedId.HasValue) {
+                status = (userSelectedId == correctOpt?.Id) ? "correct" : "wrong";
+            }
+
+            <div class="panel p-5 mb-5 reveal active h-shadow-lg q-panel" data-status="@status" style="border-radius: 32px;">
+                <div class="d-flex align-items-baseline gap-4 mb-5">
+                    <div class="badge @(status == "correct" ? "bg-success" : (status == "wrong" ? "bg-danger" : "bg-light text-muted")) p-2 d-flex align-items-center justify-content-center fw-bold" 
+                         style="width: 40px; height: 40px; border-radius: 12px; font-size: 1.1rem;">
+                        @(i + 1)
+                    </div>
+                    <h4 class="fw-bold m-0 text-dark">@q.Content</h4>
+                </div>
+
+                <div class="row g-4">
+                    @{ int optIdx = 0; }
+                    @foreach (var opt in q.Options)
+                    {
+                        bool isCorrect = opt.IsCorrect;
+                        bool isSelected = userSelectedId == opt.Id;
+                        
+                        string cardClass = "bg-light border";
+                        string icon = "";
+                        string badge = "";
+
+                        if (isCorrect) {
+                            cardClass = "border-success bg-success-glow";
+                            icon = "<i class='fa-solid fa-check-circle text-success fs-5'></i>";
+                            if (isSelected) badge = "<span class='badge bg-success text-white x-small mt-2'>BẠN CHỌN ĐÚNG</span>";
+                            else badge = "<span class='badge bg-light text-success x-small mt-2 border-success'>ĐÁP ÁN ĐÚNG</span>";
+                        }
+                        else if (isSelected && !isCorrect) {
+                            cardClass = "border-danger bg-danger-glow";
+                            icon = "<i class='fa-solid fa-circle-xmark text-danger fs-5'></i>";
+                            badge = "<span class='badge bg-danger text-white x-small mt-2'>BẠN CHỌN SAI</span>";
+                        }
+
+                        <div class="col-md-6">
+                            <div class="p-4 rounded-4 @cardClass" style="min-height: 80px;">
+                                <div class="d-flex align-items-center gap-3 text-dark fw-medium">
+                                    <div class="option-marker border d-flex align-items-center justify-content-center fw-bold @(isCorrect ? "bg-success text-white border-success" : (isSelected ? "bg-danger text-white border-danger" : ""))" 
+                                         style="width: 28px; height: 28px; border-radius: 8px; font-size: 0.8rem; flex-shrink: 0;">
+                                        @((char)('A' + optIdx++))
+                                    </div>
+                                    <div class="flex-grow-1">@opt.Content</div>
+                                    <div class="ms-auto">@Html.Raw(icon)</div>
+                                </div>
+                                <div class="mt-1">@Html.Raw(badge)</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .bg-success-glow { background: rgba(16, 185, 129, 0.04) !important; }
+    .bg-danger-glow { background: rgba(239, 68, 68, 0.04) !important; }
+    .border-success { border-color: #10b981 !important; }
+    .border-danger { border-color: #ef4444 !important; }
+</style>
+
+<script>
+    function filterQuestions(status) {
+        // Toggle Active Class
+        document.querySelectorAll('.filter-tab').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.innerText.toLowerCase().includes(status == 'all' ? 'tất cả' : (status == 'correct' ? 'đúng' : (status == 'wrong' ? 'sai' : 'bỏ qua')))) {
+                btn.classList.add('active');
+            }
+        });
+
+        const panels = document.querySelectorAll('.q-panel');
+        panels.forEach(p => {
+            if (status === 'all' || p.dataset.status === status) {
+                p.classList.remove('hidden');
+                setTimeout(() => { p.style.display = 'block'; }, 10);
+            } else {
+                p.classList.add('hidden');
+                setTimeout(() => { p.style.display = 'none'; }, 400);
+            }
+        });
+    }
+</script>

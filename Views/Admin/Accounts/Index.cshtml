@@ -3,14 +3,16 @@
     ViewData["Title"] = "Quản lý tài khoản";
 }
 
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <p class="eyebrow">Tài khoản</p>
-        <h2>Quản lý tài khoản</h2>
-        <p class="muted">Phân quyền trực tiếp bằng Roles/UserRoles, gán mã học viên theo ngành.</p>
+        <h2 class="m-0">Quản lý tài khoản</h2>
+        <p class="muted mt-1 mb-0">Phân quyền trực tiếp bằng Roles/UserRoles, gán mã học viên theo ngành.</p>
     </div>
     <div class="quick-actions">
-        <a class="btn solid" asp-action="CreateAccount">+ Tạo tài khoản</a>
+        <a class="btn btn-primary" asp-action="CreateAccount">
+            <i class="bi bi-person-plus-fill me-1"></i> Tạo tài khoản mới
+        </a>
     </div>
 </div>
 
@@ -19,70 +21,74 @@
     <div class="alert alert-success">@TempData["Message"]</div>
 }
 
-<div class="panel-card">
-    <div class="panel-head">
-        <h4>Danh sách tài khoản</h4>
-        <span class="pill muted">@Model.Accounts.Count tài khoản</span>
+<div class="panel-card animate-fade-in">
+    <div class="panel-head d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <h4 class="fw-bold m-0 text-dark">Danh sách tài khoản hệ thống</h4>
+            <span class="badge badge-primary">@Model.Accounts.Count thành viên</span>
+        </div>
+        <div class="search-container" style="width: 320px;">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;"><i class="bi bi-search"></i></span>
+                <input type="text" id="accountSearch" class="form-control border-start-0" placeholder="Tìm tên, email, vai trò..." style="border-radius: 0 12px 12px 0;">
+            </div>
+        </div>
     </div>
     <div class="table-wrapper">
-        <table class="table table-borderless align-middle admin-table">
+        <table id="accountTable" class="table table-borderless align-middle admin-table m-0">
             <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Họ tên</th>
-                    <th>Email</th>
-                    <th>Vai trò</th>
-                    <th>Mã học viên</th>
-                    <th>Ngày tạo</th>
-                    <th>Phân quyền</th>
-                    <th>Hành động</th>
+                <tr class="table-header-row small fw-bold">
+                    <th class="px-4">NGƯỜI DÙNG</th>
+                    <th>LIÊN HỆ</th>
+                    <th>VAI TRÒ</th>
+                    <th>PHÂN QUYỀN & NGÀNH</th>
+                    <th class="text-end px-4">QUẢN TRỊ</th>
                 </tr>
             </thead>
             <tbody>
             @foreach (var a in Model.Accounts)
             {
-                <tr>
-                    <td class="fw-semibold">@a.User.Username</td>
-                    <td>@a.User.FullName</td>
-                    <td>@a.User.Email</td>
-                    <td>@string.Join(" · ", a.Roles.Select(role => role == "Instructor" ? "Giảng viên" : (role == "Student" ? "Học viên" : role)))</td>
-                    <td>@(a.User.StudentCode ?? "-")</td>
-                    <td class="muted">@a.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
-                    <td>
+                <tr style="border-bottom: 1px solid var(--surface-muted);">
+                    <td class="py-4 px-4">
+                        <div class="fw-bold text-dark">@a.User.FullName</div>
+                        <div class="text-muted small">@@@a.User.Username · Mã: @(a.User.StudentCode ?? "N/A")</div>
+                    </td>
+                    <td class="py-4">
+                        <div class="text-dark fw-semibold" style="font-size: 0.9rem;">@a.User.Email</div>
+                        <div class="text-muted small">Ngày tạo: @a.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                    </td>
+                    <td class="py-4">
+                        @foreach(var role in a.Roles) {
+                            var badgeClass = role == "Admin" ? "badge-danger" : (role == "Instructor" ? "badge-warning" : "badge-success");
+                            <span class="badge @badgeClass me-1">@(role == "Instructor" ? "Giảng viên" : (role == "Student" ? "Học viên" : (role == "Admin" ? "Quản trị viên" : role)))</span>
+                        }
+                    </td>
+                    <td class="py-4">
                         <form asp-action="AssignRole" method="post" class="d-flex align-items-center gap-2">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="userId" value="@a.User.Id" />
-                            <select class="form-select form-select-sm" name="roleId">
+                            <select class="form-select form-select-sm" name="roleId" style="width: 120px;">
                                 @foreach (var r in Model.Roles)
                                 {
-                                    var displayName = r.Name == "Instructor" ? "Giảng viên" : (r.Name == "Student" ? "Học viên" : r.Name);
-                                    if (a.Roles.Contains(r.Name))
-                                    {
-                                        <option value="@r.Id" selected>@displayName</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@r.Id">@displayName</option>
-                                    }
+                                    <option value="@r.Id" selected="@(a.Roles.Contains(r.Name))">@(r.Name == "Instructor" ? "Giảng viên" : (r.Name == "Student" ? "Học viên" : r.Name))</option>
                                 }
                             </select>
-                            <select class="form-select form-select-sm" name="categoryId">
+                            <select class="form-select form-select-sm" name="categoryId" style="width: 120px;">
                                 <option value="">--Ngành--</option>
-                                @foreach (var c in Model.Categories)
-                                {
-                                    <option value="@c.Id">@c.Name</option>
-                                }
+                                @foreach (var c in Model.Categories) { <option value="@c.Id">@c.Name</option> }
                             </select>
-                            <button class="btn btn-sm solid" type="submit">Gán</button>
+                            <button class="btn solid btn-sm" type="submit">Gán</button>
                         </form>
                     </td>
-                    <td class="d-flex gap-2">
-                        <a class="btn ghost btn-sm" asp-action="EditAccount" asp-route-id="@a.User.Id">✏</a>
-                        <form asp-action="DeleteAccount" method="post" onsubmit="return confirm('Xóa tài khoản này?');">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@a.User.Id" />
-                            <button class="btn btn-sm" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecdd3;">🗑</button>
-                        </form>
+                    <td class="py-4 text-end px-4">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a class="btn ghost btn-sm" asp-action="EditAccount" asp-route-id="@a.User.Id"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="DeleteAccount" method="post" onsubmit="return confirm('Xóa tài khoản này?');" class="m-0">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@a.User.Id" />
+                                <button class="btn danger btn-sm" type="submit"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             }
@@ -90,3 +96,10 @@
         </table>
     </div>
 </div>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            applyLiveSearch('accountSearch', 'accountTable');
+        });
+    </script>
+}

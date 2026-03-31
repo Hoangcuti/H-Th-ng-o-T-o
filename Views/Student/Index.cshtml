@@ -1,53 +1,95 @@
-@model COTHUYPRO.Models.StudentDashboardVm
 @{
-    ViewData["Title"] = "Không gian Học viên";
+    var isAdmin = User.IsInRole("Admin");
+    Layout = isAdmin ? "~/Views/Shared/_AdminLayout.cshtml" : "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Khóa học của tôi";
+    var myCourses = ViewBag.MyCourses as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
 }
 
-<div class="panel container-xxl animate-fade-in">
-    <h1 class="section-title">Khóa học của tôi</h1>
-    <p class="section-sub mb-4">Tiến độ học tập và lịch học sắp tới của bạn.</p>
-
-    <div class="course-grid mb-5 delay-100 animate-fade-in" style="animation-fill-mode: both;">
-        @foreach (var cls in Model.Classes)
-        {
-            <a asp-action="CourseDetail" asp-route-id="@cls.CourseId" class="text-decoration-none" style="color: inherit;">
-                <div class="course-card">
-                    <div class="course-meta">
-                        <span class="badge">@cls.Course?.Category?.Name</span>
-                        <span class="level">@cls.Course?.Level?.Name</span>
-                    </div>
-                    <h5>@cls.Course?.CourseName</h5>
-                    <p class="muted small mt-2">Phòng: @cls.Room?.Name</p>
-                </div>
-            </a>
-        }
-        @if (!Model.Classes.Any())
-        {
-            <div class="col-12 text-center py-5">
-                <p class="muted">Bạn chưa đăng ký khóa học nào.</p>
-                <a href="/" class="btn solid btn-sm">Khám phá khóa học</a>
+<div class="container-xxl py-5 animate-fade-in">
+    <!-- STUDENT HERO -->
+    <header class="panel p-5 mb-5 h-vignette" style="border-radius: 40px;">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="pill mb-3"><i class="fa-solid fa-graduation-cap me-1"></i> Không gian học tập</span>
+                <h1 class="display-4 fw-bold text-gradient mb-3">Chào mừng bạn quay lại!</h1>
+                <p class="lead text-muted mb-0">Hôm nay bạn muốn tiếp tục chinh phục kiến thức nào?</p>
             </div>
-        }
-    </div>
-
-    <div class="panel mt-4 py-4 px-4 delay-200 animate-fade-in" style="animation-fill-mode: both; background: rgba(255,255,255,0.02); box-shadow: none;">
-        <div class="panel-header"><h3 class="m-0 text-white">Lịch học</h3></div>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead><tr><th>Lớp</th><th>Phòng</th><th>Trạng thái</th><th>Ngày học</th></tr></thead>
-                <tbody>
-                @foreach (var cls in Model.Classes)
-                {
-                    var next = cls.Schedules.OrderBy(s => s.ScheduleDate).FirstOrDefault();
-                    <tr>
-                        <td class="font-weight-bold">@cls.Course?.CourseName</td>
-                        <td><span class="badge">@cls.Room?.Name</span></td>
-                        <td><span class="pill" style="background: rgba(6,182,212,0.1); color: var(--primary); border:none;">@cls.Status?.Name</span></td>
-                        <td class="font-weight-bold" style="color: var(--primary);">@next?.ScheduleDate.ToLocalTime().ToString("dd/MM/yyyy")</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+            <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                <div class="stat-circle d-inline-flex flex-column align-items-center justify-content-center animate-float" 
+                     style="width: 140px; height: 140px; background: #fff; border-radius: 50%; box-shadow: var(--shadow-xl); border: 4px solid var(--primary);">
+                    <span class="h2 fw-bold m-0 text-primary">@myCourses.Count()</span>
+                    <span class="x-small fw-bold text-muted text-uppercase">Khóa học</span>
+                </div>
+            </div>
         </div>
-    </div>
+    </header>
+
+    <!-- MY COURSES SECTION -->
+    <section class="reveal">
+        <div class="d-flex align-items-center justify-content-between mb-5">
+            <h2 class="section-title m-0"><i class="fa-solid fa-book-bookmark text-primary me-2"></i> Khóa học của tôi</h2>
+            <div class="d-flex gap-2">
+                <a asp-controller="Courses" asp-action="Index" class="btn ghost btn-sm">Tìm thêm khóa học <i class="fa-solid fa-arrow-right-long ms-1"></i></a>
+            </div>
+        </div>
+
+        <div id="myCourseGrid" class="row g-4">
+            @if (!myCourses.Any())
+            {
+                <div class="col-12 text-center py-5">
+                    <div class="panel p-5 border-dashed" style="border: 2px dashed var(--border); background: transparent;">
+                        <i class="fa-solid fa-ghost display-1 text-muted opacity-25 mb-4"></i>
+                        <h4 class="fw-bold text-muted">Bạn chưa đăng ký khóa học nào.</h4>
+                        <p class="text-muted small mb-4">Hãy khám phá thư viện để bắt đầu hành trình của mình.</p>
+                        <a asp-controller="Courses" asp-action="Index" class="btn solid px-5 py-3">KHÁM PHÁ THƯ VIỆN</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @foreach (var mc in myCourses)
+                {
+                    var c = mc.Course;
+                    var imageUrl = !string.IsNullOrEmpty(c.ImageUrl) ? c.ImageUrl : "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600";
+                    
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="course-card h-100 reveal active shadow-hover" style="transition: all 0.4s ease;">
+                            <div class="course-thumb position-relative overflow-hidden mb-4" style="border-radius: 20px; aspect-ratio: 16/10;">
+                                <img src="@imageUrl" class="w-100 h-100 object-fit-cover" alt="@c.CourseName" />
+                                <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.7), transparent);">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="x-small fw-bold text-white">@mc.Progress% Hoàn thành</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                                        <div class="progress-bar bg-white animate-shimmer" style="width: @mc.Progress%; border-radius: 10px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="px-2">
+                                <h3 class="h5 fw-bold mb-3">@c.CourseName</h3>
+                                <div class="d-flex align-items-center gap-2 mb-4 text-muted x-small">
+                                    <span><i class="fa-solid fa-circle-check text-success"></i> Đã hoàn thành @mc.TotalLessonsCount LỘ TRÌNH </span>
+                                </div>
+
+                                <div class="mt-auto d-flex gap-2">
+                                    <a asp-action="CourseDetail" asp-route-id="@c.Id" class="btn solid w-100 fw-bold py-2 shadow-sm">
+                                        VÀO HỌC <i class="fa-solid fa-play ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </section>
 </div>
+
+<style>
+    .shadow-hover:hover { 
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.15) !important;
+    }
+    .border-dashed { border-style: dashed !important; }
+</style>

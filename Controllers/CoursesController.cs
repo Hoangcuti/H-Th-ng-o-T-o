@@ -16,11 +16,36 @@ public class CoursesController : Controller
 
     public IActionResult Index()
     {
-        var courses = _context.Courses
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        List<int> enrolledCourseIds = new();
+        bool isAdmin = User.IsInRole("Admin");
+
+        if (!string.IsNullOrEmpty(userIdString))
+        {
+            var userId = int.Parse(userIdString);
+            enrolledCourseIds = _context.ClassStudents
+                .Include(cs => cs.Class)
+                .Where(cs => cs.UserId == userId && cs.Class != null && cs.Class.CourseId.HasValue)
+                .Select(cs => cs.Class!.CourseId!.Value)
+                .ToList();
+        }
+
+        var coursesQuery = _context.Courses
             .Include(c => c.Category)
             .Include(c => c.Level)
             .Include(c => c.Instructors).ThenInclude(i => i.User)
-            .ToList();
+            .AsQueryable();
+
+        // Admin sees all, even if enrolled. Students see only not-yet-enrolled.
+        if (!isAdmin)
+        {
+            coursesQuery = coursesQuery.Where(c => !enrolledCourseIds.Contains(c.Id));
+        }
+
+        var courses = coursesQuery.ToList();
+        ViewBag.EnrolledCourseIds = enrolledCourseIds;
+        ViewBag.IsAdmin = isAdmin;
+        
         return View(courses);
     }
 
@@ -32,6 +57,27 @@ public class CoursesController : Controller
             .Include(c => c.Instructors).ThenInclude(i => i.User)
             .FirstOrDefault(c => c.Id == id);
         if (course == null) return NotFound();
+
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        bool isEnrolled = false;
+        bool isAdmin = User.IsInRole("Admin");
+
+        if (!string.IsNullOrEmpty(userIdString))
+        {
+            var userId = int.Parse(userIdString);
+            isEnrolled = _context.ClassStudents
+                .Any(cs => cs.UserId == userId && cs.Class != null && cs.Class.CourseId == id);
+        }
+
+        ViewBag.IsEnrolled = isEnrolled;
+        ViewBag.IsAdmin = isAdmin;
+
+        // Pass approved lessons to view (Admin sees all)
+        ViewBag.Lessons = _context.Lessons
+            .Where(l => l.CourseId == id && (isAdmin || l.Status == "Approved"))
+            .OrderBy(l => l.OrderIndex)
+            .ToList();
+
         return View(course);
     }
 
@@ -43,13 +89,19 @@ public class CoursesController : Controller
         if (string.IsNullOrEmpty(userIdString)) return RedirectToAction("Login", "Account");
         
         var userId = int.Parse(userIdString);
+        bool isAdmin = User.IsInRole("Admin");
 
-        // Tìm lớp học đầu tiên của khóa này đang mở (StatusId=1) hoặc bất kỳ lớp nào
+        // Admin bypass registration, redirect straight to detail
+        if (isAdmin) return RedirectToAction("CourseDetail", "Student", new { id = id });
+
+        // Tìm lớp học đầu tiên của khóa này
         var targetClass = _context.Classes.FirstOrDefault(c => c.CourseId == id);
+        
         if (targetClass == null)
         {
-            TempData["Error"] = "Khóa học hiện chưa có lớp học nào mở.";
-            return RedirectToAction("Details", new { id = id });
+            targetClass = new Class { CourseId = id, StatusId = 1 };
+            _context.Classes.Add(targetClass);
+            _context.SaveChanges();
         }
 
         var exists = _context.ClassStudents.Any(cs => cs.UserId == userId && cs.ClassId == targetClass.Id);
@@ -58,20 +110,14 @@ public class CoursesController : Controller
             var cs = new ClassStudent 
             { 
                 UserId = userId, 
-                ClassId = targetClass.Id 
+                ClassId = targetClass.Id,
+                IsPaid = false,
+                CreatedAt = DateTime.Now
             };
             _context.ClassStudents.Add(cs);
             _context.SaveChanges();
-            TempData["SuccessMessage"] = "Đăng ký khóa học thành công! Bạn hiện đã có tên trong danh sách lớp.";
-        }
-        else 
-        {
-            TempData["SuccessMessage"] = "Bạn đã đăng ký khóa học này rồi.";
         }
 
-        if (User.IsInRole("Student"))
-            return RedirectToAction("CourseDetail", "Student", new { id = id });
-        
-        return RedirectToAction("Details", new { id = id });
+        return RedirectToAction("Checkout", "Payment", new { courseId = id });
     }
 }

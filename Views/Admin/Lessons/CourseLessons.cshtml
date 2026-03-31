@@ -1,0 +1,169 @@
+@model COTHUYPRO.Models.CourseLessonsVm
+@{
+    ViewData["Title"] = $"Quản lý bài học - {Model.CourseName}";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="eyebrow"><a asp-action="Lessons" class="text-decoration-none text-muted">Bài giảng</a> / @Model.CourseName</p>
+        <h2 class="m-0 fw-bold text-uppercase">🛠️ QUẢN LÝ LỘ TRÌNH HỌC</h2>
+    </div>
+    <div class="quick-actions d-flex gap-2">
+        <a class="btn btn-outline-primary rounded-pill px-4 shadow-sm" asp-action="CreateBulk" asp-route-courseId="@Model.CourseId">
+            <i class="bi bi-magic me-1"></i> Tạo nhanh bằng AI
+        </a>
+        <a class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold border-0" asp-action="CreateLesson" asp-route-courseId="@Model.CourseId">
+            <i class="bi bi-plus-circle-fill me-1"></i> Thêm Bài học mới
+        </a>
+    </div>
+</div>
+
+@if (Model.PendingLessons.Any())
+{
+    <div class="alert alert-warning border-0 shadow-sm rounded-4 mb-4 p-4 animate-slide-down" style="background: linear-gradient(135deg, #fffcf0 0%, #fff9e6 100%); border-left: 5px solid #f59e0b !important;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="m-0 fw-bold text-warning-emphasis">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> 🔔 NỘI DUNG ĐANG CHỜ PHÊ DUYỆT (@Model.PendingLessons.Count)
+            </h5>
+            <a asp-action="PendingContent" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold">Đi tới Trung tâm Phê duyệt</a>
+        </div>
+        <div class="table-responsive bg-white rounded-3">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="bg-light small text-muted">
+                    <tr>
+                        <th class="ps-3">Tên bài học</th>
+                        <th class="text-center">Dạng nội dung</th>
+                        <th class="text-end pe-3">Thao tác duyệt nhanh</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var l in Model.PendingLessons)
+                    {
+                        <tr>
+                            <td class="ps-3 fw-bold">@l.Title</td>
+                            <td class="text-center">
+                                <span class="badge bg-warning-subtle text-warning border border-warning rounded-pill px-2" style="font-size: 10px;">PENDING</span>
+                            </td>
+                            <td class="text-end pe-3">
+                                <button class="btn btn-success btn-sm rounded-pill px-3 fw-bold me-1" onclick="updateLessonStatus(@l.Id, 'Approve')">Duyệt vào khóa</button>
+                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold" onclick="updateLessonStatus(@l.Id, 'Reject')">Từ chối</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <h5 class="fw-bold mb-4 text-secondary"><i class="bi bi-journal-check me-2"></i> LỘ TRÌNH ĐÃ PHÊ DUYỆT (@Model.Chapters.Sum(c => c.Lessons.Count) bài học)</h5>
+        
+        @foreach (var chapter in Model.Chapters)
+        {
+            <div class="chapter-card mb-4 shadow-sm border-0 rounded-4 overflow-hidden bg-white">
+                <div class="chapter-header p-3 px-4 d-flex justify-content-between align-items-center" style="background: #f8fafc; border-left: 5px solid @(chapter.Id == 0 ? "#cbd5e1" : "#0d6efd");">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="chapter-icon bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                            <i class="bi bi-layers text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold m-0 text-dark">@chapter.Title</h5>
+                    </div>
+                    <div class="chapter-actions">
+                        <span class="badge bg-primary-subtle text-primary border border-primary rounded-pill px-2 small">@chapter.Lessons.Count Bài đã duyệt</span>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-lightest small text-muted text-uppercase fw-bold">
+                            <tr>
+                                <th class="ps-5" style="width: 60px;">#</th>
+                                <th>Tên bài học</th>
+                                <th class="text-center">Tư liệu</th>
+                                <th class="text-end pe-4">Quản lý</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!chapter.Lessons.Any())
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted small">Chưa có bài học nào được duyệt trong mục này.</td>
+                                </tr>
+                            }
+                            @foreach (var l in chapter.Lessons)
+                            {
+                                <tr>
+                                    <td class="ps-5 text-muted small">@l.OrderIndex</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@l.Title</div>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (!string.IsNullOrEmpty(l.DocumentUrl))
+                                        {
+                                            <i class="bi bi-file-earmark-pdf text-danger fs-5" title="Có tài liệu đính kèm"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-play-btn text-primary fs-5" title="Chỉ có video"></i>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex gap-2 justify-content-end align-items-center">
+                                            <a class="btn btn-light btn-sm rounded-pill btn-action" asp-action="EditLesson" asp-route-id="@l.Id" title="Chỉnh sửa">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <form asp-action="DeleteLesson" method="post" class="d-inline" onsubmit="return confirm('Xóa bài học này?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@l.Id" />
+                                                <button type="submit" class="btn btn-light text-danger btn-sm rounded-pill btn-action" title="Xóa">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .bg-lightest { background-color: #fcfcfc; }
+    .chapter-card { border: 1px solid #e2e8f0; transition: transform 0.2s; }
+    .chapter-card:hover { transform: translateY(-2px); }
+    .btn-action { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+    .bg-warning-subtle { background-color: rgba(245, 158, 11, 0.1); }
+    .bg-primary-subtle { background-color: rgba(13, 110, 253, 0.1); }
+    .animate-slide-down { animation: slideDown 0.4s ease-out; }
+    @@keyframes slideDown { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
+</style>
+
+@section Scripts {
+    <script>
+        async function updateLessonStatus(id, action) {
+            if (!confirm(`Xác nhận thực hiện thao tác này?`)) return;
+
+            try {
+                const response = await fetch(`/Admin/${action}Lesson/${id}`, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Lỗi hệ thống. Vui lòng thử lại.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối mạng.');
+            }
+        }
+    </script>
+}

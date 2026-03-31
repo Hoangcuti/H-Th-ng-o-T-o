@@ -688,10 +688,7 @@ E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\scopedcss\bundle\COTHUYPRO.styles.css
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\scopedcss\projectbundle\COTHUYPRO.bundle.scp.css
-E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\1mth4ohr01-{0}-j1vepjshhs-j1vepjshhs.gz
-E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\l4dcrgb2xy-{0}-s5dsitctlj-s5dsitctlj.gz
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\ccr7xhiaeu-{0}-61n19gt1b8-61n19gt1b8.gz
-E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\4uhjbqjsnv-{0}-8o01avrgn1-8o01avrgn1.gz
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\3ido3t812n-{0}-t1cqhe9u97-t1cqhe9u97.gz
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\1mgitf8q01-{0}-c2jlpeoesf-c2jlpeoesf.gz
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\1o4it0buee-{0}-sejl45xvog-sejl45xvog.gz
@@ -751,8 +748,6 @@ E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\925ocghyla-{0}-jjsuc0puko-j
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\sdzfvnjzge-{0}-9vr69e8ynj-9vr69e8ynj.gz
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\cw2tngbh5t-{0}-87fc7y1x7t-87fc7y1x7t.gz
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\6vp3gl76o7-{0}-mlv21k5csn-mlv21k5csn.gz
-E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\1zgkylqiii-{0}-8xdqag3nr6-8xdqag3nr6.gz
-E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\r8iwck0u01-{0}-8xdqag3nr6-8xdqag3nr6.gz
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\staticwebassets.build.json
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\staticwebassets.build.json.cache
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\staticwebassets.development.json
@@ -764,3 +759,9 @@ E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\refint\COTHUYPRO.dll
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\COTHUYPRO.pdb
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\COTHUYPRO.genruntimeconfig.cache
 E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\ref\COTHUYPRO.dll
+E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\1mth4ohr01-{0}-cm3kfvniu9-cm3kfvniu9.gz
+E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\p218ewfl9c-{0}-dhux7lhxua-dhux7lhxua.gz
+E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\l4dcrgb2xy-{0}-pev46ojamw-pev46ojamw.gz
+E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\1zgkylqiii-{0}-4k8iwhyy2h-4k8iwhyy2h.gz
+E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\r8iwck0u01-{0}-4k8iwhyy2h-4k8iwhyy2h.gz
+E:\COTHUY\H-Th-ng-o-T-o\obj\Debug\net10.0\compressed\4uhjbqjsnv-{0}-r95qc65l2a-r95qc65l2a.gz

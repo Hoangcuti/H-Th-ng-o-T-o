@@ -3,42 +3,45 @@
 }
 
 <div class="container-xxl p-0 py-lg-4 animate-fade-in" style="height: calc(100vh - 80px); display: flex; flex-direction: column;">
-    <div class="chat-container">
+    <div class="chat-container" style="background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.8); border-radius: 32px; backdrop-filter: blur(20px);">
         <!-- Chat Header -->
         <div class="chat-header">
             <div class="d-flex align-items-center gap-3">
                 <div class="bot-avatar">AI</div>
                 <div>
-                    <h5 class="m-0 text-white font-weight-bold" style="font-size: 1.1rem;">Trợ lý Đào tạo AI</h5>
-                    <small class="text-success fw-bold">● Đang hoạt động trực tuyến</small>
+                    <h5 class="m-0 text-dark font-weight-bold" style="font-size: 1.1rem; letter-spacing: -0.01em;">Trợ lý Đào tạo AI</h5>
+                    <small class="text-success fw-bold" style="display: flex; align-items: center; gap: 4px;"> <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span> Đang hoạt động</small>
                 </div>
             </div>
-            <div class="chat-actions">
-                <span class="chip" style="font-size: 11px;">Mô phỏng (Mock LLM)</span>
-                <button id="saveChatBtn" class="chip" style="font-size: 11px; cursor: pointer;">Lưu nội dung chat</button>
+            <div class="chat-actions d-flex gap-2">
+                <span class="chip-light">Mô phỏng LLM</span>
+                <button id="saveChatBtn" class="btn-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                </button>
             </div>
         </div>
 
         <!-- Chat Messages -->
         <div class="chat-messages" id="chatMessages">
             <div class="message bot">
-                <div class="bubble">Xin chào! 👋 Mình là Trợ lý ảo của trung tâm. Mình có thể giúp bạn tìm hiểu về <b>khóa học</b>, <b>lịch khai giảng</b> hoặc <b>học phí</b>. Bạn cần hỗ trợ gì ạ?</div>
+                <div class="bubble">Xin chào! 👋 Mình là <b>Brainy</b> - Trợ lý ảo của trung tâm. Mình có thể giúp bạn tìm hiểu về <b>khóa học</b>, <b>lịch khai giảng</b> hoặc <b>học phí</b>. Bạn cần hỗ trợ gì ạ?</div>
             </div>
-
         </div>
 
         <!-- Chat Input -->
         <div class="chat-footer">
-            <div class="chat-hints mb-3 d-flex gap-2" style="overflow-x: auto; padding-bottom: 4px;">
-                <button class="hint-chip" type="button" onclick="sendHint('Mình mới bắt đầu, khóa .NET Backend nào phù hợp?')">Gợi ý khóa .NET Backend</button>
-                <button class="hint-chip" type="button" onclick="sendHint('Lịch khai giảng gần nhất còn chỗ nào?')">Lịch khai giảng gần nhất</button>
-                <button class="hint-chip" type="button" onclick="sendHint('Học phí và ưu đãi hiện tại cho khóa này?')">Học phí + ưu đãi</button>
-                <button class="hint-chip" type="button" onclick="sendHint('Cho mình link đăng ký nhanh nhất.')">Đăng ký nhanh</button>
+            <div class="chat-hints mb-3 d-flex gap-2" style="overflow-x: auto; padding-bottom: 8px;">
+                <button class="hint-chip" type="button" onclick="sendHint('Khóa học .NET Backend nào tốt nhất?')">Khóa .NET Backend</button>
+                <button class="hint-chip" type="button" onclick="sendHint('Lịch khai giảng mới nhất?')">Lịch khai giảng</button>
+                <button class="hint-chip" type="button" onclick="sendHint('Học phí hiện tại?')">Học phí & Ưu đãi</button>
+                <button class="hint-chip" type="button" onclick="sendHint('Đăng ký tư vấn trực tiếp')">Đăng ký tư vấn</button>
             </div>
-            <form id="chatForm" class="d-flex gap-2 m-0 relative">
-                <input type="text" id="userInput" class="form-control msg-input" placeholder="Nhắn tin cho AI..." autocomplete="off" />
-                <button type="submit" class="send-btn">
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" class="css-i6dzq1"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            <form id="chatForm" class="d-flex gap-3 m-0 align-items-center">
+                <div class="input-group-pill">
+                    <input type="text" id="userInput" class="msg-input" placeholder="Nhắn tin cho AI..." autocomplete="off" />
+                </div>
+                <button type="submit" class="send-btn-modern">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
             </form>
         </div>
@@ -46,141 +49,116 @@
 </div>
 
 <style>
-    /* Messenger Style UI */
+    /* Premium AI Chat UI */
     .content { padding-bottom: 0 !important; }
     
     .chat-container {
         display: flex;
         flex-direction: column;
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        box-shadow: var(--shadow-lg);
-        backdrop-filter: blur(20px);
         flex: 1;
         overflow: hidden;
-        margin-bottom: 20px; 
+        margin-bottom: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
     }
+    
     .chat-header {
-        padding: 16px 24px;
-        background: rgba(3, 7, 18, 0.8);
-        border-bottom: 1px solid var(--border);
+        padding: 20px 28px;
+        background: rgba(255, 255, 255, 0.6);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
+    
     .bot-avatar {
-        width: 45px; height: 45px; border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-2));
-        color: #030712; display: flex; align-items: center; justify-content: center;
-        font-weight: 800; font-size: 1.2rem; box-shadow: var(--shadow-glow);
+        width: 48px; height: 48px; border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: #fff; display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 1.1rem; box-shadow: 0 8px 16px var(--primary-glow);
     }
+    
+    .chip-light {
+        background: var(--surface-muted); color: var(--text-muted); padding: 4px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    
+    .btn-icon {
+        background: var(--surface-muted); border: none; width: 36px; height: 36px; border-radius: 10px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .btn-icon:hover { background: #fff; color: var(--primary); box-shadow: var(--shadow-sm); }
+
     .chat-messages {
         flex: 1;
-        padding: 24px;
+        padding: 32px;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 20px;
     }
-    .message {
-        display: flex;
-        max-width: 80%;
-    }
-    .message.user {
-        align-self: flex-end;
-    }
-    .message.bot {
-        align-self: flex-start;
-    }
+    
+    .message { display: flex; max-width: 85%; }
+    .message.user { align-self: flex-end; }
+    .message.bot { align-self: flex-start; }
+    
     .bubble {
-        padding: 12px 18px;
-        border-radius: 20px;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 14px 22px;
+        border-radius: 22px;
+        font-size: 1rem;
+        line-height: 1.6;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     }
+    
     .message.user .bubble {
-        background: linear-gradient(135deg, var(--primary), var(--primary-2));
-        color: #030712;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: #fff;
         border-bottom-right-radius: 4px;
         font-weight: 500;
     }
+    
     .message.bot .bubble {
-        background: rgba(255,255,255,0.08);
-        color: #e5e7eb;
-        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        border: 1px solid rgba(0,0,0,0.05);
         border-bottom-left-radius: 4px;
     }
+    
     .chat-footer {
-        padding: 16px 24px;
-        background: rgba(3, 7, 18, 0.6);
-        border-top: 1px solid var(--border);
-    }
-    .msg-input {
-        border-radius: 999px !important;
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid var(--border) !important;
-        padding-left: 20px !important;
-        height: 48px;
-        color: #e5e7eb !important;
-        caret-color: var(--primary);
-    }
-    .msg-input::placeholder { color: #9ca3af !important; opacity: 1; }
-    .msg-input:focus {
-        background: rgba(255,255,255,0.1) !important;
-        border-color: var(--primary) !important;
-    }
-    .send-btn {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid var(--border);
-        color: var(--primary);
-        width: 48px; height: 48px;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .send-btn:hover {
-        transform: scale(1.05);
-        background: var(--primary);
-        color: #030712;
-    }
-    .chat-link { color: var(--primary); font-weight: 600; text-decoration: underline; }
-    .hint-chip {
-        background: rgba(6, 182, 212, 0.1);
-        border: 1px solid rgba(6, 182, 212, 0.2);
-        color: var(--primary);
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-size: 0.85rem;
-        white-space: nowrap;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .hint-chip:hover {
-        background: rgba(6, 182, 212, 0.2);
-        color: #fff;
-    }
-    .typing-indicator {
-        display: flex; gap: 4px; align-items: center; justify-content: center;
-        padding: 12px 18px;
-    }
-    .typing-indicator span {
-        width: 6px; height: 6px; background: var(--muted); border-radius: 50%;
-        animation: typing 1.4s infinite ease-in-out both;
-    }
-    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-    @@keyframes typing {
-        0%, 80%, 100% { transform: scale(0); }
-        40% { transform: scale(1); }
+        padding: 24px 32px;
+        background: rgba(255, 255, 255, 0.4);
+        border-top: 1px solid rgba(0,0,0,0.05);
     }
     
-    /* Scrollbar override for chat */
+    .input-group-pill {
+        flex: 1;
+        background: #fff;
+        border-radius: 20px;
+        padding: 4px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .msg-input {
+        width: 100%; border: none; background: transparent; padding: 12px 20px; outline: none !important; font-size: 1rem; color: var(--text);
+    }
+    
+    .send-btn-modern {
+        background: var(--primary); color: #fff; width: 54px; height: 54px; border-radius: 18px; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px var(--primary-glow); transition: all 0.3s;
+    }
+    .send-btn-modern:hover { transform: translateY(-2px); box-shadow: 0 12px 24px var(--primary-glow); filter: brightness(1.1); }
+
+    .hint-chip {
+        background: #fff; border: 1px solid rgba(0,0,0,0.05); color: var(--text-muted); padding: 10px 20px; border-radius: 14px; font-size: 0.9rem; font-weight: 600; white-space: nowrap; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .hint-chip:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    
+    .typing-indicator { display: flex; gap: 5px; align-items: center; justify-content: center; padding: 12px 20px; background: #fff; border-radius: 20px; width: fit-content; }
+    .typing-indicator span { width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; opacity: 0.4; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    
+    @@keyframes typing { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+    
     .chat-messages::-webkit-scrollbar { width: 6px; }
-    .chat-messages::-webkit-scrollbar-track { background: transparent; }
-    .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.05); border-radius: 10px; }
 </style>
 
 @section Scripts {

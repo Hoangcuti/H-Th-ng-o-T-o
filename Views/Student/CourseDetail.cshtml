@@ -1,69 +1,247 @@
-@model COTHUYPRO.Models.Course
 @{
+    var isAdmin = User.IsInRole("Admin");
+    Layout = isAdmin ? "~/Views/Shared/_AdminLayout.cshtml" : "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = Model.CourseName;
     var lessons = ViewBag.Lessons as List<COTHUYPRO.Models.Lesson>;
-    var progress = (double)ViewBag.Progress;
+    var progress = (int)ViewBag.Progress;
+    var firstLessonId = lessons?.OrderBy(l => l.OrderIndex).FirstOrDefault()?.Id;
+    var completedLessonIds = ViewBag.CompletedLessonIds as List<int> ?? new List<int>();
 }
 
-<div class="page-header container-xxl mt-4">
-    <div>
-        <p class="eyebrow">Chi tiết khóa học</p>
-        <h2>@Model.CourseName</h2>
-        <p class="muted">@Model.Category?.Name • @Model.Level?.Name</p>
-    </div>
-    <div class="quick-actions">
-        <div class="progress" style="width: 200px; height: 10px; margin: 0;">
-            <div class="progress-bar" style="width: @progress%"></div>
-        </div>
-        <small class="text-white ms-2">@progress% hoàn thành</small>
-    </div>
-</div>
+<style>
+    /* --- SILICON LIGHT COURSE DETAIL --- */
+    .cd-hero {
+        background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+        border-radius: 40px;
+        padding: 60px;
+        border: 1px solid #e0f2fe;
+        box-shadow: 0 15px 40px rgba(14, 165, 233, 0.08);
+        position: relative; overflow: hidden;
+    }
+    .cd-hero::before {
+        content: ''; position: absolute; top: -50px; right: -50px;
+        width: 300px; height: 300px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(14,165,233,0.05) 0%, transparent 70%);
+        z-index: 0;
+    }
 
-<div class="container-xxl">
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="panel-card mb-4 animate-fade-in delay-100" style="animation-fill-mode: both;">
-                <div class="panel-head">
-                    <h4>Nội dung khóa học</h4>
-                    <span class="pill muted">@lessons?.Count bài giảng</span>
+    .cd-text-gradient {
+        background: linear-gradient(135deg, #0369a1, #0ea5e9);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+
+    .cd-card {
+        background: #fff;
+        border: 1px solid #eef2f6;
+        border-radius: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 24px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        text-decoration: none; display: flex; align-items: center; gap: 16px;
+        margin-bottom: 12px;
+    }
+    .cd-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+        border-color: #0ea5e9;
+    }
+
+    .cd-index-box {
+        width: 50px; height: 50px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        background: #f8fafc; color: #64748b; font-weight: 800;
+        border: 1px solid #e2e8f0; flex-shrink: 0; transition: all 0.2s;
+    }
+    .cd-card:hover .cd-index-box { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+
+    .cd-progress-shimmer {
+        height: 12px; border-radius: 20px; background: #f1f5f9; overflow: hidden;
+        position: relative;
+    }
+    .cd-progress-bar {
+        background: linear-gradient(90deg, #0ea5e9, #34d399);
+        height: 100%; border-radius: 20px; width: @progress%;
+        position: relative; transition: width 0.8s ease;
+    }
+    .cd-progress-bar::after {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        animation: shimmerCD 2s infinite linear;
+    }
+    @@keyframes shimmerCD { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+    .cd-badge-light {
+        background: #ecfdf5; color: #059669; padding: 4px 10px;
+        border-radius: 6px; font-size: 0.7rem; font-weight: 800; border: 1px solid #d1fae5;
+    }
+    
+    .cd-panel {
+        background: #fff; border-radius: 24px; padding: 40px;
+        border: 1px solid #eef2f6; box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    }
+</style>
+
+<div class="container-xxl py-5 reveal">
+    <!-- HERO -->
+    <div class="cd-hero mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="cd-badge-light" style="background:#f0f9ff; color:#0ea5e9; border-color:#bae6fd;">SILICON LIGHT PROGRAM</span>
+                    <span class="text-muted small">@Model.Category?.Name</span>
                 </div>
+                <h1 class="display-4 cd-text-gradient mb-3">@Model.CourseName</h1>
+                <p class="text-muted lead mb-5">Học tập trung, hiệu quả cao với lộ trình bài bản. Trải nghiệm không gian học tập sáng sủa và chuyên nghiệp.</p>
                 
-                <div class="list-group list-group-flush mt-3" style="background: transparent;">
-                    @if (lessons != null && lessons.Any())
-                    {
-                        foreach (var lesson in lessons)
-                        {
-                            <a asp-action="Lesson" asp-route-id="@lesson.Id" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" style="background: rgba(255,255,255,0.02); color: var(--text); border-color: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px;">
-                                <div>
-                                    <h5 class="mb-1" style="font-size: 1rem;">@lesson.Title</h5>
-                                    <small class="muted">Bài học</small>
-                                </div>
-                                <span class="badge" style="background: var(--primary-2); color: #fff;">Học ngay</span>
-                            </a>
-                        }
-                    }
-                    else
-                    {
-                        <p class="text-muted p-3">Đang cập nhật bài giảng cho khóa này.</p>
-                    }
+                @if (firstLessonId.HasValue) {
+                    <a asp-action="Lesson" asp-route-id="@firstLessonId" class="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow-lg" style="background:linear-gradient(135deg, #0ea5e9, #2563eb); border:none;">
+                         BẮT ĐẦU NGAY <i class="fa-solid fa-play-circle ms-2"></i>
+                    </a>
+                }
+            </div>
+            <div class="col-lg-5 mt-4 mt-lg-0">
+                <div class="cd-panel p-4" style="background: rgba(14, 165, 233, 0.02); border-color: #bae6fd;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="h6 fw-bold mb-0"><i class="fa-solid fa-chart-pie text-primary me-2"></i> TIẾN ĐỘ HỌC TẬP</span>
+                        <span class="fw-bold text-primary">@progress%</span>
+                    </div>
+                    <div class="cd-progress-shimmer mb-3">
+                        <div class="cd-progress-bar"></div>
+                    </div>
+                    <div class="d-flex justify-content-between x-small text-muted">
+                        <span>Hoàn thành <b>@completedLessonIds.Count</b> / @lessons?.Count bài học</span>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <div class="col-lg-4">
-            <div class="panel-card animate-fade-in delay-200" style="animation-fill-mode: both;">
-                <div class="panel-head">
-                    <h4>Giảng viên</h4>
-                </div>
-                @foreach(var inst in Model.Instructors)
-                {
-                    <div class="d-flex align-items-center mt-3 p-3" style="background: rgba(255,255,255,0.03); border-radius: 12px;">
-                        <div class="avatar bg-primary text-white d-flex align-items-center justify-content-center rounded-circle" style="width: 48px; height: 48px; font-weight: bold; font-size: 1.2rem;">
-                            @inst.User.FullName?.FirstOrDefault()
+    </div>
+
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <div class="cd-panel">
+                <h3 class="fw-bold mb-5"><i class="fa-solid fa-layer-group text-primary me-3"></i> NỘI DUNG CHƯƠNG TRÌNH</h3>
+                
+                <ul class="nav nav-tabs mb-4 gap-3 border-0" id="courseTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active rounded-pill px-4 fw-bold" data-bs-toggle="tab" data-bs-target="#curriculum">📚 LỘ TRÌNH</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill px-4 fw-bold" data-bs-toggle="tab" data-bs-target="#forum" onclick="loadForum()">💬 Thảo luận lớp học</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- CURRICULUM -->
+                    <div class="tab-pane fade show active" id="curriculum">
+                        @{
+                            var chapters = ViewBag.Chapters as List<COTHUYPRO.Models.CourseChapter>;
+                            var orphans = ViewBag.OrphanLessons as List<COTHUYPRO.Models.Lesson>;
+                            int chapterCount = 0;
+                        }
+
+                        <div class="accordion accordion-flush" id="courseAccordion">
+                            @if (chapters != null) {
+                                foreach (var chapter in chapters) {
+                                    chapterCount++;
+                                    bool isFirst = (chapterCount == 1);
+                                    <div class="accordion-item mb-3 border-0 rounded-4 overflow-hidden shadow-sm">
+                                        <h2 class="accordion-header" id="heading_@chapter.Id">
+                                            <button class="accordion-button @(isFirst ? "" : "collapsed") fw-extrabold py-4 px-4 bg-white text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_@chapter.Id" aria-expanded="@(isFirst ? "true" : "false")" aria-controls="collapse_@chapter.Id">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <span class="badge bg-primary-soft text-primary rounded-pill px-3 py-2 small">CHƯƠNG @chapterCount</span>
+                                                    <span class="fs-5">@chapter.Title</span>
+                                                </div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapse_@chapter.Id" class="accordion-collapse collapse @(isFirst ? "show" : "")" aria-labelledby="heading_@chapter.Id" data-bs-parent="#courseAccordion">
+                                            <div class="accordion-body bg-light-subtle p-4">
+                                                <div class="lesson-list">
+                                                    @foreach (var l in chapter.Lessons) {
+                                                        bool isDone = completedLessonIds.Contains(l.Id);
+                                                        <a asp-action="Lesson" asp-route-id="@l.Id" class="cd-card bg-white border-0 shadow-sm @(isDone ? "opacity-75" : "")">
+                                                            <div class="cd-index-box @(isDone ? "bg-success text-white border-0" : "")">
+                                                                @if(isDone) { <i class="fa-solid fa-check"></i> } else { <i class="fa-solid fa-play small"></i> }
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <div class="fw-bold h6 mb-1 text-dark">@l.Title</div>
+                                                                <div class="d-flex gap-3 text-muted x-small">
+                                                                    <span><i class="fa-solid fa-clock me-1 opacity-50"></i> @(l.Duration > 0 ? l.Duration + " phút" : "Video")</span>
+                                                                    @if(!string.IsNullOrEmpty(l.DocumentUrl)) {
+                                                                        <span><i class="fa-solid fa-file-lines me-1 opacity-50"></i> Tài liệu</span>
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            <div class="ms-auto text-end">
+                                                                @if (isDone) { <span class="badge bg-success-soft text-success fw-bold rounded-pill px-3 py-1 small">HOÀN THÀNH</span> }
+                                                                else { <span class="text-primary fw-bold small">VÀO HỌC <i class="fa-solid fa-chevron-right ms-1"></i></span> }
+                                                            </div>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+
+                            @if (orphans != null && orphans.Any()) {
+                                <div class="accordion-item mb-3 border-0 rounded-4 overflow-hidden shadow-sm">
+                                    <h2 class="accordion-header" id="heading_orphans">
+                                        <button class="accordion-button collapsed fw-extrabold py-4 px-4 bg-white text-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_orphans" aria-expanded="false" aria-controls="collapse_orphans">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <span class="badge bg-secondary-soft text-secondary rounded-pill px-3 py-2 small">KHÁC</span>
+                                                <span class="fs-5">CÁC NỘI DUNG BỔ SUNG</span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse_orphans" class="accordion-collapse collapse" aria-labelledby="heading_orphans" data-bs-parent="#courseAccordion">
+                                        <div class="accordion-body bg-light-subtle p-4">
+                                            <div class="lesson-list">
+                                                @foreach (var l in orphans) {
+                                                    bool isDone = completedLessonIds.Contains(l.Id);
+                                                    <a asp-action="Lesson" asp-route-id="@l.Id" class="cd-card bg-white border-0 shadow-sm @(isDone ? "opacity-50" : "")">
+                                                        <div class="cd-index-box">
+                                                            @if(isDone) { <i class="fa-solid fa-check"></i> } else { <i class="fa-solid fa-link small"></i> }
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <div class="fw-bold h6 mb-1">@l.Title</div>
+                                                        </div>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
                         </div>
-                        <div class="ms-3">
-                            <h6 class="mb-0 text-white">@inst.User.FullName</h6>
-                            <small class="muted">Chuyên gia đào tạo</small>
+                    </div>
+
+                    <!-- FORUM -->
+                    <div class="tab-pane fade" id="forum">
+                        <div id="forumContainer" class="p-2">
+                             <div class="text-center py-5">
+                                 <div class="spinner-border text-primary" role="status"></div>
+                                 <p class="mt-2 text-muted">ĐANG TẢI THẢO LUẬN...</p>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="cd-panel p-4 mb-4">
+                <h6 class="fw-bold text-uppercase opacity-50 small mb-4">GIẢNG VIÊN ĐÀO TẠO</h6>
+                @foreach(var inst in Model.Instructors) {
+                    <div class="d-flex align-items-center gap-3 p-2">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width:50px; height:50px; font-size:1.2rem;">
+                            @(inst.User.FullName?.Length > 0 ? inst.User.FullName[0].ToString() : "U")
+                        </div>
+                        <div>
+                            <div class="fw-bold">@inst.User.FullName</div>
+                            <div class="x-small text-muted">Chuyên gia cấp cao</div>
                         </div>
                     </div>
                 }

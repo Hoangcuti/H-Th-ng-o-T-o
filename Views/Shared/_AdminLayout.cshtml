@@ -6,8 +6,9 @@
     <title>@ViewData["Title"] - Admin · Training Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/COTHUYPRO.styles.css" asp-append-version="true" />
 </head>
@@ -17,38 +18,85 @@
             <div class="sidebar-brand">
                 <div class="brand-mark">ADM</div>
                 <div>
-                    <div class="brand-title">Training</div>
-                    <div class="brand-sub">Bảng điều khiển</div>
+                    <div class="brand-title">SmartHub</div>
                 </div>
             </div>
+            
             <nav class="sidebar-nav">
-                <a class="nav-link @((ViewContext.RouteData.Values["action"]?.ToString() == "Index") ? "active" : "")" asp-controller="Admin" asp-action="Index">
-                    <span class="dot"></span>Dashboard
+                <div class="nav-label">Chính</div>
+                <a class="nav-link @((ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Admin") ? "active" : "")" 
+                   asp-controller="Admin" asp-action="Index">
+                    <span class="icon dashboard"><i class="bi bi-grid-fill"></i></span>
+                    <span class="text">Tổng quan</span>
                 </a>
-                <div class="nav-label">Dashboard</div>
-                <a class="nav-link @((ViewContext.RouteData.Values["controller"]?.ToString() == "Admin") ? "active" : "")" asp-controller="Admin" asp-action="Index">
-                    <span class="icon">📊</span><span class="text">Tổng quan</span>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingContent" ? "active" : "")" 
+                   asp-controller="Admin" asp-action="PendingContent">
+                    <span class="icon dashboard"><i class="bi bi-shield-check"></i></span>
+                    <span class="text">Trung tâm Phê duyệt</span>
                 </a>
-                <div class="nav-label">Quản trị nội dung</div>
-                <a class="nav-link" asp-controller="Admin" asp-action="Courses"><span class="icon">📚</span><span class="text">Khóa học</span></a>
-                <a class="nav-link" asp-controller="Admin" asp-action="Lessons"><span class="icon">📝</span><span class="text">QL bài giảng</span></a>
-                <a class="nav-link" asp-controller="Admin" asp-action="Quiz"><span class="icon">❓</span><span class="text">QL bài Quiz</span></a>
-                <div class="nav-label">Quản lý người dùng</div>
-                <a class="nav-link" asp-controller="Admin" asp-action="Accounts"><span class="icon">👤</span><span class="text">QL tài khoản</span></a>
-                <a class="nav-link" asp-controller="Admin" asp-action="Students"><span class="icon">🎓</span><span class="text">QL học viên</span></a>
-                <a class="nav-link" asp-controller="Admin" asp-action="Instructors"><span class="icon">👩‍🏫</span><span class="text">QL giảng viên</span></a>
-                <div class="nav-label">Kinh doanh</div>
-                <a class="nav-link" asp-controller="Admin" asp-action="Discounts"><span class="icon">🏷️</span><span class="text">QL mã giảm giá</span></a>
-                <a class="nav-link" asp-controller="Admin" asp-action="Revenue"><span class="icon">💰</span><span class="text">Doanh thu · thống kê</span></a>
-                <a class="nav-link" asp-controller="Admin" asp-action="Payments"><span class="icon">💳</span><span class="text">Thanh toán khóa</span></a>
-                <div class="nav-label">Tiện ích</div>
-                <a class="nav-link @((ViewContext.RouteData.Values["controller"]?.ToString() == "Chat") ? "active" : "")" asp-controller="Chat" asp-action="Index"><span class="icon">🤖</span><span class="text">Chat AI</span></a>
-                <a class="nav-link" asp-controller="Home" asp-action="Index"><span class="icon">🏠</span><span class="text">Về trang chính</span></a>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ContentHistory" ? "active" : "")" 
+                   asp-controller="Admin" asp-action="ContentHistory">
+                    <span class="icon dashboard"><i class="bi bi-clock-history"></i></span>
+                    <span class="text">Lịch sử thao tác</span>
+                </a>
+                
+                <div class="nav-label">Nội dung</div>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Courses" ? "active" : "")" 
+                   asp-controller="Admin" asp-action="Courses">
+                    <span class="icon courses"><i class="bi bi-journal-bookmark-fill"></i></span>
+                    <span class="text">Khóa học</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lessons" ? "active" : "")" 
+                   asp-controller="Admin" asp-action="Lessons">
+                    <span class="icon lessons"><i class="bi bi-play-btn-fill"></i></span>
+                    <span class="text">Bài giảng</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Quiz" ? "active" : "")" 
+                   asp-controller="Admin" asp-action="Quiz">
+                    <span class="icon quizzes"><i class="bi bi-patch-check-fill"></i></span>
+                    <span class="text">Bài tập Quiz</span>
+                </a>
+
+                <div class="nav-label">Nhân sự</div>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Accounts" ? "active" : "")" 
+                   asp-controller="Admin" asp-action="Accounts">
+                    <span class="icon accounts"><i class="bi bi-people-fill"></i></span>
+                    <span class="text">Tài khoản</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Students" ? "active" : "")" 
+                   asp-controller="Admin" asp-action="Students">
+                    <span class="icon students"><i class="bi bi-mortarboard-fill"></i></span>
+                    <span class="text">Học viên</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Instructors" ? "active" : "")" 
+                   asp-controller="Admin" asp-action="Instructors">
+                    <span class="icon instructors"><i class="bi bi-person-workspace"></i></span>
+                    <span class="text">Giảng viên</span>
+                </a>
+
+                <div class="nav-label">Tài chính</div>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Revenue" ? "active" : "")" 
+                   asp-controller="Admin" asp-action="Revenue">
+                    <span class="icon revenue"><i class="bi bi-bar-chart-fill"></i></span>
+                    <span class="text">Doanh thu</span>
+                </a>
+                
+                <div class="nav-label">Hệ thống</div>
+                <a class="nav-link" asp-controller="Chat" asp-action="Index">
+                    <span class="icon system"><i class="bi bi-robot"></i></span>
+                    <span class="text">Trợ lý AI</span>
+                </a>
+                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                    <span class="icon system"><i class="bi bi-house-door-fill"></i></span>
+                    <span class="text">Trang chủ</span>
+                </a>
             </nav>
-            <div class="sidebar-footer">
-                <div class="foot-title">Đăng xuất</div>
+
+            <div class="sidebar-footer pt-4 border-top">
                 <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
-                    <button type="submit" class="btn-logout">Thoát phiên</button>
+                    <button type="submit" class="btn w-100 ghost text-danger fw-bold">
+                        <i class="bi bi-box-arrow-left me-2"></i> Đăng xuất
+                    </button>
                 </form>
             </div>
         </aside>
@@ -56,44 +104,65 @@
         <main class="admin-main">
             <header class="admin-toolbar">
                 <div>
-                    <p class="breadcrumb">Admin · @ViewData["Title"]</p>
+                    <div class="breadcrumb">Admin <i class="bi bi-chevron-right small"></i> @ViewData["Title"]</div>
                     <h1 class="page-title">@ViewData["Title"]</h1>
                 </div>
-                <div class="toolbar-actions">
-                    <span class="pill muted">@User.FindFirst("FullName")?.Value ?? User.Identity?.Name</span>
-                    <a class="pill" asp-controller="Account" asp-action="Logout">Đăng xuất</a>
+                <div class="toolbar-right">
+                    <div class="noti-bell">
+                        <i class="bi bi-bell-fill"></i>
+                        <span class="noti-dot"></span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar shadow-sm">A</div>
+                        <div class="user-info d-none d-md-block">
+                            <div class="fw-bold small">Administrator</div>
+                            <div class="text-muted" style="font-size:0.6rem;">Master Access</div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
             <section class="admin-content">
-                @if (TempData["Message"] != null)
-                {
-                    <div class="admin-toast success">
-                        <div class="icon">✔</div>
-                        <div>@TempData["Message"]</div>
-                        <button type="button" class="close-toast" aria-label="close">×</button>
-                    </div>
-                }
-                @if (TempData["Error"] != null)
-                {
-                    <div class="admin-toast danger">
-                        <div class="icon">!</div>
-                        <div>@TempData["Error"]</div>
-                        <button type="button" class="close-toast" aria-label="close">×</button>
-                    </div>
-                }
                 @RenderBody()
             </section>
         </main>
     </div>
 
+    <!-- TOAST CONTAINER -->
+    <div class="admin-toast-container" id="toastContainer">
+        @if (TempData["Message"] != null)
+        {
+            <div class="admin-toast success shadow-lg">
+                <div class="icon-box"><i class="bi bi-check2-circle"></i></div>
+                <div class="toast-content">
+                    <h5>Thành công</h5>
+                    <p>@TempData["Message"]</p>
+                </div>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="admin-toast danger shadow-lg">
+                <div class="icon-box"><i class="bi bi-exclamation-triangle"></i></div>
+                <div class="toast-content">
+                    <h5>Lỗi hệ thống</h5>
+                    <p>@TempData["Error"]</p>
+                </div>
+            </div>
+        }
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
-        document.querySelectorAll('.admin-toast .close-toast')?.forEach(btn => {
-            btn.addEventListener('click', () => btn.parentElement?.remove());
+        // Toast auto-hide logic
+        document.querySelectorAll('.admin-toast').forEach(toast => {
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
         });
-        setTimeout(() => document.querySelectorAll('.admin-toast').forEach(t => t.classList.add('hide')), 4000);
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -2,41 +2,41 @@
 for details on configuring this project to bundle and minify static web assets. */
 
 a.navbar-brand[b-rcz0guq3ji] {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
 }
 
 a[b-rcz0guq3ji] {
-  color: #0077cc;
+    color: #0077cc;
 }
 
 .btn-primary[b-rcz0guq3ji] {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
 }
 
-.nav-pills .nav-link.active[b-rcz0guq3ji], .nav-pills .show > .nav-link[b-rcz0guq3ji] {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+.nav-pills .nav-link.active[b-rcz0guq3ji],
+.nav-pills .show>.nav-link[b-rcz0guq3ji] {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
 }
 
 .border-top[b-rcz0guq3ji] {
-  border-top: 1px solid #e5e5e5;
+    border-top: 1px solid #e5e5e5;
 }
+
 .border-bottom[b-rcz0guq3ji] {
-  border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .box-shadow[b-rcz0guq3ji] {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
 }
 
 button.accept-policy[b-rcz0guq3ji] {
-  font-size: 1rem;
-  line-height: inherit;
+    font-size: 1rem;
+    line-height: inherit;
 }
-
-

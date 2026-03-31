@@ -1,0 +1,50 @@
+@model COTHUYPRO.Models.Exam
+@{
+    ViewData["Title"] = "Chuẩn bị thi - " + Model.Title;
+}
+
+<div class="theme-midnight animate-fade-in pb-5">
+    <!-- HEADER SECTION (Screenshot 2 Match) -->
+    <section class="container-xxl py-5 mt-4">
+        <div class="midnight-card-pro p-5 shadow-indigo position-relative overflow-hidden" style="border-radius: 32px;">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="badge badge-primary px-3 py-2 mb-4" style="background: rgba(34, 211, 238, 0.1); color: var(--neon-cyan); border: 1px solid rgba(34, 211, 238, 0.2); font-size: 0.7rem; border-radius: 10px;">
+                        ĐANG THỰC HIỆN BÀI KIỂM TRA
+                    </div>
+                    <h1 class="display-3 fw-extrabold text-white mb-4" style="letter-spacing: -0.04em;">@Model.Title</h1>
+                    <p class="text-white opacity-50 mb-5 fw-medium leading-relaxed" style="max-width: 600px;">
+                        @(string.IsNullOrEmpty(Model.Description) ? "Vui lòng tập trung hoàn thành bài thi trong thời gian quy định. Mọi gian lận sẽ bị hệ thống phát hiện." : Model.Description)
+                    </p>
+
+                    <!-- QUICK STATS (Screenshot 2) -->
+                    <div class="d-flex align-items-center gap-4 flex-wrap">
+                        <div class="stat-pill d-flex flex-column align-items-center justify-content-center" style="width: 120px; height: 100px; background: rgba(255,255,255,0.03); border-radius: 20px; border: 1px solid var(--midnight-border);">
+                            <div class="small fw-bold opacity-50" style="font-size: 0.65rem;">THỜI GIAN</div>
+                            <div class="h3 fw-extrabold m-0">@Model.DurationMinutes:00</div>
+                        </div>
+                        <div class="stat-pill d-flex flex-column align-items-center justify-content-center" style="width: 120px; height: 100px; background: rgba(255,255,255,0.03); border-radius: 20px; border: 1px solid var(--midnight-border);">
+                            <div class="small fw-bold opacity-50" style="font-size: 0.65rem;">CÂU HỎI</div>
+                            <div class="h3 fw-extrabold m-0">@ViewBag.TotalQuestions</div>
+                        </div>
+                        <div class="stat-pill d-flex flex-column align-items-center justify-content-center" style="width: 120px; height: 100px; background: rgba(255,255,255,0.03); border-radius: 20px; border: 1px solid var(--midnight-border);">
+                            <div class="small fw-bold opacity-50" style="font-size: 0.65rem;">YÊU CẦU</div>
+                            <div class="h3 fw-extrabold m-0">@(Model.PassingScore)/10</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 d-flex gap-3">
+                        <a asp-action="Take" asp-route-id="@Model.Id" class="btn-neon-primary px-5 py-3">
+                            @(ViewBag.HasUnfinished ? "TIẾP TỤC LÀM BÀI" : "BẮT ĐẦU LÀM BÀI")
+                        </a>
+                        <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-light border-0 px-4 py-3 fw-bold opacity-50">Hủy bỏ</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="position-absolute top-50 end-0 translate-middle-y me-5 opacity-10 d-none d-lg-block" style="font-size: 15rem;">
+                <i class="bi bi-patch-check"></i>
+            </div>
+        </div>
+    </section>
+</div>

@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/COTHUYPRO.styles.css" asp-append-version="true" />
 </head>
@@ -16,20 +17,21 @@
         <header class="topbar">
             <div class="container-xxl nav-wrap">
                 <div class="brand">
-                    <div class="mark">IT</div>
-                    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Internal Training</a>
+                    <div class="mark"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Training Portal</a>
                 </div>
                 <nav>
-                    <a asp-controller="Home" asp-action="Index">Trang chủ</a>
-                    <a asp-controller="Courses" asp-action="Index">Khóa học</a>
-                    <a asp-controller="Home" asp-action="Index" asp-fragment="classes">Lịch học</a>
-                    <a asp-controller="Chat" asp-action="Index">Chat AI</a>
+                    <a asp-controller="Home" asp-action="Index"><i class="fa-solid fa-house me-1"></i> Trang chủ</a>
+                    <a asp-controller="Courses" asp-action="Index"><i class="fa-solid fa-book-open me-1"></i> Khóa học</a>
+                    <a asp-controller="Home" asp-action="Index" asp-fragment="classes"><i class="fa-solid fa-calendar-days me-1"></i> Lịch học</a>
+                    <a asp-controller="Chat" asp-action="Index"><i class="fa-solid fa-comments me-1"></i> Chat AI</a>
+                    <a asp-controller="Ranking" asp-action="Index"><i class="fa-solid fa-trophy me-1"></i> Bảng xếp hạng</a>
                     @if (User.IsInRole("Admin"))
-                    { <a asp-controller="Admin" asp-action="Index">Admin</a> }
+                    { <a asp-controller="Admin" asp-action="Index"><i class="fa-solid fa-user-shield me-1"></i> Admin</a> }
                     else if (User.IsInRole("Instructor"))
-                    { <a asp-controller="Instructor" asp-action="Index">Giảng viên</a> }
+                    { <a asp-controller="Instructor" asp-action="Index"><i class="fa-solid fa-chalkboard-user me-1"></i> Giảng viên</a> }
                     else if (User.IsInRole("Student"))
-                    { <a asp-controller="Student" asp-action="Index">Học viên</a> }
+                    { <a asp-controller="Student" asp-action="Index"><i class="fa-solid fa-user-graduate me-1"></i> Học viên</a> }
                 </nav>
                 <div class="auth-actions">
                     @if (User.Identity?.IsAuthenticated == true)
@@ -38,20 +40,21 @@
                         var phone = User.FindFirst(System.Security.Claims.ClaimTypes.MobilePhone)?.Value ?? "Chưa cập nhật";
                         <div class="user-dropdown nav-item">
                             <button class="btn ghost dropdown-trigger">
-                                👤 @(User.FindFirst("FullName")?.Value ?? User.Identity.Name)
+                                <i class="fa-solid fa-circle-user fa-lg"></i>
+                                <span>@(User.FindFirst("FullName")?.Value ?? User.Identity.Name)</span>
                             </button>
                             <div class="dropdown-menu-custom">
                                 <div class="dropdown-header d-flex justify-content-between align-items-center">
-                                    Hồ sơ cá nhân
+                                    <span>Hồ sơ cá nhân</span>
                                     <a asp-controller="Account" asp-action="Profile" class="btn btn-sm ghost" style="padding: 2px 8px; font-size: 0.75rem;">Chỉnh sửa</a>
                                 </div>
-                                <div class="dropdown-item"><span>✉️</span> @email</div>
-                                <div class="dropdown-item"><span>📞</span> @phone</div>
+                                <div class="dropdown-item"><i class="fa-solid fa-envelope text-primary"></i> @email</div>
+                                <div class="dropdown-item"><i class="fa-solid fa-phone text-primary"></i> @phone</div>
                                 <div class="dropdown-divider"></div>
                                 <div class="dropdown-item security-toggle" tabindex="0">
                                     <div class="sec-label">
-                                        <span>🛡️</span> Bảo mật
-                                        <small>T.Báo qua Gmail</small>
+                                        <span><i class="fa-solid fa-shield-halved text-success"></i> Bảo mật</span>
+                                        <small>Thông báo qua Gmail</small>
                                     </div>
                                     <label class="switch">
                                         <input type="checkbox" checked>
@@ -60,7 +63,7 @@
                                 </div>
                                 <div class="dropdown-divider"></div>
                                 <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="m-0">
-                                    <button class="dropdown-btn-logout w-100" type="submit">🚪 Đăng xuất</button>
+                                    <button class="dropdown-btn-logout w-100" type="submit"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</button>
                                 </form>
                             </div>
                         </div>
@@ -87,13 +90,19 @@
 
         <footer class="footer">
             <div class="container-xxl footer-row">
-                <div>
-                    <strong>Internal Training</strong><br />
-                    <span class="muted">Đào tạo nội bộ · Quản trị dễ dùng</span>
+                <div class="brand">
+                    <div class="mark sm"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div>
+                        <strong>Training Portal</strong><br />
+                        <span class="text-muted small">Cổng thông tin đào tạo nội bộ chuyên nghiệp</span>
+                    </div>
                 </div>
-                <div class="muted">SQL Server: DESKTOP-KH2OE1U\SQLEXPRESS</div>
+                <div class="text-muted small">
+                    <i class="fa-solid fa-database me-1"></i> @Environment.MachineName\SQLEXPRESS
+                </div>
             </div>
         </footer>
+
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

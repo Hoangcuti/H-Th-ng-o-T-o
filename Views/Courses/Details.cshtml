@@ -1,33 +1,155 @@
 @model COTHUYPRO.Models.Course
 @{
     ViewData["Title"] = Model.CourseName;
-    var price = 1200000 + Model.Id * 150000;
+    var lessons = ViewBag.Lessons as List<COTHUYPRO.Models.Lesson> ?? new List<COTHUYPRO.Models.Lesson>();
 }
 
-<section class="panel container-xxl">
-    <div class="panel-header">
-        <div>
-            <p class="label">@Model.Category?.Name ?? "Khóa học"</p>
-            <h2 class="section-title">@Model.CourseName</h2>
-            <p class="section-sub">Cấp độ: @Model.Level?.Name ?? "N/A" · Giảng viên: @string.Join(", ", Model.Instructors.Select(i => i.User?.FullName ?? i.User?.Username ?? "N/A"))</p>
-        </div>
-        <div class="price-tag big">@String.Format("{0:#,0} đ", price)</div>
-    </div>
+<div class="container-xxl py-5 animate-fade-in">
+    <!-- BREADCRUMB -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb x-small fw-bold text-uppercase">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Khóa học</a></li>
+            <li class="breadcrumb-item active text-muted" aria-current="page">@Model.CourseName</li>
+        </ol>
+    </nav>
 
-    <div class="course-detail-grid">
-        <div class="course-detail-card">
-            <h4>Nội dung chính</h4>
-            <ul>
-                <li>Video bài giảng & tài liệu tải xuống.</li>
-                <li>Bài tập + trắc nghiệm tự đánh giá.</li>
-                <li>Chứng chỉ nội bộ khi hoàn thành.</li>
-            </ul>
-            <div class="card-actions">
-                <form asp-controller="Courses" asp-action="Enroll" asp-route-id="@Model.Id" method="post" style="display: inline;">
-                    <button type="submit" class="btn solid lg">Đăng ký & xác nhận</button>
-                </form>
-                <button class="btn ghost lg">Chia sẻ khóa học</button>
+    <div class="row g-5">
+        <!-- MAIN CONTENT -->
+        <div class="col-lg-8">
+            <header class="mb-5">
+                <span class="pill mb-3"><i class="fa-solid fa-graduation-cap me-1"></i> Khóa học chuyên sâu</span>
+                <h1 class="display-4 fw-bold text-gradient mb-4">@Model.CourseName</h1>
+                
+                <div class="d-flex align-items-center gap-4 flex-wrap mb-5">
+                    <div class="stat-item">
+                        <span class="text-muted x-small fw-bold text-uppercase">Danh mục</span>
+                        <div class="fw-bold">@Model.Category?.Name</div>
+                    </div>
+                    <div class="stat-item position-relative ps-4">
+                        <div class="v-divider" style="position: absolute; left: 0; top: 15%; height: 70%; width: 2px; background: var(--border);"></div>
+                        <span class="text-muted x-small fw-bold text-uppercase">Cấp độ</span>
+                        <div class="fw-bold text-primary">@Model.Level?.Name</div>
+                    </div>
+                    <div class="stat-item position-relative ps-4">
+                        <div class="v-divider" style="position: absolute; left: 0; top: 15%; height: 70%; width: 2px; background: var(--border);"></div>
+                        <span class="text-muted x-small fw-bold text-uppercase">Thời lượng</span>
+                        <div class="fw-bold">@lessons.Count Bài giảng</div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    @if (ViewBag.IsAdmin == true || ViewBag.IsEnrolled == true)
+                    {
+                        <a asp-controller="Student" asp-action="CourseDetail" asp-route-id="@Model.Id" class="btn solid lg px-5 shadow-primary-sm scale-hover border-0" style="background: linear-gradient(135deg, #0ea5e9, #2563eb);">
+                            <i class="fa-solid fa-play me-2"></i> BẮT ĐẦU HỌC NGAY @(ViewBag.IsAdmin == true ? "(ADMIN)" : "")
+                        </a>
+                    }
+                    else
+                    {
+                        <form asp-controller="Courses" asp-action="Enroll" asp-route-id="@Model.Id" method="post">
+                            <button type="submit" class="btn solid lg px-5 shadow-primary-sm scale-hover">
+                                <i class="fa-solid fa-bolt me-2"></i> ĐĂNG KÝ & THANH TOÁN
+                            </button>
+                        </form>
+                    }
+                </div>
+            </header>
+
+            <!-- LESSON LIST -->
+            <section class="reveal">
+                <h3 class="h4 fw-bold mb-4"><i class="fa-solid fa-list-check text-primary me-2"></i> Nội dung khóa học</h3>
+                @if (lessons.Any())
+                {
+                    <div class="lesson-timeline d-grid gap-3">
+                        @for (int i = 0; i < lessons.Count; i++)
+                        {
+                            var lesson = lessons[i];
+                            var canAccess = ViewBag.IsAdmin == true || ViewBag.IsEnrolled == true;
+
+                            if (canAccess)
+                            {
+                                <a asp-controller="Student" asp-action="Lesson" asp-route-id="@lesson.Id" class="lesson-row p-4 text-decoration-none d-block" style="background: #fff; border-radius: 16px; border: 1px solid var(--border); transition: all 0.3s; color: inherit;">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center gap-4">
+                                            <div class="num-box fw-bold" style="width: 40px; height: 40px; background: var(--slate-100); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                                @(i + 1)
+                                            </div>
+                                            <div>
+                                                <h5 class="fw-bold m-0 text-dark">@lesson.Title</h5>
+                                                <span class="x-small text-muted"><i class="fa-regular fa-clock me-1"></i> Bài học lý thuyết & thực hành</span>
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-circle-play text-primary fs-5"></i>
+                                    </div>
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="lesson-row p-4" style="background: #fff; border-radius: 16px; border: 1px solid var(--border); transition: all 0.3s; opacity: 0.8;">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center gap-4">
+                                            <div class="num-box fw-bold" style="width: 40px; height: 40px; background: var(--slate-100); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                                @(i + 1)
+                                            </div>
+                                            <div>
+                                                <h5 class="fw-bold m-0 text-muted">@lesson.Title</h5>
+                                                <span class="x-small text-muted"><i class="fa-solid fa-lock me-1"></i> Đăng ký để mở khóa</span>
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-lock text-muted opacity-50"></i>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-light border-0 rounded-4 p-4 text-center">
+                        <p class="text-muted m-0 italic">Nội dung bài học đang được bộ phận chuyên môn cập nhật.</p>
+                    </div>
+                }
+            </section>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px;">
+                <div class="panel p-5 overflow-hidden" style="border-radius: 32px;">
+                    <div class="animate-shimmer position-absolute top-0 start-0 w-100 h-1" style="height: 4px;"></div>
+                    <div class="price-tag big mb-4 text-gradient">@String.Format("{0:#,0} đ", Model.Price)</div>
+                    
+                    <div class="info-list d-grid gap-3 mb-5">
+                        <div class="d-flex justify-content-between x-small fw-bold">
+                            <span class="text-muted">GIẢNG VIÊN</span>
+                            <span>Hệ thống đào tạo</span>
+                        </div>
+                        <div class="d-flex justify-content-between x-small fw-bold">
+                            <span class="text-muted">CHỨNG CHỈ</span>
+                            <span class="text-success">CÓ CẤP SAU KHÓA</span>
+                        </div>
+                        <div class="d-flex justify-content-between x-small fw-bold">
+                            <span class="text-muted">HỖ TRỢ</span>
+                            <span>CHAT AI 24/7</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-4 x-small italic text-muted">
+                        <i class="fa-solid fa-shield-halved me-1"></i> Thanh toán được bảo mật và hỗ trợ hoàn phí nếu không hài lòng trong 7 ngày đầu.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</section>
+</div>
+
+<style>
+    .shadow-primary-sm:hover { box-shadow: 0 8px 20px -6px rgba(56, 189, 248, 0.4); }
+    .scale-hover:hover { transform: scale(1.02); }
+    .lesson-row:hover { 
+        transform: translateY(-4px); 
+        box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.1); 
+        border-color: var(--primary) !important;
+    }
+</style>

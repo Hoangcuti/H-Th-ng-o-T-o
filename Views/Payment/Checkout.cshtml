@@ -1,0 +1,102 @@
+@model COTHUYPRO.Models.Course
+@{
+    ViewData["Title"] = "Thanh toán khóa học";
+}
+
+<div class="container-xxl py-5 animate-fade-in">
+    <div class="row g-5">
+        <!-- LEFT: COURSE INFO -->
+        <div class="col-lg-7">
+            <div class="panel p-5 h-vignette" style="border-radius: 32px;">
+                <div class="mb-4 d-flex align-items-center gap-3">
+                    <div class="mark sm animate-float"><i class="fa-solid fa-credit-card"></i></div>
+                    <h2 class="section-title m-0">Xác nhận thanh toán</h2>
+                </div>
+                
+                <div class="course-card-horizontal p-4 mb-5" style="background: rgba(255,255,255,0.5); border-radius: 20px; border: 1px solid var(--border);">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://images.unsplash.com/photo-1454165833767-027ffea9e77b?w=400" : Model.ImageUrl)" 
+                                 class="img-fluid rounded-4 shadow-sm" alt="@Model.CourseName" />
+                        </div>
+                        <div class="col-md-8">
+                            <span class="badge bg-primary-soft text-primary mb-2">@Model.Category?.Name</span>
+                            <h4 class="fw-bold">@Model.CourseName</h4>
+                            <p class="text-muted small mb-0"><i class="fa-solid fa-medal me-1"></i> @Model.Level?.Name</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-4">Phương thức thanh toán</h5>
+                <div class="payment-methods d-grid gap-3 mb-4">
+                    <div class="payment-option p-4 d-flex align-items-center justify-content-between active" style="border: 2px solid var(--primary); border-radius: 16px; background: rgba(56, 189, 248, 0.05); cursor: pointer;">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" width="32" height="32" />
+                            <div>
+                                <div class="fw-bold">Ví điện tử MoMo</div>
+                                <div class="x-small text-muted">Thanh toán nhanh qua ứng dụng MoMo</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-primary"></i>
+                    </div>
+
+                    <div class="payment-option p-4 d-flex align-items-center justify-content-between" style="border: 1px solid var(--border); border-radius: 16px; background: #fff; cursor: pointer; opacity: 0.6;">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-building-columns fs-3 text-muted"></i>
+                            <div>
+                                <div class="fw-bold">Chuyển khoản Ngân hàng</div>
+                                <div class="x-small text-muted">Thanh toán qua QR Code / Napas247</div>
+                            </div>
+                        </div>
+                        <i class="fa-regular fa-circle text-muted"></i>
+                    </div>
+                </div>
+
+                <div class="alert alert-info border-0 rounded-4 p-3 x-small">
+                    <i class="fa-solid fa-info-circle me-1"></i> Đây là môi trường thử nghiệm. Tiền sẽ không bị trừ thật.
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: SUMMARY -->
+        <div class="col-lg-5">
+            <div class="panel p-5 sticky-top overflow-hidden" style="top: 100px; border-radius: 32px;">
+                <div class="animate-shimmer position-absolute top-0 start-0 w-100 h-1" style="height: 4px;"></div>
+                <h4 class="fw-bold mb-5">Chi tiết hóa đơn</h4>
+                
+                <div class="d-flex justify-content-between mb-3 text-muted">
+                    <span>Giá khóa học</span>
+                    <span>@String.Format("{0:#,0} đ", Model.Price)</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 text-muted">
+                    <span>Giảm giá (Demo)</span>
+                    <span class="text-success">- 0 đ</span>
+                </div>
+                <div class="dropdown-divider my-4"></div>
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <span class="h5 fw-bold m-0">Tổng cộng</span>
+                    <span class="h3 fw-bold text-gradient m-0">@String.Format("{0:#,0} đ", Model.Price)</span>
+                </div>
+
+                <form asp-action="ProcessPayment" asp-controller="Payment" method="post">
+                    <input type="hidden" name="courseId" value="@Model.Id" />
+                    <input type="hidden" name="method" value="MoMo" />
+                    <button type="submit" class="btn solid w-100 py-3 fw-bold h-shadow-lg scale-hover">
+                        Xác nhận và Thanh toán <i class="fa-solid fa-shield-check ms-2"></i>
+                    </button>
+                </form>
+
+                <p class="text-center text-muted x-small mt-4">
+                    Bằng việc nhấn vào nút trên, bạn đồng ý với <br />
+                    <a href="#" class="text-decoration-none fw-bold">Điều khoản sử dụng của chúng tôi</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-soft { background: rgba(56, 189, 248, 0.1); }
+    .scale-hover:hover { transform: scale(1.02); }
+    .h-shadow-lg:hover { box-shadow: 0 20px 40px -10px rgba(56, 189, 248, 0.3); }
+</style>

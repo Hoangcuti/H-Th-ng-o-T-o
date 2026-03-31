@@ -20,7 +20,6 @@ public class HomeController : Controller
             .Include(c => c.Category)
             .Include(c => c.Level)
             .Include(c => c.Instructors).ThenInclude(ci => ci.User)
-            .Include(c => c.LearningProgresses)
             .ToList();
 
         var classes = _context.Classes
@@ -39,7 +38,8 @@ public class HomeController : Controller
                 Category = c.Category?.Name ?? "N/A",
                 Level = c.Level?.Name ?? "N/A",
                 Instructors = c.Instructors.Select(i => i.User?.FullName ?? i.User?.Username ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList(),
-                Progress = 0
+                Progress = 0,
+                ImageUrl = c.ImageUrl
             }).ToList(),
             UpcomingClasses = classes
                 .Select(cls => new ClassCardVm

@@ -1,0 +1,171 @@
+@{
+    ViewBag.Title = "Nhật ký Nội dung";
+    Layout = "_AdminLayout";
+    var lessons = ViewBag.Lessons as List<COTHUYPRO.Models.Lesson> ?? new();
+    var exams = ViewBag.Exams as List<COTHUYPRO.Models.Exam> ?? new();
+    var assignments = ViewBag.Assignments as List<COTHUYPRO.Models.Assignment> ?? new();
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="eyebrow text-muted small"><a asp-action="PendingContent" class="text-decoration-none text-muted">Phê duyệt</a> / Nhật ký</p>
+        <h2 class="m-0 text-dark fw-bold text-uppercase">📜 Nhật ký thay đổi nội dung</h2>
+    </div>
+    <a asp-action="PendingContent" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold border-0">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại Phê duyệt
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white border-bottom py-3 px-4 text-center">
+        <ul class="nav nav-pills card-header-pills justify-content-center d-inline-flex p-1 bg-light rounded-pill" id="historyTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill fw-bold" id="lessons-tab" data-bs-toggle="tab" data-bs-target="#lessons" type="button" role="tab">BÀI GIẢNG</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill fw-bold" id="exams-tab" data-bs-toggle="tab" data-bs-target="#exams" type="button" role="tab">QUIZ</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill fw-bold" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments" type="button" role="tab">BÀI TẬP</button>
+            </li>
+        </ul>
+    </div>
+    <div class="tab-content" id="historyTabContent">
+        <!-- LESSONS -->
+        <div class="tab-pane fade show active" id="lessons" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light small text-muted text-uppercase fw-bold">
+                        <tr>
+                            <th class="ps-4">Nội dung</th>
+                            <th>Khóa học</th>
+                            <th>Tạo bởi</th>
+                            <th>Cập nhật cuối</th>
+                            <th class="text-center">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var l in lessons)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">@l.Title</div>
+                                    <div class="text-muted small">ID: #@l.Id</div>
+                                </td>
+                                <td class="small">@l.Course?.CourseName</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border rounded-pill px-2 small">@(l.CreatedByUser?.FullName ?? "Admin")</span>
+                                </td>
+                                <td class="small">
+                                    <div class="fw-medium">@((l.UpdatedAt ?? l.CreatedAt).ToString("dd/MM/yyyy"))</div>
+                                    <div class="text-muted" style="font-size:10px;">@((l.UpdatedAt ?? l.CreatedAt).ToString("HH:mm"))</div>
+                                </td>
+                                <td class="text-center">
+                                    @Html.Raw(renderStatusHtml(l.Status))
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- EXAMS -->
+        <div class="tab-pane fade" id="exams" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light small text-muted text-uppercase fw-bold">
+                        <tr>
+                            <th class="ps-4">Nội dung</th>
+                            <th>Khóa học</th>
+                            <th>Tạo bởi</th>
+                            <th>Cập nhật cuối</th>
+                            <th class="text-center">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in exams)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">@e.Title</div>
+                                    <div class="text-muted small">ID: #@e.Id</div>
+                                </td>
+                                <td class="small">@e.Course?.CourseName</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border rounded-pill px-2 small">@(e.CreatedByUser?.FullName ?? "Admin")</span>
+                                </td>
+                                <td class="small">
+                                    <div class="fw-medium">@((e.UpdatedAt ?? e.CreatedAt).ToString("dd/MM/yyyy"))</div>
+                                    <div class="text-muted" style="font-size:10px;">@((e.UpdatedAt ?? e.CreatedAt).ToString("HH:mm"))</div>
+                                </td>
+                                <td class="text-center">
+                                    @Html.Raw(renderStatusHtml(e.Status))
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ASSIGNMENTS -->
+        <div class="tab-pane fade" id="assignments" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light small text-muted text-uppercase fw-bold">
+                        <tr>
+                            <th class="ps-4">Nội dung</th>
+                            <th>Khóa học</th>
+                            <th>Tạo bởi</th>
+                            <th>Cập nhật cuối</th>
+                            <th class="text-center">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in assignments)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">@a.Title</div>
+                                    <div class="text-muted small">ID: #@a.Id</div>
+                                </td>
+                                <td class="small">@a.Course?.CourseName</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border rounded-pill px-2 small">@(a.CreatedByUser?.FullName ?? "Admin")</span>
+                                </td>
+                                <td class="small">
+                                    <div class="fw-medium">@((a.UpdatedAt ?? a.CreatedAt).ToString("dd/MM/yyyy"))</div>
+                                    <div class="text-muted" style="font-size:10px;">@((a.UpdatedAt ?? a.CreatedAt).ToString("HH:mm"))</div>
+                                </td>
+                                <td class="text-center">
+                                    @Html.Raw(renderStatusHtml(a.Status))
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string renderStatusHtml(string? status) {
+        if (status == "Approved") {
+            return "<span class='badge bg-success-subtle text-success border border-success rounded-pill px-3 py-1 fw-bold' style='font-size: 10px;'>CÔNG KHAI</span>";
+        } else if (status == "Pending") {
+            return "<span class='badge bg-warning-subtle text-warning border border-warning rounded-pill px-3 py-1 fw-bold' style='font-size: 10px;'>CHỜ DUYỆT</span>";
+        } else {
+            return "<span class='badge bg-secondary-subtle text-secondary border border-secondary rounded-pill px-3 py-1 fw-bold' style='font-size: 10px;'>BẢN NHÁP</span>";
+        }
+    }
+}
+
+<style>
+    .nav-pills .nav-link.active { background-color: #0d6efd; color: #fff !important; box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2); }
+    .nav-pills .nav-link { color: #64748b; font-size: 0.75rem; letter-spacing: 1px; padding: 10px 25px; transition: all 0.3s; }
+    .bg-success-subtle { background-color: rgba(25,135,84, 0.1); }
+    .bg-warning-subtle { background-color: rgba(255,193,7, 0.1); }
+    .bg-secondary-subtle { background-color: rgba(108,117,125, 0.1); }
+</style>

@@ -1,0 +1,2 @@
+ALTER TABLE [Lessons] ADD [Status] NVARCHAR(20) NOT NULL DEFAULT 'Approved';
+GO

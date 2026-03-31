@@ -16,16 +16,35 @@
     <form asp-action="CreateQuiz" method="post" class="row g-3">
         @Html.AntiForgeryToken()
         <div class="col-md-6">
+            <label class="form-label">Loại bài kiểm tra / Đánh giá</label>
+            <select asp-for="ExamType" class="form-select">
+                <option value="Quiz">Trắc nghiệm bài học (Quiz)</option>
+                <option value="Final">Bài thi kết thúc khóa (Final Exam)</option>
+                <option value="Midterm">Kiểm tra giữa kỳ</option>
+            </select>
+            <span class="text-danger" asp-validation-for="ExamType"></span>
+        </div>
+        <div class="col-md-6">
             <label class="form-label">Tiêu đề (Tên bài Quiz)</label>
-            <input asp-for="Title" class="form-control" />
+            <input asp-for="Title" class="form-control" placeholder="Ví dụ: Kiểm tra kiến thức Chương 1" />
             <span class="text-danger" asp-validation-for="Title"></span>
         </div>
         <div class="col-md-6">
             <label class="form-label">Khóa học</label>
-            <select asp-for="CourseId" class="form-select">
+            <select asp-for="CourseId" class="form-select" id="courseSelect" onchange="filterLessons(this.value)">
                 @foreach (var c in courses) { <option value="@c.Id">@c.CourseName</option> }
             </select>
             <span class="text-danger" asp-validation-for="CourseId"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Gắn vào bài giảng (Tùy chọn)</label>
+            <select asp-for="LessonId" class="form-select" id="lessonSelect">
+                <option value="">-- Chọn bài giảng (Toàn bộ khóa) --</option>
+                @foreach (var l in (ViewBag.Lessons as List<COTHUYPRO.Models.Lesson> ?? new())) {
+                    <option value="@l.Id" data-course="@l.CourseId">@l.Title</option>
+                }
+            </select>
+            <span class="text-danger" asp-validation-for="LessonId"></span>
         </div>
         <div class="col-md-6">
             <label class="form-label">Thời gian làm bài (Phút)</label>
@@ -70,4 +89,29 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function filterLessons(courseId) {
+            const lessonSelect = document.getElementById('lessonSelect');
+            const options = lessonSelect.querySelectorAll('option');
+            
+            options.forEach(opt => {
+                if (opt.value === "") {
+                    opt.style.display = 'block';
+                    return;
+                }
+                const optCourseId = opt.getAttribute('data-course');
+                if (optCourseId === courseId) {
+                    opt.style.display = 'block';
+                } else {
+                    opt.style.display = 'none';
+                    if (lessonSelect.value === opt.value) lessonSelect.value = "";
+                }
+            });
+        }
+
+        // Run on load
+        window.addEventListener('DOMContentLoaded', () => {
+            filterLessons(document.getElementById('courseSelect').value);
+        });
+    </script>
 }

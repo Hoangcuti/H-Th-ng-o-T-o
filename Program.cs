@@ -21,8 +21,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("InstructorOnly", policy => policy.RequireRole("Instructor"));
-    options.AddPolicy("StudentOnly", policy => policy.RequireRole("Student"));
+    options.AddPolicy("InstructorOnly", policy => policy.RequireRole("Instructor", "Admin"));
+    options.AddPolicy("StudentOnly", policy => policy.RequireRole("Student", "Admin"));
 });
 
 builder.Services.AddControllersWithViews();

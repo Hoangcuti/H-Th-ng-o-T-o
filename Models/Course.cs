@@ -13,10 +13,13 @@ public class Course
     public CourseCategory? Category { get; set; }
     public int? LevelId { get; set; }
     public CourseLevel? Level { get; set; }
+    
     [Column(TypeName = "decimal(18,2)")]
     public decimal Price { get; set; } = 0;
+
+    [MaxLength(1000)]
+    public string? ImageUrl { get; set; }
+
     public ICollection<CourseInstructor> Instructors { get; set; } = new List<CourseInstructor>();
     public ICollection<Class> Classes { get; set; } = new List<Class>();
-    public ICollection<LearningProgress> LearningProgresses { get; set; } = new List<LearningProgress>();
 }
-

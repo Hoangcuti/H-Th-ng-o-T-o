@@ -26,7 +26,6 @@ public class User
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public ICollection<CourseInstructor> TeachingCourses { get; set; } = new List<CourseInstructor>();
     public ICollection<Class> Classes { get; set; } = new List<Class>();
-    public ICollection<LearningProgress> LearningProgresses { get; set; } = new List<LearningProgress>();
     public ICollection<ClassStudent> ClassStudents { get; set; } = new List<ClassStudent>();
 }
 

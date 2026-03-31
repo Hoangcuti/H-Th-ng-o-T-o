@@ -12,39 +12,61 @@
     </div>
 </div>
 
-<div class="panel-card">
-    <div class="panel-head"><h4>Thông tin</h4></div>
-    <form asp-action="CreateCourse" method="post" class="row g-3">
-        @Html.AntiForgeryToken()
-        <div class="col-md-6">
-            <label class="form-label">Tên khóa</label>
-            <input asp-for="CourseName" class="form-control" />
-            <span class="text-danger" asp-validation-for="CourseName"></span>
+<div class="row g-4 animate-fade-in">
+    <div class="col-lg-8">
+        <div class="panel-card h-100">
+            <div class="panel-head mb-4"><h4>Thông tin cơ bản</h4></div>
+            <form asp-action="CreateCourse" method="post" class="row g-3">
+                @Html.AntiForgeryToken()
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Tên khóa học chính thức</label>
+                    <input asp-for="CourseName" class="form-control" placeholder="Ví dụ: Lập trình C# cơ bản" />
+                    <span class="text-danger small" asp-validation-for="CourseName"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Danh mục đào tạo</label>
+                    <select asp-for="CategoryId" class="form-select">
+                        <option value="">-- Chọn danh mục --</option>
+                        @foreach (var c in categories) { <option value="@c.Id">@c.Name</option> }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Cấp độ học thuật</label>
+                    <select asp-for="LevelId" class="form-select">
+                        <option value="">-- Chọn cấp độ --</option>
+                        @foreach (var l in levels) { <option value="@l.Id">@l.Name</option> }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Học phí (VNĐ)</label>
+                    <input asp-for="Price" type="number" step="1000" class="form-control" placeholder="0" />
+                    <span class="text-danger small" asp-validation-for="Price"></span>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">URL Ảnh đại diện (Thumbnail)</label>
+                    <input asp-for="ImageUrl" class="form-control" placeholder="https://unsplash.com/..." />
+                    <p class="text-muted small mt-2">Dán link ảnh chất lượng cao để hiển thị trên Catalog.</p>
+                </div>
+                <div class="col-12 d-flex gap-2 mt-4 pt-4 border-top">
+                    <button class="btn solid px-4" type="submit">Xác nhận tạo</button>
+                    <a class="btn ghost px-4" asp-action="Courses">Hủy bỏ</a>
+                </div>
+            </form>
         </div>
-        <div class="col-md-6">
-            <label class="form-label">Danh mục</label>
-            <select asp-for="CategoryId" class="form-select">
-                <option value="">--Chọn--</option>
-                @foreach (var c in categories) { <option value="@c.Id">@c.Name</option> }
-            </select>
-        </div>
-    <div class="col-md-6">
-        <label class="form-label">Cấp độ</label>
-        <select asp-for="LevelId" class="form-select">
-            <option value="">--Chọn--</option>
-            @foreach (var l in levels) { <option value="@l.Id">@l.Name</option> }
-        </select>
     </div>
-    <div class="col-md-6">
-        <label class="form-label">Giá khóa học (VNĐ)</label>
-        <input asp-for="Price" type="number" step="1000" class="form-control" placeholder="Ví dụ: 500000" />
-        <span class="text-danger" asp-validation-for="Price"></span>
-    </div>
-        <div class="col-12 d-flex gap-2">
-            <button class="btn solid" type="submit">Tạo</button>
-            <a class="btn ghost" asp-action="Courses">Hủy</a>
+    <div class="col-lg-4">
+        <div class="panel-card h-100">
+            <div class="panel-head mb-4"><h4>Tips Quản trị</h4></div>
+            <div class="text-muted small mb-4">
+                <p>• Hãy chọn ảnh có tỷ lệ 16:9 để hiển thị đẹp nhất.</p>
+                <p>• Giá khóa học sẽ được hiển thị kèm định dạng VNĐ tự động.</p>
+                <p>• Bạn có thể gán giảng viên sau khi tạo thành công.</p>
+            </div>
+            <div id="image-preview" style="width: 100%; aspect-ratio: 16/9; border-radius: 12px; background: var(--surface-muted); display: grid; place-items: center; border: 2px dashed var(--border);">
+                <span class="text-muted">Preview Ảnh</span>
+            </div>
         </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {

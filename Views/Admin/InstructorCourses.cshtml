@@ -1,0 +1,78 @@
+@{
+    ViewData["Title"] = "Quản lý Khóa học của Giảng viên";
+    var instructor = ViewBag.Instructor as COTHUYPRO.Models.User;
+    var courses = ViewBag.Courses as List<COTHUYPRO.Models.CourseInstructor> ?? new();
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="eyebrow text-muted small">
+            <a asp-action="Instructors" class="text-decoration-none text-muted">Giảng viên</a> / Gỡ khỏi Khóa học
+        </p>
+        <h2 class="m-0">🏫 KHÓA HỌC CỦA GIẢNG VIÊN: @instructor?.FullName</h2>
+    </div>
+    <a asp-action="Instructors" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại DS Giảng viên
+    </a>
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-3">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white border-0 py-3 px-4">
+        <h5 class="m-0 fw-bold">Danh sách khóa học đang phụ trách (@courses.Count khóa học)</h5>
+        <p class="text-muted small m-0 mt-1">Bấm <strong>Gỡ Giảng viên</strong> để thu hồi quyền phụ trách một khóa học. Tài khoản giảng viên <strong>sẽ không bị xóa</strong>.</p>
+    </div>
+    <div class="card-body p-0">
+        @if (!courses.Any())
+        {
+            <p class="text-center text-muted py-5">
+                <i class="bi bi-book fs-3 d-block mb-2"></i>
+                Giảng viên này chưa phụ trách khóa học nào.
+            </p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light small text-muted text-uppercase">
+                        <tr>
+                            <th class="ps-4" style="width:60px;">#</th>
+                            <th>Tên Khóa học</th>
+                            <th>Danh mục</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int no = 1; }
+                        @foreach (var ci in courses)
+                        {
+                            <tr>
+                                <td class="ps-4 text-muted">@(no++)</td>
+                                <td class="fw-semibold">@(ci.Course?.CourseName ?? "—")</td>
+                                <td class="text-muted small">@(ci.Course?.Category?.Name ?? "—")</td>
+                                <td class="text-center">
+                                    <form asp-action="RemoveInstructorFromCourse" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc muốn gỡ giảng viên này khỏi khóa học \'@(ci.Course?.CourseName)\'? Tài khoản của họ vẫn được giữ nguyên.');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="instructorId" value="@instructor?.Id" />
+                                        <input type="hidden" name="courseId" value="@ci.CourseId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                            <i class="bi bi-person-dash me-1"></i> Gỡ Giảng viên
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

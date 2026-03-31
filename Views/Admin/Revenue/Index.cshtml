@@ -1,70 +1,149 @@
-@model COTHUYPRO.Models.RevenuePageVm
+@model COTHUYPRO.Controllers.RevenueDashboardVm
 @{
-    ViewData["Title"] = "Báo cáo Doanh thu";
+    ViewData["Title"] = "Thống kê Doanh thu";
 }
 
-<div class="page-header mt-4">
-    <div>
-        <p class="eyebrow">Thống kê Tài chính</p>
-        <h2>Doanh thu & Khóa học bán chạy</h2>
-        <p class="muted">Phân tích dòng tiền và xu hướng đăng ký học (Giả định giá bán: 500,000đ/học viên).</p>
-    </div>
-</div>
+<style>
+    .stat-card {
+        background: white; border: none; border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: all 0.3s ease;
+        overflow: hidden; position: relative;
+    }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
+    .stat-icon {
+        width: 60px; height: 60px; border-radius: 15px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; margin-bottom: 20px;
+    }
+    .chart-container {
+        background: white; border-radius: 24px; padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04); height: 100%;
+    }
+    .table-modern { border-collapse: separate; border-spacing: 0 12px; }
+    .table-modern thead th { border: none; color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; padding: 15px 25px; }
+    .table-modern tbody tr { background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border-radius: 15px; transition: all 0.2s; }
+    .table-modern tbody tr:hover { transform: scale(1.01); box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
+    .table-modern tbody td { border: none; padding: 20px 25px; vertical-align: middle; }
+    .table-modern tbody td:first-child { border-top-left-radius: 15px; border-bottom-left-radius: 15px; }
+    .table-modern tbody td:last-child { border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
+    
+    .avatar-circle { width: 45px; height: 45px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #6366f1; }
+    .gradient-blue { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; }
+    .gradient-cyan { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; }
+    .gradient-purple { background: linear-gradient(135deg, #a855f7, #9333ea); color: white; }
+</style>
 
-<div class="stat-grid animate-fade-in delay-100" style="animation-fill-mode: both;">
-    <div class="stat-card primary">
-        <p>Tổng doanh thu (Gross)</p>
-        <h3>@Model.TotalRevenue.ToString("N0") ₫</h3>
-        <span class="muted">Toàn thời gian</span>
-    </div>
-    <div class="stat-card accent">
-        <p>Tổng học viên thu phí</p>
-        <h3>@Model.TotalLearners</h3>
-        <span class="muted">Lượt enroll thành công</span>
-    </div>
-    <div class="stat-card">
-        <p>Khóa học đang khai thác</p>
-        <h3>@Model.TotalCourses</h3>
-        <span class="muted">Kênh mang lại doanh thu</span>
-    </div>
-</div>
-
-<div class="panel-card mt-4 mb-4 animate-fade-in delay-150" style="animation-fill-mode: both;">
-    <div class="panel-head">
+<div class="container-fluid py-4" style="background-color: #f8fafc; min-height: 100vh;">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h4>Biểu đồ Doanh thu (7 tháng gần nhất)</h4>
+            <h1 class="fw-extrabold text-dark m-0">Quản lý Doanh thu</h1>
+            <p class="text-muted mt-1">Theo dõi các chỉ số tài chính và hoạt động bán hàng của hệ thống.</p>
         </div>
-        <span class="pill muted">Giả lập xu hướng</span>
+        <div class="d-flex gap-2">
+            <button class="btn btn-white shadow-sm border-0 rounded-pill px-4 fw-bold"> Xuất Báo Cáo</button>
+            <button class="btn btn-primary shadow-lg border-0 rounded-pill px-4 fw-bold hover-lift" style="background: #6366f1;">
+                <i class="bi bi-calendar3 me-2"></i>Tháng Này
+            </button>
+        </div>
     </div>
-    <div style="height: 300px; width: 100%;">
-        <canvas id="revChart"></canvas>
-    </div>
-</div>
 
-<div class="panel-grid animate-fade-in delay-200" style="animation-fill-mode: both;">
-    <div class="panel-card" style="grid-column: 1 / -1;">
-        <div class="panel-head">
-            <h4>Top Khóa Học Bán Chạy Nhất</h4>
-            <span class="pill primary">BXH Top @Model.TopCourses.Count</span>
+    <!-- Stats Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-4 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon gradient-blue">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <h6 class="text-muted fw-bold small text-uppercase">Tổng Doanh Thu</h6>
+                <h2 class="fw-extrabold text-dark mb-1">@Model.TotalRevenue.ToString("N0") VNĐ</h2>
+                <div class="text-success small fw-bold">
+                    <i class="bi bi-arrow-up me-1"></i> Tất cả thời gian
+                </div>
+            </div>
         </div>
-        <div class="table-responsive mt-3">
-            <table class="table table-borderless align-middle admin-table">
+        <div class="col-xl-4 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon gradient-cyan">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <h6 class="text-muted fw-bold small text-uppercase">Doanh Thu Tháng Này</h6>
+                <h2 class="fw-extrabold text-dark mb-1">@Model.MonthlyRevenue.ToString("N0") VNĐ</h2>
+                <div class="text-info small fw-bold">
+                    <i class="bi bi-stars me-1"></i> Mục tiêu 80% đạt được
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="stat-card p-4">
+                <div class="stat-icon gradient-purple">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <h6 class="text-muted fw-bold small text-uppercase">Đăng Ký Mới (30 ngày)</h6>
+                <h2 class="fw-extrabold text-dark mb-1">@Model.NewEnrollmentsCount</h2>
+                <div class="text-success small fw-bold">
+                    <i class="bi bi-plus-lg me-1"></i> Tăng trưởng 12%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="bi bi-bar-chart-line me-2 text-primary"></i> Tăng Trưởng Doanh Thu (6 tháng gần đây)
+                </h5>
+                <div style="height: 350px;">
+                    <canvas id="revenueLineChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-container">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="bi bi-pie-chart me-2 text-primary"></i> Cơ Cấu Theo Khóa Học
+                </h5>
+                <div style="height: 350px;">
+                    <canvas id="coursePieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchases Table -->
+    <div class="mb-4">
+        <h5 class="fw-bold mb-4 d-flex align-items-center">
+            <i class="bi bi-clock-history me-2 text-primary"></i> Giao Dịch Gần Đây
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-modern">
                 <thead>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <th>Tên khóa học</th>
-                        <th class="text-center">Số lượt đăng ký</th>
-                        <th class="text-end">Doanh thu mang lại</th>
+                    <tr>
+                        <th>Học viên</th>
+                        <th>Khóa học</th>
+                        <th>Số tiền</th>
+                        <th>Ngày thanh toán</th>
+                        <th>Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody>
-                @foreach (var item in Model.TopCourses)
-                {
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
-                        <td class="fw-semibold text-white">@item.CourseName</td>
-                        <td class="text-center"><span class="badge" style="background: rgba(6,182,212,0.1); color: var(--primary);">@item.Learners học viên</span></td>
-                        <td class="text-end fw-bold" style="color: var(--primary-2);">@item.Revenue.ToString("N0") ₫</td>
-                    </tr>
-                }
+                    @foreach (var item in Model.RecentPurchases)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-circle">@item.StudentName[0]</div>
+                                    <div class="fw-bold text-dark">@item.StudentName</div>
+                                </div>
+                            </td>
+                            <td class="text-muted">@item.CourseName</td>
+                            <td><span class="fw-extrabold text-success">@item.Amount.ToString("N0") đ</span></td>
+                            <td class="text-muted">@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-bold">Hoàn tất</span></td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
@@ -74,72 +153,67 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const ctx = document.getElementById('revChart').getContext('2d');
-            
-            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');   
-            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Line Chart
+            const lineCtx = document.getElementById('revenueLineChart').getContext('2d');
+            const lineGradient = lineCtx.createLinearGradient(0, 0, 0, 400);
+            lineGradient.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
+            lineGradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
 
-            var revenues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRevenue));
-
-            new Chart(ctx, {
-                type: 'bar',
+            new Chart(lineCtx, {
+                type: 'line',
                 data: {
-                    labels: ['Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9 (Hiện tại)'],
+                    labels: @Html.Raw(Json.Serialize(Model.MonthlyLabels)),
                     datasets: [{
                         label: 'Doanh thu (VNĐ)',
-                        data: revenues,
-                        backgroundColor: gradient,
-                        borderColor: '#10b981',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        hoverBackgroundColor: 'rgba(16, 185, 129, 0.8)'
+                        data: @Html.Raw(Json.Serialize(Model.MonthlyData)),
+                        borderColor: '#6366f1',
+                        borderWidth: 4,
+                        backgroundColor: lineGradient,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#6366f1',
+                        pointBorderWidth: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#fff',
-                            bodyColor: '#10b981',
-                            borderColor: 'rgba(255,255,255,0.1)',
-                            borderWidth: 1,
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#94a3b8', font: { family: "'Space Grotesk', sans-serif" } }
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { borderDash: [5, 5], color: '#f1f5f9' },
+                            ticks: { callback: value => value.toLocaleString() + ' đ' }
                         },
-                        y: {
-                            grid: { color: 'rgba(255, 255, 255, 0.05)', borderDash: [5, 5] },
-                            ticks: { 
-                                color: '#94a3b8', 
-                                font: { family: "'Space Grotesk', sans-serif" },
-                                callback: function(value, index, values) {
-                                    return value / 1000000 + 'M';
-                                }
-                            },
-                            beginAtZero: true
-                        }
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Pie Chart
+            const pieCtx = document.getElementById('coursePieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.CourseLabels)),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model.CourseData)),
+                        backgroundColor: [
+                            '#6366f1', '#06b6d4', '#a855f7', '#f59e0b', '#ef4444'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 20
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true, font: { weight: 'bold' } } }
                     }
                 }
             });

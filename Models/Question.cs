@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,5 +10,7 @@ public class Question
     public int ExamId { get; set; }
     public Exam? Exam { get; set; }
     public string? Content { get; set; }
+
+    public ICollection<QuestionOption> Options { get; set; } = new List<QuestionOption>();
 }
 

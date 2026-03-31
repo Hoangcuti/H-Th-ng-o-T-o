@@ -1,0 +1,120 @@
+@model List<COTHUYPRO.Controllers.RankingVm>
+@{
+    ViewData["Title"] = "Bảng Xếp Hạng Học Viên";
+}
+
+<div class="ranking-container animate-fade-in py-4">
+    <div class="text-center mb-5">
+        <h6 class="text-primary fw-bold text-uppercase ls-2">Thành tích học tập</h6>
+        <h2 class="display-5 fw-800 text-dark">🏆 BẢNG XẾP HẠNG HỌC VIÊN</h2>
+        <p class="text-muted">Dựa trên tổng điểm Quiz và Bài tập (Assignment) trên toàn hệ thống</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 text-center py-5">
+            <i class="bi bi-person-slash display-4 opacity-25"></i>
+            <p class="mt-3 text-muted">Chưa có dữ liệu xếp hạng.</p>
+        </div>
+    }
+    else
+    {
+        <!-- TOP 3 PODIUM -->
+        <div class="row g-4 justify-content-center align-items-end mb-5">
+            <!-- HẠNG 2 -->
+            @if (Model.Count >= 2)
+            {
+                <div class="col-md-3 order-md-1">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white position-relative overflow-hidden hover-up transition-all" style="height: 240px;">
+                        <div class="rank-badge position-absolute top-0 end-0 m-3 px-3 py-1 bg-secondary text-white rounded-pill small fw-bold">#2</div>
+                        <div class="avatar-lg mx-auto mb-3 bg-light rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px; font-size: 2rem;">🥈</div>
+                        <h6 class="fw-bold text-dark text-truncate mb-1">@Model[1].FullName</h6>
+                        <div class="text-primary fw-800 fs-4">@Model[1].TotalScore.ToString("N1")</div>
+                        <div class="text-muted small">@Model[1].StudentCode</div>
+                    </div>
+                </div>
+            }
+
+            <!-- HẠNG 1 (TRUNG TÂM) -->
+            <div class="col-md-4 order-md-2">
+                <div class="card border-0 shadow-lg rounded-4 p-5 text-center bg-dark text-white position-relative overflow-hidden hover-up transition-all" style="height: 300px; background: linear-gradient(135deg, #1e293b, #0f172a);">
+                    <div class="rank-badge position-absolute top-0 end-0 m-3 px-4 py-2 bg-warning text-dark rounded-pill fw-bold">QUÁN QUÂN #1</div>
+                    <div class="crown-icon position-absolute top-0 start-50 translate-middle-x mt-n3" style="font-size: 3rem; color: #fbbf24;">👑</div>
+                    <div class="avatar-xl mx-auto mb-3 bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center shadow-lg border border-white border-opacity-20" style="width: 100px; height: 100px; font-size: 3rem;">🥇</div>
+                    <h5 class="fw-bold text-truncate mb-1">@Model[0].FullName</h5>
+                    <div class="text-warning display-6 fw-800">@Model[0].TotalScore.ToString("N1")</div>
+                    <div class="opacity-75 small">@Model[0].StudentCode</div>
+                </div>
+            </div>
+
+            <!-- HẠNG 3 -->
+            @if (Model.Count >= 3)
+            {
+                <div class="col-md-3 order-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white position-relative overflow-hidden hover-up transition-all" style="height: 220px;">
+                        <div class="rank-badge position-absolute top-0 end-0 m-3 px-3 py-1 bg-brown text-white rounded-pill small fw-bold" style="background:#b45309;">#3</div>
+                        <div class="avatar-lg mx-auto mb-3 bg-light rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px; font-size: 2rem;">🥉</div>
+                        <h6 class="fw-bold text-dark text-truncate mb-1">@Model[2].FullName</h6>
+                        <div class="text-primary fw-800 fs-4">@Model[2].TotalScore.ToString("N1")</div>
+                        <div class="text-muted small">@Model[2].StudentCode</div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- LIST ALL -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-lightest small text-muted text-uppercase fw-bold">
+                        <tr>
+                            <th class="ps-4" style="width: 80px;">Hạng</th>
+                            <th>Học viên</th>
+                            <th class="text-center">Điểm Quiz</th>
+                            <th class="text-center">Điểm Assignment</th>
+                            <th class="text-end pe-5">Tổng điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model)
+                        {
+                            <tr class="@(r.Rank <= 3 ? "bg-light-subtle" : "")">
+                                <td class="ps-4">
+                                    <span class="rank-number @(r.Rank == 1 ? "rank-1" : r.Rank == 2 ? "rank-2" : r.Rank == 3 ? "rank-3" : "rank-n")">@r.Rank</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="avatar-sm rounded-circle bg-primary-subtle text-primary border d-flex align-items-center justify-content-center fw-bold" style="width:40px; height:40px;">@r.FullName.Substring(0,1)</div>
+                                        <div>
+                                            <div class="fw-bold text-dark">@r.FullName</div>
+                                            <div class="text-muted small">@r.StudentCode</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center fw-medium">@r.QuizScore.ToString("N1")</td>
+                                <td class="text-center fw-medium">@r.AssignmentScore.ToString("N1")</td>
+                                <td class="text-end pe-5 fw-800 text-primary fs-5">@r.TotalScore.ToString("N1")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .ls-2 { letter-spacing: 2px; }
+    .fw-800 { font-weight: 800; }
+    .display-5 { font-size: 2.5rem; letter-spacing: -2px; }
+    .hover-up:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    .transition-all { transition: all 0.4s ease; }
+    .bg-lightest { background-color: #fcfcfc; }
+    
+    .rank-number { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 800; font-size: 0.8rem; }
+    .rank-1 { background: #fbbf24; color: #78350f; }
+    .rank-2 { background: #94a3b8; color: #1e293b; }
+    .rank-3 { background: #d97706; color: #fff; }
+    .rank-n { background: #f1f5f9; color: #64748b; }
+    .avatar-sm { background-color: rgba(14, 165, 233, 0.1) !important; }
+</style>

@@ -13,7 +13,7 @@
 
 <div class="panel-card">
     <div class="panel-head"><h4>Thông tin</h4></div>
-    <form asp-action="EditLesson" method="post" class="row g-3">
+    <form asp-action="EditLesson" method="post" enctype="multipart/form-data" class="row g-3">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
         <div class="col-md-6">
@@ -38,14 +38,26 @@
             <span class="text-danger" asp-validation-for="Duration"></span>
         </div>
         <div class="col-md-6">
-            <label class="form-label">Link Tài Liệu (URL)</label>
-            <input asp-for="DocumentUrl" class="form-control" placeholder="https://..." />
+            <label class="form-label">Tài liệu bài giảng (File Word/PDF hoặc URL)</label>
+            <div class="input-group">
+                <input type="file" asp-for="DocumentFile" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx" />
+                <input asp-for="DocumentUrl" class="form-control" placeholder="Hoặc dán URL tài liệu..." />
+            </div>
+            <span class="text-danger" asp-validation-for="DocumentFile"></span>
             <span class="text-danger" asp-validation-for="DocumentUrl"></span>
+            @if(!string.IsNullOrEmpty(Model.DocumentUrl)) {
+                <div class="mt-1"><small class="text-muted">Hiện tại: <a href="@Model.DocumentUrl" target="_blank">Xem tài liệu</a></small></div>
+            }
         </div>
         <div class="col-md-6">
             <label class="form-label">Link Video (YouTube/Vimeo)</label>
-            <input asp-for="VideoUrl" class="form-control" placeholder="https://..." />
+            <input asp-for="VideoUrl" class="form-control" placeholder="https://..." oninput="updateVideoPreview(this.value)" />
             <span class="text-danger" asp-validation-for="VideoUrl"></span>
+            <div id="videoPreviewContainer" class="mt-3" style="display:none;">
+                <div class="ratio ratio-16x9 border rounded overflow-hidden shadow-sm">
+                    <iframe id="videoPreviewFrame" src="" allowfullscreen></iframe>
+                </div>
+            </div>
         </div>
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-end mb-2">
@@ -108,5 +120,40 @@
             btn.disabled = false;
         }
     }
+
+    function updateVideoPreview(url) {
+        const container = document.getElementById('videoPreviewContainer');
+        const iframe = document.getElementById('videoPreviewFrame');
+        
+        if (!url) {
+            container.style.display = 'none';
+            return;
+        }
+
+        let embedUrl = "";
+        if (url.includes("youtube.com/watch?v=")) {
+            const id = url.split("v=")[1].split("&")[0];
+            embedUrl = `https://www.youtube.com/embed/${id}`;
+        } else if (url.includes("youtu.be/")) {
+            const id = url.split("youtu.be/")[1].split("?")[0];
+            embedUrl = `https://www.youtube.com/embed/${id}`;
+        } else if (url.includes("vimeo.com/")) {
+            const id = url.split("vimeo.com/")[1].split("?")[0];
+            embedUrl = `https://player.vimeo.com/video/${id}`;
+        }
+
+        if (embedUrl) {
+            iframe.src = embedUrl;
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    // Auto-check on load if URL exists
+    window.addEventListener('DOMContentLoaded', () => {
+        const val = document.getElementById('VideoUrl').value;
+        if (val) updateVideoPreview(val);
+    });
     </script>
 }
