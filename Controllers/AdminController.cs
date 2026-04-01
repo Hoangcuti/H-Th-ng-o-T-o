@@ -1620,8 +1620,8 @@ public class AdminController : Controller
             studentHistory.ExamResults = _context.ExamResults
                 .Include(r => r.Attempt).ThenInclude(a => a.Exam)
                 .Where(r => r.Attempt != null && r.Attempt.UserId == student.UserId && r.Attempt.Exam != null && r.Attempt.Exam.CourseId == cls.CourseId)
-                .OrderByDescending(r => r.Attempt.StartedAt)
                 .AsEnumerable()
+                .OrderByDescending(r => r.Attempt!.StartedAt)
                 .Select(r =>
                 {
                     var attempt = r.Attempt!;
@@ -1641,8 +1641,8 @@ public class AdminController : Controller
             studentHistory.AssignmentSubmissions = _context.AssignmentSubmissions
                 .Include(s => s.Assignment)
                 .Where(s => s.StudentId == student.UserId && s.Assignment != null && s.Assignment.CourseId == cls.CourseId)
-                .OrderByDescending(s => s.SubmittedAt)
                 .AsEnumerable()
+                .OrderByDescending(s => s.SubmittedAt)
                 .Select(s =>
                 {
                     var assignment = s.Assignment!;
