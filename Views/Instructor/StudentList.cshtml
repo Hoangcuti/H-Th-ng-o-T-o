@@ -12,7 +12,8 @@
             </h2>
             <p class="text-muted mb-0">Course: @Model.ClassInfo.Course?.CourseName</p>
             <p class="text-muted mb-0">
-                Block: @Model.ClassInfo.Block?.BlockName | Semester: @Model.ClassInfo.Block?.Semester?.SemesterName | Year: @Model.ClassInfo.Block?.Semester?.Year?.YearNumber
+                Block: @Model.ClassInfo.Block?.BlockName | Semester: @Model.ClassInfo.Block?.Semester?.SemesterName |
+                Year: @Model.ClassInfo.Block?.Semester?.Year?.YearNumber
             </p>
         </div>
         <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
@@ -38,56 +39,59 @@
                         <tr>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="avatar-sm rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">
+                                    <div class="avatar-sm rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                         style="width: 40px; height: 40px;">
                                         @(student.StudentName?.Substring(0, 1).ToUpper() ?? "?")
                                     </div>
                                     <span class="fw-bold text-dark">@student.StudentName</span>
                                 </div>
                             </td>
-                            <td class="text-muted">@Model.ClassInfo.ClassStudents.FirstOrDefault(cs => cs.UserId == student.StudentId)?.User?.Email</td>
-                            <td class="text-muted">@Model.ClassInfo.ClassStudents.FirstOrDefault(cs => cs.UserId == student.StudentId)?.CreatedAt.ToString("dd/MM/yyyy")</td>
-                            <td>
-                                @if (student.ExamResults.Any())
-                                {
-                                    <ul class="list-unstyled mb-0">
-                                        @foreach (var exam in student.ExamResults.Take(2))
+                            <td class="text-muted">@Model.ClassInfo.ClassStudents.FirstOrDefault(cs => cs.UserId ==
+                                                            student.StudentId)?.User?.Email</td>
+                                <td class="text-muted">@Model.ClassInfo.ClassStudents.FirstOrDefault(cs => cs.UserId ==
+                                                                student.StudentId)?.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        @if (student.ExamResults.Any())
                                         {
-                                            <li>@exam.ExamTitle - @exam.Score/10</li>
+                                            <ul class="list-unstyled mb-0">
+                                                @foreach (var exam in student.ExamResults.Take(2))
+                                                {
+                                                    <li>@exam.ExamTitle - @exam.Score/10</li>
+                                                }
+                                            </ul>
                                         }
-                                    </ul>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">No quiz history</span>
-                                }
-                            </td>
-                            <td>
-                                @if (student.AssignmentSubmissions.Any())
-                                {
-                                    <ul class="list-unstyled mb-0">
-                                        @foreach (var submission in student.AssignmentSubmissions.Take(2))
+                                        else
                                         {
-                                            <li>@submission.AssignmentTitle - @submission.Status</li>
+                                            <span class="text-muted">No quiz history</span>
                                         }
-                                    </ul>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">No assignments</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                    @if (!Model.StudentHistories.Any())
-                    {
-                        <tr>
-                            <td colspan="5" class="text-center py-5">
-                                <p class="text-muted mb-0">No students have been assigned to this class yet.</p>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                    </td>
+                                    <td>
+                                        @if (student.AssignmentSubmissions.Any())
+                                        {
+                                            <ul class="list-unstyled mb-0">
+                                                @foreach (var submission in student.AssignmentSubmissions.Take(2))
+                                                {
+                                                    <li>@submission.AssignmentTitle - @submission.Status</li>
+                                                }
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No assignments</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            @if (!Model.StudentHistories.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <p class="text-muted mb-0">No students have been assigned to this class yet.</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
-</div>

@@ -68,7 +68,7 @@ public class InstructorController : Controller
         ViewBag.AcademicYears = _context.AcademicYears.ToList();
         ViewBag.Semesters = _context.Semesters.Include(s => s.Year).ToList();
         ViewBag.Blocks = _context.Blocks.Include(b => b.Semester).ThenInclude(s => s!.Year).ToList();
-        
+
         ViewBag.SelectedYear = yearId;
         ViewBag.SelectedSemester = semesterId;
         ViewBag.SelectedBlock = blockId;
@@ -133,11 +133,11 @@ public class InstructorController : Controller
             });
         }
 
-        return View("Lessons/CourseLessons", new CourseLessonsVm 
-        { 
-            CourseId = course.Id, 
+        return View("Lessons/CourseLessons", new CourseLessonsVm
+        {
+            CourseId = course.Id,
             CourseName = course.CourseName,
-            Chapters = chapters 
+            Chapters = chapters
         });
     }
 
@@ -149,7 +149,7 @@ public class InstructorController : Controller
             .Where(ci => ci.UserId == userId)
             .Select(ci => ci.Course)
             .ToList();
-            
+
         ViewBag.Courses = courses;
         return View("Lessons/Create", new LessonFormVm { CourseId = courseId ?? 0 });
     }
@@ -181,9 +181,9 @@ public class InstructorController : Controller
             docUrl = "/uploads/lessons/" + fileName;
         }
 
-        _context.Lessons.Add(new Lesson 
-        { 
-            Title = model.Title, 
+        _context.Lessons.Add(new Lesson
+        {
+            Title = model.Title,
             CourseId = model.CourseId,
             OrderIndex = model.OrderIndex,
             DocumentUrl = docUrl,
@@ -267,7 +267,7 @@ public class InstructorController : Controller
         lesson.Duration = model.Duration;
         lesson.IsFreePreview = model.IsFreePreview;
         lesson.IsPublished = model.IsPublished;
-        
+
         lesson.Status = "Pending";
         lesson.UpdatedByUserId = userId;
         lesson.UpdatedAt = DateTime.Now;

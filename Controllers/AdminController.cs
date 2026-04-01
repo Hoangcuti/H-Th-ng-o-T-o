@@ -48,7 +48,8 @@ public class AdminController : Controller
             .ToList();
 
         var topCourses = learnerByCourse
-            .Select(g => {
+            .Select(g =>
+            {
                 var c = _context.Courses.FirstOrDefault(x => x.Id == g.CourseId);
                 return new RevenueCourseVm
                 {
@@ -70,18 +71,20 @@ public class AdminController : Controller
         var revenuePoints = _context.ClassStudents
             .Include(cs => cs.Class).ThenInclude(c => c!.Course)
             .Where(cs => cs.CreatedAt >= DateTime.Now.AddMonths(-12))
-            .ToList() 
+            .ToList()
             .GroupBy(cs => new { cs.CreatedAt.Year, cs.CreatedAt.Month })
             .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
-            .Select(g => new { 
-                Label = $"T{g.Key.Month}/{g.Key.Year % 100}", 
-                Value = g.Sum(cs => cs.Class != null && cs.Class.Course != null ? cs.Class.Course.Price : 0) 
+            .Select(g => new
+            {
+                Label = $"T{g.Key.Month}/{g.Key.Year % 100}",
+                Value = g.Sum(cs => cs.Class != null && cs.Class.Course != null ? cs.Class.Course.Price : 0)
             })
             .ToList();
 
         // 2. Pie Chart Data: Course Distribution (Show top 8 courses with enrollment)
         var courseDataQuery = _context.Courses
-            .Select(c => new {
+            .Select(c => new
+            {
                 Label = c.CourseName,
                 Value = _context.ClassStudents.Count(cs => cs.Class != null && cs.Class.CourseId == c.Id)
             })
@@ -350,7 +353,7 @@ public class AdminController : Controller
                 TaughtCourses = u.TeachingCourses.Select(tc => tc.Course!).ToList()
             })
             .ToList();
-        
+
         var applications = _context.InstructorCourseApplications
             .Include(a => a.User)
             .Include(a => a.Course)
@@ -381,7 +384,7 @@ public class AdminController : Controller
         var user = _context.Users
             .Include(u => u.ClassStudents).ThenInclude(cs => cs.Class).ThenInclude(c => c!.Course)
             .FirstOrDefault(u => u.Id == id);
-            
+
         if (user == null) return NotFound();
 
         var vm = new StudentDetailsVm { User = user };
@@ -422,7 +425,7 @@ public class AdminController : Controller
                 ExamTitle = r.Attempt!.Exam!.Title,
                 Score = r.Score,
                 AttemptDate = r.Attempt.StartedAt,
-                IsPassed = r.Score >= (r.Attempt.Exam.PassingScore / 10.0) 
+                IsPassed = r.Score >= (r.Attempt.Exam.PassingScore / 10.0)
             })
             .ToList();
 
@@ -598,7 +601,7 @@ public class AdminController : Controller
                     .ToList()
             })
             .ToList();
-            
+
         var pendingLessons = _context.Lessons
             .Where(l => l.CourseId == courseId && l.Status == "Pending")
             .OrderBy(l => l.OrderIndex)
@@ -637,9 +640,9 @@ public class AdminController : Controller
             });
         }
 
-        return View("Lessons/CourseLessons", new CourseLessonsVm 
-        { 
-            CourseId = course.Id, 
+        return View("Lessons/CourseLessons", new CourseLessonsVm
+        {
+            CourseId = course.Id,
             CourseName = course.CourseName,
             Chapters = chapters,
             PendingLessons = pendingLessons
@@ -651,9 +654,9 @@ public class AdminController : Controller
     {
         var course = _context.Courses.FirstOrDefault(c => c.Id == courseId);
         if (course == null) return NotFound();
-        
-        var vm = new CreateBulkVm 
-        { 
+
+        var vm = new CreateBulkVm
+        {
             CourseId = courseId,
             AvailableCourses = _context.Courses.OrderBy(c => c.CourseName).ToList()
         };
@@ -708,7 +711,7 @@ public class AdminController : Controller
                     CourseId = model.CourseId,
                     LessonId = lesson.Id,
                     Title = entry.QuizTitle,
-                    PassingScore = 10, 
+                    PassingScore = 10,
                     DurationMinutes = 15,
                     MaxAttempts = 99
                 };
@@ -750,9 +753,9 @@ public class AdminController : Controller
             docUrl = "/uploads/lessons/" + fileName;
         }
 
-        _context.Lessons.Add(new Lesson 
-        { 
-            Title = model.Title, 
+        _context.Lessons.Add(new Lesson
+        {
+            Title = model.Title,
             CourseId = model.CourseId,
             OrderIndex = model.OrderIndex,
             DocumentUrl = docUrl,
@@ -775,10 +778,10 @@ public class AdminController : Controller
         var lesson = _context.Lessons.FirstOrDefault(l => l.Id == id);
         if (lesson == null) return NotFound();
         ViewBag.Courses = _context.Courses.ToList();
-        return View("Lessons/Edit", new LessonFormVm 
-        { 
-            Id = lesson.Id, 
-            Title = lesson.Title, 
+        return View("Lessons/Edit", new LessonFormVm
+        {
+            Id = lesson.Id,
+            Title = lesson.Title,
             CourseId = lesson.CourseId,
             OrderIndex = lesson.OrderIndex,
             DocumentUrl = lesson.DocumentUrl,
@@ -888,9 +891,9 @@ public class AdminController : Controller
             ViewBag.Courses = _context.Courses.ToList();
             return View("Quiz/Create", model);
         }
-        var newExam = new Exam 
-        { 
-            Title = model.Title, 
+        var newExam = new Exam
+        {
+            Title = model.Title,
             CourseId = model.CourseId,
             LessonId = model.LessonId,
             DurationMinutes = model.DurationMinutes,
@@ -913,11 +916,11 @@ public class AdminController : Controller
     {
         var exam = _context.Exams.FirstOrDefault(e => e.Id == id);
         if (exam == null) return NotFound();
-        
+
         var questions = _context.Questions
             .Where(q => q.ExamId == id)
             .ToList();
-            
+
         var questionIds = questions.Select(q => q.Id).ToList();
         var options = _context.QuestionOptions
             .Where(o => questionIds.Contains(o.QuestionId))
@@ -927,11 +930,11 @@ public class AdminController : Controller
         ViewBag.Options = options;
         ViewBag.Courses = _context.Courses.ToList();
         ViewBag.Lessons = _context.Lessons.Where(l => l.CourseId == exam.CourseId).ToList();
-        
-        return View("Quiz/Edit", new ExamFormVm 
-        { 
-            Id = exam.Id, 
-            Title = exam.Title, 
+
+        return View("Quiz/Edit", new ExamFormVm
+        {
+            Id = exam.Id,
+            Title = exam.Title,
             CourseId = exam.CourseId,
             DurationMinutes = exam.DurationMinutes,
             PassingScore = exam.PassingScore,
@@ -954,7 +957,7 @@ public class AdminController : Controller
         }
         var exam = _context.Exams.FirstOrDefault(e => e.Id == model.Id);
         if (exam == null) return NotFound();
-        
+
         exam.Title = model.Title;
         exam.CourseId = model.CourseId;
         exam.LessonId = model.LessonId;
@@ -966,7 +969,7 @@ public class AdminController : Controller
         exam.ShowAnswers = model.ShowAnswers;
         exam.ExamType = model.ExamType;
         _context.SaveChanges();
-        
+
         TempData["Message"] = "Đã cập nhật bài quiz.";
         return RedirectToAction(nameof(Quiz));
     }
@@ -977,7 +980,7 @@ public class AdminController : Controller
     {
         var exam = _context.Exams.FirstOrDefault(e => e.Id == id);
         if (exam == null) return NotFound();
-        
+
         // cascade delete questions will be handled by EF if configured, otherwise might fail
         _context.Exams.Remove(exam);
         _context.SaveChanges();
@@ -991,13 +994,13 @@ public class AdminController : Controller
         var exam = _context.Exams
             .Include(e => e.Course)
             .FirstOrDefault(e => e.Id == id);
-            
+
         if (exam == null) return NotFound();
 
         var questions = _context.Questions
             .Where(q => q.ExamId == id)
             .ToList();
-            
+
         var questionIds = questions.Select(q => q.Id).ToList();
         var options = _context.QuestionOptions
             .Where(o => questionIds.Contains(o.QuestionId))
@@ -1005,7 +1008,7 @@ public class AdminController : Controller
 
         ViewBag.Questions = questions;
         ViewBag.Options = options;
-        
+
         return View("Quiz/Details", exam);
     }
 
@@ -1064,7 +1067,7 @@ public class AdminController : Controller
         }
         return RedirectToAction(nameof(EditQuiz), new { id = examId });
     }
-    
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult EditOption(int id, int examId, string content)
@@ -1119,21 +1122,21 @@ public class AdminController : Controller
     public async Task<IActionResult> GenerateExamQuestions([FromBody] AiExamRequestMsg req)
     {
         if (string.IsNullOrWhiteSpace(req.Topic) || req.ExamId == 0) return BadRequest();
-        
+
         var questions = await _aiService.GenerateQuizQuestionsAsync(req.Topic, req.Count);
         foreach (var qDto in questions)
         {
             var dbQ = new Question { ExamId = req.ExamId, Content = qDto.Content };
             _context.Questions.Add(dbQ);
-            _context.SaveChanges(); 
-            
+            _context.SaveChanges();
+
             foreach (var optDto in qDto.Options)
             {
-                _context.QuestionOptions.Add(new QuestionOption 
-                { 
-                    QuestionId = dbQ.Id, 
-                    Content = optDto.Content, 
-                    IsCorrect = optDto.IsCorrect 
+                _context.QuestionOptions.Add(new QuestionOption
+                {
+                    QuestionId = dbQ.Id,
+                    Content = optDto.Content,
+                    IsCorrect = optDto.IsCorrect
                 });
             }
         }
@@ -1277,7 +1280,7 @@ public class AdminController : Controller
     [HttpGet]
     public IActionResult MigrateStatus()
     {
-        try 
+        try
         {
             _context.Database.ExecuteSqlRaw("IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Lessons') AND name = 'Status') ALTER TABLE Lessons ADD Status NVARCHAR(20) DEFAULT 'Approved' NOT NULL;");
             return Content("Migration successful! Status column added.");
@@ -1533,14 +1536,14 @@ public class AdminController : Controller
             .Include(c => c.Instructor)
             .Include(c => c.Block).ThenInclude(b => b!.Semester).ThenInclude(s => s!.Year)
             .ToList();
-        
+
         ViewBag.Courses = _context.Courses.ToList();
         var instructorRole = _context.Roles.FirstOrDefault(r => r.Name == "Instructor");
         ViewBag.Instructors = _context.Users
             .Where(u => u.UserRoles.Any(ur => ur.RoleId == instructorRole!.Id))
             .ToList();
         ViewBag.Blocks = _context.Blocks.Include(b => b.Semester).ThenInclude(s => s!.Year).ToList();
-        
+
         return View("Classes/Index", classes);
     }
 
@@ -1559,16 +1562,16 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Classes));
         }
 
-        var newClass = new Class 
-        { 
-            ClassCode = classCode.Trim(), 
-            CourseId = courseId, 
-            InstructorId = instructorId, 
-            BlockId = blockId 
+        var newClass = new Class
+        {
+            ClassCode = classCode.Trim(),
+            CourseId = courseId,
+            InstructorId = instructorId,
+            BlockId = blockId
         };
         _context.Classes.Add(newClass);
         _context.SaveChanges();
-        
+
         TempData["Message"] = $"Created class {classCode} successfully.";
         return RedirectToAction(nameof(Classes));
     }

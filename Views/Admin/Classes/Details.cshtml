@@ -1,0 +1,71 @@
+@model COTHUYPRO.Models.ClassDetailVm
+@{
+    ViewData["Title"] = $"Class Details - {Model.ClassInfo.ClassCode}";
+}
+
+<div class="container-fluid p-4">
+    <h2 class="mb-4">Class @Model.ClassInfo.ClassCode</h2>
+    <p>Course: @Model.ClassInfo.Course?.CourseName</p>
+    <p>Instructor: @Model.ClassInfo.Instructor?.FullName</p>
+    <p>Block: @Model.ClassInfo.Block?.BlockName</p>
+    <p>Semester: @Model.ClassInfo.Block?.Semester?.SemesterName</p>
+    <p>Year: @Model.ClassInfo.Block?.Semester?.Year?.YearNumber</p>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Students</h5>
+            <ul class="list-group list-group-flush">
+                @foreach (var student in Model.StudentHistories)
+                {
+                    <li class="list-group-item">
+                        <strong>@student.StudentName</strong> - @student.StudentCode
+                        <div class="small text-muted">Quiz results: @student.ExamResults.Count() | Assignment submissions:
+                            @student.AssignmentSubmissions.Count()</div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Lessons</h5>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var lesson in Model.Lessons.Take(5))
+                            {
+                                <li class="list-group-item">@lesson.Title</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Exams</h5>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var exam in Model.Exams.Take(5))
+                            {
+                                <li class="list-group-item">@exam.Title</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Assignments</h5>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var assignment in Model.Assignments.Take(5))
+                            {
+                                <li class="list-group-item">@assignment.Title</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

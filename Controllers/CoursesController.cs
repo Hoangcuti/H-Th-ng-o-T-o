@@ -45,7 +45,7 @@ public class CoursesController : Controller
         var courses = coursesQuery.ToList();
         ViewBag.EnrolledCourseIds = enrolledCourseIds;
         ViewBag.IsAdmin = isAdmin;
-        
+
         return View(courses);
     }
 
@@ -87,7 +87,7 @@ public class CoursesController : Controller
     {
         var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userIdString)) return RedirectToAction("Login", "Account");
-        
+
         var userId = int.Parse(userIdString);
         bool isAdmin = User.IsInRole("Admin");
 
@@ -96,7 +96,7 @@ public class CoursesController : Controller
 
         // Tìm lớp học đầu tiên của khóa này
         var targetClass = _context.Classes.FirstOrDefault(c => c.CourseId == id);
-        
+
         if (targetClass == null)
         {
             targetClass = new Class { CourseId = id, StatusId = 1 };
@@ -105,11 +105,11 @@ public class CoursesController : Controller
         }
 
         var exists = _context.ClassStudents.Any(cs => cs.UserId == userId && cs.ClassId == targetClass.Id);
-        if (!exists) 
+        if (!exists)
         {
-            var cs = new ClassStudent 
-            { 
-                UserId = userId, 
+            var cs = new ClassStudent
+            {
+                UserId = userId,
                 ClassId = targetClass.Id,
                 IsPaid = false,
                 CreatedAt = DateTime.Now
