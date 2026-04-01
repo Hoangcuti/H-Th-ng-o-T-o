@@ -1621,20 +1621,16 @@ public class AdminController : Controller
                 .Include(r => r.Attempt).ThenInclude(a => a.Exam)
                 .Where(r => r.Attempt != null && r.Attempt.UserId == student.UserId && r.Attempt.Exam != null && r.Attempt.Exam.CourseId == cls.CourseId)
                 .AsEnumerable()
-                .OrderByDescending(r => r.Attempt!.StartedAt)
-                .Select(r =>
+                .Select(r => new { Result = r, Attempt = r.Attempt!, Exam = r.Attempt!.Exam! })
+                .OrderByDescending(x => x.Attempt.StartedAt)
+                .Select(x => new ClassExamResultVm
                 {
-                    var attempt = r.Attempt!;
-                    var exam = attempt.Exam!;
-                    return new ClassExamResultVm
-                    {
-                        ExamId = attempt.ExamId,
-                        ExamTitle = exam.Title,
-                        Score = r.Score,
-                        TotalQuestions = r.TotalQuestions,
-                        AttemptDate = attempt.StartedAt,
-                        IsPassed = r.Score >= (exam.PassingScore / 10.0)
-                    };
+                    ExamId = x.Attempt.ExamId,
+                    ExamTitle = x.Exam.Title,
+                    Score = x.Result.Score,
+                    TotalQuestions = x.Result.TotalQuestions,
+                    AttemptDate = x.Attempt.StartedAt,
+                    IsPassed = x.Result.Score >= (x.Exam.PassingScore / 10.0)
                 })
                 .ToList();
 
