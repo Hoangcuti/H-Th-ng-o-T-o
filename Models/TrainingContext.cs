@@ -68,6 +68,10 @@ public class TrainingContext : DbContext
     public DbSet<Assignment> Assignments => Set<Assignment>();
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
 
+    public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
+    public DbSet<Semester> Semesters => Set<Semester>();
+    public DbSet<Block> Blocks => Set<Block>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -354,5 +358,25 @@ public class TrainingContext : DbContext
             .WithMany(u => u.Classes)
             .HasForeignKey(c => c.InstructorId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Semester>()
+            .HasOne(s => s.Year)
+            .WithMany(y => y.Semesters)
+            .HasForeignKey(s => s.YearId);
+
+        modelBuilder.Entity<Block>()
+            .HasOne(b => b.Semester)
+            .WithMany(s => s.Blocks)
+            .HasForeignKey(b => b.SemesterId);
+
+        modelBuilder.Entity<Class>()
+            .HasOne(c => c.Block)
+            .WithMany(b => b.Classes)
+            .HasForeignKey(c => c.BlockId);
+
+        modelBuilder.Entity<Course>()
+            .HasOne(c => c.Block)
+            .WithMany(b => b.Courses)
+            .HasForeignKey(c => c.BlockId);
     }
 }

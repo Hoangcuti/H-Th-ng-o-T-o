@@ -31,7 +31,7 @@ public class Lesson
     public CourseChapter? Chapter { get; set; }
 
     [MaxLength(20)]
-    public string Status { get; set; } = "Approved";
+    public string Status { get; set; } = "Pending";
 
     public int? CreatedByUserId { get; set; }
     public User? CreatedByUser { get; set; }

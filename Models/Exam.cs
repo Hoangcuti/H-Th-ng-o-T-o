@@ -26,7 +26,7 @@ public class Exam
     public string ExamType { get; set; } = "Quiz"; // Quiz, Final
 
     [MaxLength(20)]
-    public string Status { get; set; } = "Approved";
+    public string Status { get; set; } = "Pending";
 
     public int? CreatedByUserId { get; set; }
     public User? CreatedByUser { get; set; }

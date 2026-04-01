@@ -25,22 +25,26 @@ public class InstructorController : Controller
         return Json(new { success = true, content });
     }
 
-    public IActionResult Index()
+    public IActionResult Index(int? yearId, int? semesterId, int? blockId)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var classes = _context.Classes
+        var classesQuery = _context.Classes
             .Include(c => c.Course)
             .Include(c => c.Room)
-            .Include(c => c.Status)
-            .Include(c => c.Schedules)
+            .Include(c => c.Block).ThenInclude(b => b!.Semester).ThenInclude(s => s!.Year)
             .Include(c => c.ClassStudents).ThenInclude(cs => cs.User)
-            .Where(c => c.InstructorId == userId)
-            .ToList();
+            .Where(c => c.InstructorId == userId);
+
+        if (blockId.HasValue) classesQuery = classesQuery.Where(c => c.BlockId == blockId);
+        else if (semesterId.HasValue) classesQuery = classesQuery.Where(c => c.Block!.SemesterId == semesterId);
+        else if (yearId.HasValue) classesQuery = classesQuery.Where(c => c.Block!.Semester!.YearId == yearId);
+
+        var classes = classesQuery.ToList();
 
         var courses = _context.CourseInstructors
-            .Include(ci => ci.Course).ThenInclude(c => c.Level)
-            .Include(ci => ci.Course).ThenInclude(c => c.Category)
+            .Include(ci => ci.Course).ThenInclude(c => c!.Level)
+            .Include(ci => ci.Course).ThenInclude(c => c!.Category)
             .Where(ci => ci.UserId == userId)
             .Select(ci => ci.Course!)
             .Distinct()
@@ -48,7 +52,7 @@ public class InstructorController : Controller
 
         var students = _context.ClassStudents
             .Include(cs => cs.User)
-            .Include(cs => cs.Class).ThenInclude(cls => cls.Course)
+            .Include(cs => cs.Class).ThenInclude(cls => cls!.Course)
             .Where(cs => cs.Class != null && cs.Class.InstructorId == userId)
             .Select(cs => cs.User!)
             .Distinct()
@@ -61,56 +65,16 @@ public class InstructorController : Controller
             Students = students
         };
 
-        // Danh sách các khóa học mà giảng viên chưa được gán và chưa đăng ký (hoặc đã bị từ chối)
-        var assignedCourseIds = courses.Select(c => c.Id).ToList();
-        var pendingApplicationCourseIds = _context.InstructorCourseApplications
-            .Where(a => a.UserId == userId && a.Status == "Pending")
-            .Select(a => a.CourseId)
-            .ToList();
-
-        // Lấy tất cả các khóa học ngoại trừ những khóa giảng viên HIỆN ĐANG dạy hoặc ĐANG CHỜ duyệt
-        ViewBag.AvailableCourses = _context.Courses
-            .Include(c => c.Instructors).ThenInclude(ci => ci.User)
-            .Include(c => c.Category)
-            .Where(c => !assignedCourseIds.Contains(c.Id) && !pendingApplicationCourseIds.Contains(c.Id))
-            .ToList();
+        ViewBag.AcademicYears = _context.AcademicYears.ToList();
+        ViewBag.Semesters = _context.Semesters.Include(s => s.Year).ToList();
+        ViewBag.Blocks = _context.Blocks.Include(b => b.Semester).ThenInclude(s => s!.Year).ToList();
+        
+        ViewBag.SelectedYear = yearId;
+        ViewBag.SelectedSemester = semesterId;
+        ViewBag.SelectedBlock = blockId;
 
         return View(vm);
     }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult ApplyForCourse(int courseId)
-    {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        
-        // Kiểm tra xem đã đăng ký chưa
-        var exists = _context.InstructorCourseApplications
-            .Any(a => a.UserId == userId && a.CourseId == courseId && a.Status == "Pending");
-
-        if (!exists)
-        {
-            _context.InstructorCourseApplications.Add(new InstructorCourseApplication
-            {
-                UserId = userId,
-                CourseId = courseId,
-                ApplyDate = DateTime.Now,
-                Status = "Pending"
-            });
-            _context.SaveChanges();
-            TempData["Message"] = "Đã gửi đơn đăng ký giảng dạy. Vui lòng chờ Admin phê duyệt.";
-        }
-        else
-        {
-            TempData["Error"] = "Bạn đã gửi đơn đăng kí cho khóa học này rồi.";
-        }
-
-        return RedirectToAction(nameof(Index));
-    }
-
-    // ==========================================
-    // QUẢN LÝ LỘ TRÌNH (BÀI GIẢNG) CHO GIẢNG VIÊN
-    // ==========================================
 
     [HttpGet]
     public IActionResult CourseLessons(int courseId)
@@ -314,11 +278,6 @@ public class InstructorController : Controller
         return RedirectToAction(nameof(CourseLessons), new { courseId = model.CourseId });
     }
 
-    // ==========================================
-    // QUẢN LÝ QUIZ (BÀI KIỂM TRA)
-    // ==========================================
-
-    [HttpGet]
     public IActionResult Exams()
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -367,11 +326,6 @@ public class InstructorController : Controller
         return RedirectToAction(nameof(Exams));
     }
 
-    // ==========================================
-    // QUẢN LÝ BÀI TẬP (ASSIGNMENT)
-    // ==========================================
-
-    [HttpGet]
     public IActionResult Assignments()
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -418,5 +372,18 @@ public class InstructorController : Controller
 
         TempData["Message"] = "Đã gửi Bài tập. Vui lòng đợi Admin phê duyệt.";
         return RedirectToAction(nameof(Assignments));
+    }
+
+    public IActionResult StudentList(int classId)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var cls = _context.Classes
+            .Include(c => c.Course)
+            .Include(c => c.ClassStudents).ThenInclude(cs => cs.User)
+            .FirstOrDefault(c => c.Id == classId && c.InstructorId == userId);
+
+        if (cls == null) return Forbid();
+
+        return View(cls);
     }
 }

@@ -27,7 +27,7 @@ public class Assignment
     public string AssignmentType { get; set; } = "Regular";
 
     [MaxLength(20)]
-    public string Status { get; set; } = "Approved";
+    public string Status { get; set; } = "Pending";
 
     public int? CreatedByUserId { get; set; }
     [ForeignKey("CreatedByUserId")]

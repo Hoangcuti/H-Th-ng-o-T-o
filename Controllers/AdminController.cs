@@ -1453,7 +1453,119 @@ public class AdminController : Controller
         return View();
     }
 
+    // ==========================================
+    // QUẢN LÝ NĂM - KỲ - BLOCK
+    // ==========================================
 
+    public IActionResult AcademicYears()
+    {
+        var years = _context.AcademicYears.OrderByDescending(y => y.YearNumber).ToList();
+        return View("AcademicYears/Index", years);
+    }
+
+    [HttpPost]
+    public IActionResult CreateAcademicYear(int yearNumber)
+    {
+        if (yearNumber > 2000)
+        {
+            _context.AcademicYears.Add(new AcademicYear { YearNumber = yearNumber });
+            _context.SaveChanges();
+            TempData["Message"] = "Đã thêm năm học mới.";
+        }
+        return RedirectToAction(nameof(AcademicYears));
+    }
+
+    public IActionResult Semesters()
+    {
+        var semesters = _context.Semesters
+            .Include(s => s.Year)
+            .OrderByDescending(s => s.Year!.YearNumber)
+            .ThenBy(s => s.SemesterName)
+            .ToList();
+        ViewBag.Years = _context.AcademicYears.ToList();
+        return View("Semesters/Index", semesters);
+    }
+
+    [HttpPost]
+    public IActionResult CreateSemester(string name, int yearId)
+    {
+        if (!string.IsNullOrEmpty(name))
+        {
+            _context.Semesters.Add(new Semester { SemesterName = name, YearId = yearId });
+            _context.SaveChanges();
+            TempData["Message"] = "Đã thêm kỳ học mới.";
+        }
+        return RedirectToAction(nameof(Semesters));
+    }
+
+    public IActionResult Blocks()
+    {
+        var blocks = _context.Blocks
+            .Include(b => b.Semester).ThenInclude(s => s!.Year)
+            .OrderByDescending(b => b.Semester!.Year!.YearNumber)
+            .ThenBy(b => b.Semester!.SemesterName)
+            .ThenBy(b => b.BlockName)
+            .ToList();
+        ViewBag.Semesters = _context.Semesters.Include(s => s.Year).ToList();
+        return View("Blocks/Index", blocks);
+    }
+
+    [HttpPost]
+    public IActionResult CreateBlock(string name, int semesterId)
+    {
+        if (!string.IsNullOrEmpty(name))
+        {
+            _context.Blocks.Add(new Block { BlockName = name, SemesterId = semesterId });
+            _context.SaveChanges();
+            TempData["Message"] = "Đã thêm Block mới.";
+        }
+        return RedirectToAction(nameof(Blocks));
+    }
+
+    // ==========================================
+    // CẬP NHẬT QUẢN LÝ LỚP HỌC (CLASS CODE)
+    // ==========================================
+
+    public IActionResult Classes()
+    {
+        var classes = _context.Classes
+            .Include(c => c.Course)
+            .Include(c => c.Instructor)
+            .Include(c => c.Block).ThenInclude(b => b!.Semester).ThenInclude(s => s!.Year)
+            .ToList();
+        
+        ViewBag.Courses = _context.Courses.ToList();
+        var instructorRole = _context.Roles.FirstOrDefault(r => r.Name == "Instructor");
+        ViewBag.Instructors = _context.Users
+            .Where(u => u.UserRoles.Any(ur => ur.RoleId == instructorRole!.Id))
+            .ToList();
+        ViewBag.Blocks = _context.Blocks.Include(b => b.Semester).ThenInclude(s => s!.Year).ToList();
+        
+        return View("Classes/Index", classes);
+    }
+
+    [HttpPost]
+    public IActionResult CreateClass(string classCode, int? courseId, int? instructorId, int? blockId)
+    {
+        if (string.IsNullOrEmpty(classCode))
+        {
+            TempData["Error"] = "Vui lòng nhập Mã lớp.";
+            return RedirectToAction(nameof(Classes));
+        }
+
+        var newClass = new Class 
+        { 
+            ClassCode = classCode, 
+            CourseId = courseId, 
+            InstructorId = instructorId, 
+            BlockId = blockId 
+        };
+        _context.Classes.Add(newClass);
+        _context.SaveChanges();
+        
+        TempData["Message"] = $"Đã tạo lớp {classCode} thành công.";
+        return RedirectToAction(nameof(Classes));
+    }
 }
 
 public class AiRequest

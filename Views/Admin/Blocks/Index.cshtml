@@ -1,0 +1,108 @@
+@model IEnumerable<COTHUYPRO.Models.Block>
+@{
+    ViewData["Title"] = "Quản lý Block học";
+    Layout = "_AdminLayout";
+    var semesters = ViewBag.Semesters as IEnumerable<COTHUYPRO.Models.Semester>;
+}
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white fw-bold"><i class="fas fa-th-large me-2 text-warning"></i>Quản lý Block</h2>
+        <button class="btn btn-warning text-dark shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#createBlockModal">
+            <i class="fas fa-plus me-2"></i>Thêm Block
+        </button>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm text-dark" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card bg-dark border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover table-dark align-middle mb-0">
+                <thead class="bg-warning text-dark">
+                    <tr>
+                        <th class="ps-4 py-3">ID</th>
+                        <th class="py-3">Tên Block</th>
+                        <th class="py-3">Kỳ & Năm học</th>
+                        <th class="pe-4 py-3 text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var block in Model ?? Enumerable.Empty<COTHUYPRO.Models.Block>())
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-muted">#@block.Id</td>
+                            <td>
+                                <span class="badge bg-soft-warning text-warning px-3 py-2 rounded-pill fw-bold">
+                                    @block.BlockName
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-light">
+                                    @(block.Semester?.SemesterName ?? "N/A") 
+                                    - Năm @(block.Semester?.Year?.YearNumber ?? 0)
+                                </span>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <button class="btn btn-outline-warning btn-sm rounded-pill px-3 me-2">
+                                    <i class="fas fa-edit me-1"></i>Sửa
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                    <i class="fas fa-trash me-1"></i>Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create -->
+<div class="modal fade" id="createBlockModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered text-dark">
+        <div class="modal-content bg-dark border-warning shadow-lg">
+            <form asp-action="CreateBlock" method="post">
+                <div class="modal-header border-warning text-white">
+                    <h5 class="modal-title fw-bold">Thêm Block mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-white">
+                    <div class="mb-3">
+                        <label class="form-label">Tên Block (ví dụ: Block 1)</label>
+                        <select name="name" class="form-select bg-secondary text-white border-0 shadow-sm" required>
+                            <option value="Block 1">Block 1</option>
+                            <option value="Block 2">Block 2</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Chọn Kỳ học</label>
+                        <select name="semesterId" class="form-select bg-secondary text-white border-0 shadow-sm" required>
+                            @if (semesters != null)
+                            {
+                                @foreach (var s in semesters)
+                                {
+                                    <option value="@s.Id">Kỳ @s.SemesterName - Năm @(s.Year?.YearNumber ?? 0)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-warning">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-warning text-dark px-4 fw-bold">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-soft-warning { background-color: rgba(255, 193, 7, 0.15) !important; }
+</style>

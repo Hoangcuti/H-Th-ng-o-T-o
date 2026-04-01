@@ -1,0 +1,107 @@
+@model IEnumerable<COTHUYPRO.Models.Semester>
+@{
+    ViewData["Title"] = "Quản lý Kỳ học";
+    Layout = "_AdminLayout";
+    var years = ViewBag.Years as IEnumerable<COTHUYPRO.Models.AcademicYear>;
+}
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white fw-bold"><i class="fas fa-layer-group me-2 text-info"></i>Quản lý Kỳ học</h2>
+        <button class="btn btn-info text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#createSemesterModal">
+            <i class="fas fa-plus me-2"></i>Thêm Kỳ học
+        </button>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="fas fa-info-circle me-2"></i>@TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card bg-dark border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover table-dark align-middle mb-0">
+                <thead class="bg-info text-white">
+                    <tr>
+                        <th class="ps-4 py-3">ID</th>
+                        <th class="py-3">Tên Kỳ</th>
+                        <th class="py-3">Năm học</th>
+                        <th class="pe-4 py-3 text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sem in Model ?? Enumerable.Empty<COTHUYPRO.Models.Semester>())
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-muted">#@sem.Id</td>
+                            <td>
+                                <span class="badge bg-soft-info text-info px-3 py-2 rounded-pill fw-bold">
+                                    @sem.SemesterName
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-light">Năm @(sem.Year?.YearNumber ?? 0)</span>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <button class="btn btn-outline-light btn-sm rounded-pill px-3 me-2">
+                                    <i class="fas fa-edit me-1"></i>Sửa
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                    <i class="fas fa-trash me-1"></i>Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create -->
+<div class="modal fade" id="createSemesterModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-info shadow-lg">
+            <form asp-action="CreateSemester" method="post">
+                <div class="modal-header border-info">
+                    <h5 class="modal-title text-white fw-bold">Thêm Kỳ học mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-white">
+                    <div class="mb-3">
+                        <label class="form-label">Tên Kỳ (Spring, Summer, Fall)</label>
+                        <select name="name" class="form-select bg-secondary text-white border-0 shadow-sm" required>
+                            <option value="Spring">Spring</option>
+                            <option value="Summer">Summer</option>
+                            <option value="Fall">Fall</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Chọn Năm học</label>
+                        <select name="yearId" class="form-select bg-secondary text-white border-0 shadow-sm" required>
+                            @if (years != null)
+                            {
+                                @foreach (var y in years)
+                                {
+                                    <option value="@y.Id">Năm @y.YearNumber</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-info">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-info text-white px-4">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-soft-info { background-color: rgba(13, 202, 240, 0.15) !important; }
+    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05) !important; }
+</style>

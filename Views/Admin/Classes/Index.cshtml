@@ -1,0 +1,137 @@
+@model IEnumerable<COTHUYPRO.Models.Class>
+@{
+    ViewData["Title"] = "Quản lý Lớp học";
+    Layout = "_AdminLayout";
+    var courses = ViewBag.Courses as IEnumerable<COTHUYPRO.Models.Course>;
+    var instructors = ViewBag.Instructors as IEnumerable<COTHUYPRO.Models.User>;
+    var blocks = ViewBag.Blocks as IEnumerable<COTHUYPRO.Models.Block>;
+}
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white fw-bold"><i class="fas fa-chalkboard-teacher me-2 text-success"></i>Quản lý Lớp học</h2>
+        <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#createClassModal">
+            <i class="fas fa-plus me-2"></i>Tạo Lớp mới
+        </button>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card bg-dark border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover table-dark align-middle mb-0">
+                <thead class="bg-success text-white">
+                    <tr>
+                        <th class="ps-4 py-3">Mã lớp</th>
+                        <th class="py-3">Môn học</th>
+                        <th class="py-3">Giảng viên</th>
+                        <th class="py-3">Block học</th>
+                        <th class="py-3">Sĩ số</th>
+                        <th class="pe-4 py-3 text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cls in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                <span class="badge bg-soft-success text-success px-3 py-2 rounded-3">
+                                    @cls.ClassCode
+                                </span>
+                            </td>
+                            <td>@(cls.Course?.CourseName ?? "N/A")</td>
+                            <td>@(cls.Instructor?.FullName ?? "Chưa gán")</td>
+                            <td>
+                                @if (cls.Block != null)
+                                {
+                                    <small class="text-muted">
+                                        @cls.Block.BlockName (@cls.Block.Semester?.SemesterName @cls.Block.Semester?.Year?.YearNumber)
+                                    </small>
+                                }
+                                else
+                                {
+                                    <span class="text-danger">Chưa gán Block</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">@(cls.ClassStudents?.Count ?? 0) SV</span>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <button class="btn btn-outline-info btn-sm rounded-pill px-3 me-2">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create -->
+<div class="modal fade" id="createClassModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-success shadow-lg">
+            <form asp-action="CreateClass" method="post">
+                <div class="modal-header border-success text-white">
+                    <h5 class="modal-title fw-bold">Tạo Lớp học mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-white">
+                    <div class="mb-3">
+                        <label class="form-label">Mã lớp học (ví dụ: SE1701)</label>
+                        <input type="text" name="classCode" class="form-control bg-secondary text-white border-0 shadow-sm" placeholder="Nhập mã lớp..." required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Chọn Môn học</label>
+                        <select name="courseId" class="form-select bg-secondary text-white border-0 shadow-sm">
+                            <option value="">-- Chọn môn học --</option>
+                            @foreach (var c in courses ?? Enumerable.Empty<COTHUYPRO.Models.Course>())
+                            {
+                                <option value="@c.Id">@c.CourseName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Chọn Giảng viên</label>
+                        <select name="instructorId" class="form-select bg-secondary text-white border-0 shadow-sm">
+                            <option value="">-- Chọn giảng viên --</option>
+                            @foreach (var i in instructors ?? Enumerable.Empty<COTHUYPRO.Models.User>())
+                            {
+                                <option value="@i.Id">@i.FullName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Chọn Block học</label>
+                        <select name="blockId" class="form-select bg-secondary text-white border-0 shadow-sm" required>
+                            <option value="">-- Chọn Block --</option>
+                            @foreach (var b in blocks ?? Enumerable.Empty<COTHUYPRO.Models.Block>())
+                            {
+                                <option value="@b.Id">Block @b.BlockName - Kỳ @b.Semester?.SemesterName (@b.Semester?.Year?.YearNumber)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-success">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success px-4 fw-bold">Tạo ngay</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-soft-success { background-color: rgba(25, 135, 84, 0.15) !important; }
+</style>

@@ -20,6 +20,9 @@ public class Course
     [MaxLength(1000)]
     public string? ImageUrl { get; set; }
 
+    public int? BlockId { get; set; }
+    public Block? Block { get; set; }
+
     public ICollection<CourseInstructor> Instructors { get; set; } = new List<CourseInstructor>();
     public ICollection<Class> Classes { get; set; } = new List<Class>();
 }
