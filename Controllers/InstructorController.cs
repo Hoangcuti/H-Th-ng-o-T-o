@@ -379,11 +379,71 @@ public class InstructorController : Controller
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var cls = _context.Classes
             .Include(c => c.Course)
+            .Include(c => c.Block).ThenInclude(b => b!.Semester).ThenInclude(s => s!.Year)
             .Include(c => c.ClassStudents).ThenInclude(cs => cs.User)
             .FirstOrDefault(c => c.Id == classId && c.InstructorId == userId);
 
         if (cls == null) return Forbid();
 
-        return View(cls);
+        var classHistory = new ClassDetailVm
+        {
+            ClassInfo = cls,
+            Lessons = _context.Lessons
+                .Where(l => l.CourseId == cls.CourseId)
+                .OrderBy(l => l.OrderIndex)
+                .ToList(),
+            Exams = _context.Exams
+                .Where(e => e.CourseId == cls.CourseId)
+                .OrderByDescending(e => e.CreatedAt)
+                .ToList(),
+            Assignments = _context.Assignments
+                .Where(a => a.CourseId == cls.CourseId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToList()
+        };
+
+        foreach (var student in cls.ClassStudents)
+        {
+            var studentHistory = new ClassStudentHistoryVm
+            {
+                StudentId = student.UserId,
+                StudentName = student.User?.FullName ?? "Unknown",
+                StudentCode = student.User?.StudentCode ?? string.Empty
+            };
+
+            studentHistory.ExamResults = _context.ExamResults
+                .Include(r => r.Attempt).ThenInclude(a => a!.Exam)
+                .Where(r => r.Attempt!.UserId == student.UserId && r.Attempt.Exam!.CourseId == cls.CourseId)
+                .OrderByDescending(r => r.Attempt.StartedAt)
+                .Select(r => new ClassExamResultVm
+                {
+                    ExamId = r.Attempt.ExamId,
+                    ExamTitle = r.Attempt.Exam!.Title,
+                    Score = r.Score,
+                    TotalQuestions = r.TotalQuestions,
+                    AttemptDate = r.Attempt.StartedAt,
+                    IsPassed = r.Score >= (r.Attempt.Exam.PassingScore / 10.0)
+                })
+                .ToList();
+
+            studentHistory.AssignmentSubmissions = _context.AssignmentSubmissions
+                .Include(s => s.Assignment)
+                .Where(s => s.StudentId == student.UserId && s.Assignment!.CourseId == cls.CourseId)
+                .OrderByDescending(s => s.SubmittedAt)
+                .Select(s => new ClassAssignmentSubmissionVm
+                {
+                    SubmissionId = s.Id,
+                    AssignmentTitle = s.Assignment!.Title,
+                    Score = s.Score,
+                    Feedback = s.Feedback ?? string.Empty,
+                    SubmittedAt = s.SubmittedAt,
+                    Status = s.Score.HasValue ? "Graded" : "Pending"
+                })
+                .ToList();
+
+            classHistory.StudentHistories.Add(studentHistory);
+        }
+
+        return View(classHistory);
     }
 }

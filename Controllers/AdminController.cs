@@ -1553,9 +1553,15 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Classes));
         }
 
+        if (_context.Classes.Any(c => c.ClassCode == classCode.Trim()))
+        {
+            TempData["Error"] = "This class code already exists. Please choose a different code.";
+            return RedirectToAction(nameof(Classes));
+        }
+
         var newClass = new Class 
         { 
-            ClassCode = classCode, 
+            ClassCode = classCode.Trim(), 
             CourseId = courseId, 
             InstructorId = instructorId, 
             BlockId = blockId 
@@ -1563,8 +1569,85 @@ public class AdminController : Controller
         _context.Classes.Add(newClass);
         _context.SaveChanges();
         
-        TempData["Message"] = $"Đã tạo lớp {classCode} thành công.";
+        TempData["Message"] = $"Created class {classCode} successfully.";
         return RedirectToAction(nameof(Classes));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult AssignInstructorToClass(int classId, int instructorId)
+    {
+        var cls = _context.Classes.Find(classId);
+        if (cls == null) return NotFound();
+
+        cls.InstructorId = instructorId;
+        _context.SaveChanges();
+        TempData["Message"] = "Instructor assigned to class successfully.";
+        return RedirectToAction(nameof(Classes));
+    }
+
+    public IActionResult ClassDetails(int classId)
+    {
+        var cls = _context.Classes
+            .Include(c => c.Course)
+            .Include(c => c.Instructor)
+            .Include(c => c.Block).ThenInclude(b => b!.Semester).ThenInclude(s => s!.Year)
+            .Include(c => c.ClassStudents).ThenInclude(cs => cs.User)
+            .FirstOrDefault(c => c.Id == classId);
+
+        if (cls == null) return NotFound();
+
+        var detail = new ClassDetailVm
+        {
+            ClassInfo = cls,
+            Lessons = _context.Lessons.Where(l => l.CourseId == cls.CourseId).OrderBy(l => l.OrderIndex).ToList(),
+            Exams = _context.Exams.Where(e => e.CourseId == cls.CourseId).OrderByDescending(e => e.CreatedAt).ToList(),
+            Assignments = _context.Assignments.Where(a => a.CourseId == cls.CourseId).OrderByDescending(a => a.CreatedAt).ToList()
+        };
+
+        foreach (var student in cls.ClassStudents)
+        {
+            var studentHistory = new ClassStudentHistoryVm
+            {
+                StudentId = student.UserId,
+                StudentName = student.User?.FullName ?? "Unknown",
+                StudentCode = student.User?.StudentCode ?? string.Empty
+            };
+
+            studentHistory.ExamResults = _context.ExamResults
+                .Include(r => r.Attempt).ThenInclude(a => a!.Exam)
+                .Where(r => r.Attempt!.UserId == student.UserId && r.Attempt.Exam!.CourseId == cls.CourseId)
+                .OrderByDescending(r => r.Attempt.StartedAt)
+                .Select(r => new ClassExamResultVm
+                {
+                    ExamId = r.Attempt.ExamId,
+                    ExamTitle = r.Attempt.Exam!.Title,
+                    Score = r.Score,
+                    TotalQuestions = r.TotalQuestions,
+                    AttemptDate = r.Attempt.StartedAt,
+                    IsPassed = r.Score >= (r.Attempt.Exam.PassingScore / 10.0)
+                })
+                .ToList();
+
+            studentHistory.AssignmentSubmissions = _context.AssignmentSubmissions
+                .Include(s => s.Assignment)
+                .Where(s => s.StudentId == student.UserId && s.Assignment!.CourseId == cls.CourseId)
+                .OrderByDescending(s => s.SubmittedAt)
+                .Select(s => new ClassAssignmentSubmissionVm
+                {
+                    SubmissionId = s.Id,
+                    AssignmentTitle = s.Assignment!.Title,
+                    Score = s.Score,
+                    Feedback = s.Feedback ?? string.Empty,
+                    SubmittedAt = s.SubmittedAt,
+                    Status = s.Score.HasValue ? "Graded" : "Pending"
+                })
+                .ToList();
+
+            detail.StudentHistories.Add(studentHistory);
+        }
+
+        return View("Classes/Details", detail);
     }
 }
 
