@@ -412,13 +412,13 @@ public class InstructorController : Controller
             };
 
             studentHistory.ExamResults = _context.ExamResults
-                .Include(r => r.Attempt).ThenInclude(a => a!.Exam)
-                .Where(r => r.Attempt!.UserId == student.UserId && r.Attempt.Exam!.CourseId == cls.CourseId)
+                .Include(r => r.Attempt).ThenInclude(a => a.Exam)
+                .Where(r => r.Attempt != null && r.Attempt.UserId == student.UserId && r.Attempt.Exam != null && r.Attempt.Exam.CourseId == cls.CourseId)
                 .OrderByDescending(r => r.Attempt.StartedAt)
                 .Select(r => new ClassExamResultVm
                 {
                     ExamId = r.Attempt.ExamId,
-                    ExamTitle = r.Attempt.Exam!.Title,
+                    ExamTitle = r.Attempt.Exam.Title,
                     Score = r.Score,
                     TotalQuestions = r.TotalQuestions,
                     AttemptDate = r.Attempt.StartedAt,
@@ -428,7 +428,7 @@ public class InstructorController : Controller
 
             studentHistory.AssignmentSubmissions = _context.AssignmentSubmissions
                 .Include(s => s.Assignment)
-                .Where(s => s.StudentId == student.UserId && s.Assignment!.CourseId == cls.CourseId)
+                .Where(s => s.StudentId == student.UserId && s.Assignment != null && s.Assignment.CourseId == cls.CourseId)
                 .OrderByDescending(s => s.SubmittedAt)
                 .Select(s => new ClassAssignmentSubmissionVm
                 {
