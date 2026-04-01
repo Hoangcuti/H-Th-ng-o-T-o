@@ -415,14 +415,20 @@ public class InstructorController : Controller
                 .Include(r => r.Attempt).ThenInclude(a => a.Exam)
                 .Where(r => r.Attempt != null && r.Attempt.UserId == student.UserId && r.Attempt.Exam != null && r.Attempt.Exam.CourseId == cls.CourseId)
                 .OrderByDescending(r => r.Attempt.StartedAt)
-                .Select(r => new ClassExamResultVm
+                .AsEnumerable()
+                .Select(r =>
                 {
-                    ExamId = r.Attempt.ExamId,
-                    ExamTitle = r.Attempt.Exam.Title,
-                    Score = r.Score,
-                    TotalQuestions = r.TotalQuestions,
-                    AttemptDate = r.Attempt.StartedAt,
-                    IsPassed = r.Score >= (r.Attempt.Exam.PassingScore / 10.0)
+                    var attempt = r.Attempt!;
+                    var exam = attempt.Exam!;
+                    return new ClassExamResultVm
+                    {
+                        ExamId = attempt.ExamId,
+                        ExamTitle = exam.Title,
+                        Score = r.Score,
+                        TotalQuestions = r.TotalQuestions,
+                        AttemptDate = attempt.StartedAt,
+                        IsPassed = r.Score >= (exam.PassingScore / 10.0)
+                    };
                 })
                 .ToList();
 
@@ -430,14 +436,19 @@ public class InstructorController : Controller
                 .Include(s => s.Assignment)
                 .Where(s => s.StudentId == student.UserId && s.Assignment != null && s.Assignment.CourseId == cls.CourseId)
                 .OrderByDescending(s => s.SubmittedAt)
-                .Select(s => new ClassAssignmentSubmissionVm
+                .AsEnumerable()
+                .Select(s =>
                 {
-                    SubmissionId = s.Id,
-                    AssignmentTitle = s.Assignment!.Title,
-                    Score = s.Score,
-                    Feedback = s.Feedback ?? string.Empty,
-                    SubmittedAt = s.SubmittedAt,
-                    Status = s.Score.HasValue ? "Graded" : "Pending"
+                    var assignment = s.Assignment!;
+                    return new ClassAssignmentSubmissionVm
+                    {
+                        SubmissionId = s.Id,
+                        AssignmentTitle = assignment.Title,
+                        Score = s.Score,
+                        Feedback = s.Feedback ?? string.Empty,
+                        SubmittedAt = s.SubmittedAt,
+                        Status = s.Score.HasValue ? "Graded" : "Pending"
+                    };
                 })
                 .ToList();
 
