@@ -120,4 +120,44 @@ public class CoursesController : Controller
 
         return RedirectToAction("Checkout", "Payment", new { courseId = id });
     }
+
+    [HttpPost]
+    [Authorize]
+    public IActionResult EnrollByClassCode(string classCode)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString)) return RedirectToAction("Login", "Account");
+        if (string.IsNullOrWhiteSpace(classCode))
+        {
+            TempData["Error"] = "Please enter a valid class code.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var userId = int.Parse(userIdString);
+        var targetClass = _context.Classes
+            .Include(c => c.Course)
+            .FirstOrDefault(c => c.ClassCode == classCode.Trim());
+
+        if (targetClass == null || targetClass.Course == null)
+        {
+            TempData["Error"] = "Invalid class code. Please check and try again.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var exists = _context.ClassStudents.Any(cs => cs.UserId == userId && cs.ClassId == targetClass.Id);
+        if (!exists)
+        {
+            var cs = new ClassStudent
+            {
+                UserId = userId,
+                ClassId = targetClass.Id,
+                IsPaid = false,
+                CreatedAt = DateTime.Now
+            };
+            _context.ClassStudents.Add(cs);
+            _context.SaveChanges();
+        }
+
+        return RedirectToAction("Details", new { id = targetClass.CourseId });
+    }
 }

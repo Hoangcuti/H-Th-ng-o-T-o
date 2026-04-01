@@ -1,7 +1,0 @@
-﻿E:\COTHUY\H-Th-ng-o-T-o\Controllers\CoursesController.cs(24,33): error CS0029: Cannot implicitly convert type 'System.Collections.Generic.List<int?>' to 'System.Collections.Generic.List<int>' [E:\COTHUY\H-Th-ng-o-T-o\COTHUYPRO.csproj]
-
-Build FAILED.
-    14 Warning(s)
-    1 Error(s)
-
-Time Elapsed 00:00:07.55
