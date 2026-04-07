@@ -3,29 +3,36 @@
     ViewData["Title"] = "Quản lý Kỳ học";
     Layout = "_AdminLayout";
     var years = ViewBag.Years as IEnumerable<COTHUYPRO.Models.AcademicYear>;
+    var items = Model ?? Enumerable.Empty<COTHUYPRO.Models.Semester>();
 }
 
-<div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-white fw-bold"><i class="fas fa-layer-group me-2 text-info"></i>Quản lý Kỳ học</h2>
-        <button class="btn btn-info text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#createSemesterModal">
-            <i class="fas fa-plus me-2"></i>Thêm Kỳ học
-        </button>
+<div class="container-fluid p-4 page-shell">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <div class="text-muted small">Niên khóa</div>
+            <h2 class="fw-bold mb-1 text-dark"><i class="bi bi-layers-fill me-2 text-info"></i>Quản lý Kỳ học</h2>
+            <p class="text-muted small mb-0">UI sáng, kính nhẹ; thêm kỳ nhanh.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#createSemesterModal">
+                <i class="bi bi-plus-circle me-1"></i> Thêm Kỳ học
+            </button>
+        </div>
     </div>
 
     @if (TempData["Message"] != null)
     {
-        <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm" role="alert">
-            <i class="fas fa-info-circle me-2"></i>@TempData["Message"]
+        <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm rounded-pill px-3" role="alert">
+            <i class="bi bi-check2-circle me-2"></i>@TempData["Message"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="card bg-dark border-0 shadow-lg rounded-4 overflow-hidden">
+    <div class="card soft-card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
-            <table class="table table-hover table-dark align-middle mb-0">
-                <thead class="bg-info text-white">
-                    <tr>
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr class="text-uppercase small text-muted">
                         <th class="ps-4 py-3">ID</th>
                         <th class="py-3">Tên Kỳ</th>
                         <th class="py-3">Năm học</th>
@@ -33,24 +40,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var sem in Model ?? Enumerable.Empty<COTHUYPRO.Models.Semester>())
+                    @foreach (var sem in items)
                     {
                         <tr>
-                            <td class="ps-4 fw-bold text-muted">#@sem.Id</td>
+                            <td class="ps-4 fw-semibold text-muted">#@sem.Id</td>
                             <td>
                                 <span class="badge bg-soft-info text-info px-3 py-2 rounded-pill fw-bold">
                                     @sem.SemesterName
                                 </span>
                             </td>
-                            <td>
-                                <span class="text-light">Năm @(sem.Year?.YearNumber ?? 0)</span>
+                            <td class="text-muted">
+                                Năm @(sem.Year?.YearNumber ?? 0)
                             </td>
                             <td class="pe-4 text-end">
-                                <button class="btn btn-outline-light btn-sm rounded-pill px-3 me-2">
-                                    <i class="fas fa-edit me-1"></i>Sửa
+                                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 me-2">
+                                    <i class="bi bi-pencil-square me-1"></i>Sửa
                                 </button>
                                 <button class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                    <i class="fas fa-trash me-1"></i>Xóa
+                                    <i class="bi bi-trash me-1"></i>Xóa
                                 </button>
                             </td>
                         </tr>
@@ -64,37 +71,39 @@
 <!-- Modal Create -->
 <div class="modal fade" id="createSemesterModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-info shadow-lg">
+        <div class="modal-content soft-card border-0 shadow-lg">
             <form asp-action="CreateSemester" method="post">
-                <div class="modal-header border-info">
-                    <h5 class="modal-title text-white fw-bold">Thêm Kỳ học mới</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-0">
+                    <div>
+                        <div class="text-muted small">Tạo mới</div>
+                        <h5 class="modal-title fw-bold mb-0">Kỳ học</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 text-white">
+                <div class="modal-body p-4 text-dark">
                     <div class="mb-3">
-                        <label class="form-label">Tên Kỳ (Spring, Summer, Fall)</label>
-                        <select name="name" class="form-select bg-secondary text-white border-0 shadow-sm" required>
+                        <label class="form-label text-muted">Tên Kỳ (Spring, Summer, Fall)</label>
+                        <select name="name" class="form-select" required>
                             <option value="Spring">Spring</option>
                             <option value="Summer">Summer</option>
                             <option value="Fall">Fall</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Chọn Năm học</label>
-                        <select name="yearId" class="form-select bg-secondary text-white border-0 shadow-sm" required>
-                            @if (years != null)
+                        <label class="form-label text-muted">Chọn Năm học</label>
+                        <select name="yearId" class="form-select" required>
+                            @foreach (var y in years ?? Enumerable.Empty<COTHUYPRO.Models.AcademicYear>())
                             {
-                                @foreach (var y in years)
-                                {
-                                    <option value="@y.Id">Năm @y.YearNumber</option>
-                                }
+                                <option value="@y.Id">Năm @y.YearNumber</option>
                             }
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer border-info">
-                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-info text-white px-4">Xác nhận</button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary text-white rounded-pill px-4">
+                        <i class="bi bi-check2-circle me-1"></i>Xác nhận
+                    </button>
                 </div>
             </form>
         </div>
@@ -102,6 +111,8 @@
 </div>
 
 <style>
-    .bg-soft-info { background-color: rgba(13, 202, 240, 0.15) !important; }
-    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05) !important; }
+    .page-shell { background: linear-gradient(180deg, #f7f9fb 0%, #f2f5fa 100%); }
+    .soft-card { background: #fff; border-radius: 16px; }
+    .bg-soft-info { background: #e0f7ff; }
+    .table > :not(caption) > * > * { background-color: transparent; }
 </style>

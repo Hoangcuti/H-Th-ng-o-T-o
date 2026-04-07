@@ -1,6 +1,7 @@
 @model COTHUYPRO.Models.CreateBulkVm
 @{
     ViewData["Title"] = "Thêm nội dung hàng loạt";
+    var blocks = Model.AvailableBlocks ?? new List<COTHUYPRO.Models.Block>();
 }
 
 <style>
@@ -67,6 +68,16 @@
                                 @foreach (var course in Model.AvailableCourses)
                                 {
                                     <option value="@course.Id">@course.CourseName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-lg-5">
+                            <label class="form-label">Thuộc Block</label>
+                            <select asp-for="BlockId" class="form-select form-control-lg bg-white">
+                                <option value="">-- Chọn Block --</option>
+                                @foreach (var b in blocks)
+                                {
+                                    <option value="@b.Id">@b.BlockName · @b.Semester?.SemesterName · Năm @b.Semester?.Year?.YearNumber</option>
                                 }
                             </select>
                         </div>

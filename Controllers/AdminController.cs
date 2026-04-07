@@ -658,7 +658,13 @@ public class AdminController : Controller
         var vm = new CreateBulkVm
         {
             CourseId = courseId,
-            AvailableCourses = _context.Courses.OrderBy(c => c.CourseName).ToList()
+            AvailableCourses = _context.Courses.OrderBy(c => c.CourseName).ToList(),
+            AvailableBlocks = _context.Blocks
+                .Include(b => b.Semester)!.ThenInclude(s => s!.Year)
+                .OrderByDescending(b => b.Semester!.Year!.YearNumber)
+                .ThenBy(b => b.Semester!.SemesterName)
+                .ThenBy(b => b.BlockName)
+                .ToList()
         };
         return View("Lessons/CreateBulk", vm);
     }
@@ -671,6 +677,12 @@ public class AdminController : Controller
         {
             ModelState.AddModelError("", "Vui lòng nhập tên Nội dung chương trình.");
             model.AvailableCourses = _context.Courses.OrderBy(c => c.CourseName).ToList();
+            model.AvailableBlocks = _context.Blocks
+                .Include(b => b.Semester)!.ThenInclude(s => s!.Year)
+                .OrderByDescending(b => b.Semester!.Year!.YearNumber)
+                .ThenBy(b => b.Semester!.SemesterName)
+                .ThenBy(b => b.BlockName)
+                .ToList();
             return View("Lessons/CreateBulk", model);
         }
 
@@ -699,6 +711,7 @@ public class AdminController : Controller
                 Content = entry.ContentHtml,
                 IsFreePreview = entry.IsFreePreview,
                 IsPublished = entry.IsPublished,
+                BlockId = model.BlockId,
                 Status = "Pending"
             };
             _context.Lessons.Add(lesson);
@@ -728,6 +741,12 @@ public class AdminController : Controller
     public IActionResult CreateLesson()
     {
         ViewBag.Courses = _context.Courses.ToList();
+        ViewBag.Blocks = _context.Blocks
+            .Include(b => b.Semester)!.ThenInclude(s => s!.Year)
+            .OrderByDescending(b => b.Semester!.Year!.YearNumber)
+            .ThenBy(b => b.Semester!.SemesterName)
+            .ThenBy(b => b.BlockName)
+            .ToList();
         return View("Lessons/Create", new LessonFormVm());
     }
 
@@ -738,6 +757,12 @@ public class AdminController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.Courses = _context.Courses.ToList();
+            ViewBag.Blocks = _context.Blocks
+                .Include(b => b.Semester)!.ThenInclude(s => s!.Year)
+                .OrderByDescending(b => b.Semester!.Year!.YearNumber)
+                .ThenBy(b => b.Semester!.SemesterName)
+                .ThenBy(b => b.BlockName)
+                .ToList();
             return View("Lessons/Create", model);
         }
         string? docUrl = model.DocumentUrl;
@@ -764,6 +789,7 @@ public class AdminController : Controller
             Duration = model.Duration,
             IsFreePreview = model.IsFreePreview,
             IsPublished = model.IsPublished,
+            BlockId = model.BlockId,
             Status = "Approved",
             CreatedByUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!)
         });
@@ -778,6 +804,12 @@ public class AdminController : Controller
         var lesson = _context.Lessons.FirstOrDefault(l => l.Id == id);
         if (lesson == null) return NotFound();
         ViewBag.Courses = _context.Courses.ToList();
+        ViewBag.Blocks = _context.Blocks
+            .Include(b => b.Semester)!.ThenInclude(s => s!.Year)
+            .OrderByDescending(b => b.Semester!.Year!.YearNumber)
+            .ThenBy(b => b.Semester!.SemesterName)
+            .ThenBy(b => b.BlockName)
+            .ToList();
         return View("Lessons/Edit", new LessonFormVm
         {
             Id = lesson.Id,
@@ -789,7 +821,8 @@ public class AdminController : Controller
             Content = lesson.Content,
             Duration = lesson.Duration,
             IsFreePreview = lesson.IsFreePreview,
-            IsPublished = lesson.IsPublished
+            IsPublished = lesson.IsPublished,
+            BlockId = lesson.BlockId
         });
     }
 
@@ -800,6 +833,12 @@ public class AdminController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.Courses = _context.Courses.ToList();
+            ViewBag.Blocks = _context.Blocks
+                .Include(b => b.Semester)!.ThenInclude(s => s!.Year)
+                .OrderByDescending(b => b.Semester!.Year!.YearNumber)
+                .ThenBy(b => b.Semester!.SemesterName)
+                .ThenBy(b => b.BlockName)
+                .ToList();
             return View("Lessons/Edit", model);
         }
         var lesson = _context.Lessons.FirstOrDefault(l => l.Id == model.Id);
@@ -828,6 +867,7 @@ public class AdminController : Controller
         lesson.Duration = model.Duration;
         lesson.IsFreePreview = model.IsFreePreview;
         lesson.IsPublished = model.IsPublished;
+        lesson.BlockId = model.BlockId;
         _context.SaveChanges();
         TempData["Message"] = "Đã cập nhật bài giảng.";
         return RedirectToAction(nameof(Lessons));
@@ -1342,6 +1382,26 @@ public class AdminController : Controller
             .OrderByDescending(e => e.UpdatedAt ?? e.CreatedAt)
             .ToList();
 
+        var examIds = pendingExams.Select(e => e.Id).ToList();
+        var examQuestions = _context.Questions
+            .Include(q => q.Options)
+            .Where(q => examIds.Contains(q.ExamId))
+            .ToList();
+        var examQuestionHtml = examQuestions
+            .GroupBy(q => q.ExamId)
+            .ToDictionary(
+                g => g.Key,
+                g =>
+                {
+                    var blocks = g.Select(q =>
+                    {
+                        var opts = string.Join("", q.Options.Select(o =>
+                            $"<li>{System.Net.WebUtility.HtmlEncode(o.Content)}{(o.IsCorrect ? " ✓" : "")}</li>"));
+                        return $"<div style='margin-bottom:8px'><div><strong>Q:</strong> {System.Net.WebUtility.HtmlEncode(q.Content ?? "")}</div><ul style='padding-left:16px;margin:4px 0'>{opts}</ul></div>";
+                    });
+                    return string.Join("", blocks);
+                });
+
         var pendingAssignments = _context.Assignments
             .Include(a => a.Course)
             .Include(a => a.CreatedByUser)
@@ -1358,6 +1418,8 @@ public class AdminController : Controller
 
         ViewBag.PendingLessons = pendingLessons;
         ViewBag.PendingExams = pendingExams;
+        ViewBag.ExamQuestions = examQuestions;
+        ViewBag.ExamQuestionHtml = examQuestionHtml;
         ViewBag.PendingAssignments = pendingAssignments;
         ViewBag.PendingApplications = pendingApplications;
         return View();
@@ -1510,6 +1572,9 @@ public class AdminController : Controller
             .ThenBy(b => b.BlockName)
             .ToList();
         ViewBag.Semesters = _context.Semesters.Include(s => s.Year).ToList();
+        ViewBag.Departments = _context.Departments.ToList();
+        ViewBag.Courses = _context.Courses.ToList();
+        ViewBag.Classes = _context.Classes.ToList();
         return View("Blocks/Index", blocks);
     }
 
@@ -1535,6 +1600,7 @@ public class AdminController : Controller
             .Include(c => c.Course)
             .Include(c => c.Instructor)
             .Include(c => c.Block).ThenInclude(b => b!.Semester).ThenInclude(s => s!.Year)
+            .Include(c => c.ClassStudents)
             .ToList();
 
         ViewBag.Courses = _context.Courses.ToList();
@@ -1543,49 +1609,81 @@ public class AdminController : Controller
             .Where(u => u.UserRoles.Any(ur => ur.RoleId == instructorRole!.Id))
             .ToList();
         ViewBag.Blocks = _context.Blocks.Include(b => b.Semester).ThenInclude(s => s!.Year).ToList();
+        ViewBag.Departments = _context.Departments.ToList();
+        var studentRole = _context.Roles.FirstOrDefault(r => r.Name == "Student");
+        ViewBag.Students = _context.Users
+            .Include(u => u.UserRoles)
+            .Where(u => u.UserRoles.Any(ur => ur.RoleId == studentRole!.Id))
+            .OrderBy(u => u.FullName)
+            .ToList();
 
         return View("Classes/Index", classes);
     }
 
     [HttpPost]
-    public IActionResult CreateClass(string classCode, int? courseId, int? instructorId, int? blockId)
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateClass(string classCode, int? courseId, int? instructorId, int blockId)
     {
-        if (string.IsNullOrEmpty(classCode))
+        if (string.IsNullOrWhiteSpace(classCode) || blockId == 0)
         {
-            TempData["Error"] = "Vui lòng nhập Mã lớp.";
+            TempData["Message"] = "Vui lòng nhập mã lớp và chọn Block.";
             return RedirectToAction(nameof(Classes));
         }
 
         if (_context.Classes.Any(c => c.ClassCode == classCode.Trim()))
         {
-            TempData["Error"] = "This class code already exists. Please choose a different code.";
+            TempData["Message"] = "Mã lớp đã tồn tại.";
             return RedirectToAction(nameof(Classes));
         }
 
-        var newClass = new Class
+        var cls = new Class
         {
             ClassCode = classCode.Trim(),
             CourseId = courseId,
             InstructorId = instructorId,
             BlockId = blockId
         };
-        _context.Classes.Add(newClass);
-        _context.SaveChanges();
 
-        TempData["Message"] = $"Created class {classCode} successfully.";
+        _context.Classes.Add(cls);
+        _context.SaveChanges();
+        TempData["Message"] = "Đã tạo lớp học.";
         return RedirectToAction(nameof(Classes));
     }
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public IActionResult AssignInstructorToClass(int classId, int instructorId)
     {
-        var cls = _context.Classes.Find(classId);
+        var cls = _context.Classes.FirstOrDefault(c => c.Id == classId);
         if (cls == null) return NotFound();
 
         cls.InstructorId = instructorId;
         _context.SaveChanges();
         TempData["Message"] = "Instructor assigned to class successfully.";
+        return RedirectToAction(nameof(Classes));
+    }
+
+    [HttpPost]
+    public IActionResult DeleteClass(int id)
+    {
+        var cls = _context.Classes
+            .Include(c => c.ClassStudents)
+            .FirstOrDefault(c => c.Id == id);
+        if (cls == null) return NotFound();
+
+        if (cls.ClassStudents.Any())
+            _context.ClassStudents.RemoveRange(cls.ClassStudents);
+
+        _context.Classes.Remove(cls);
+        _context.SaveChanges();
+
+        // If called via AJAX (fetch) return 200 so res.ok succeeds; otherwise redirect.
+        var isAjax = string.Equals(
+            Request?.Headers["X-Requested-With"].ToString(),
+            "XMLHttpRequest",
+            StringComparison.OrdinalIgnoreCase);
+        if (isAjax) return Ok();
+
+        TempData["Message"] = "Đã xóa lớp học.";
         return RedirectToAction(nameof(Classes));
     }
 
@@ -1657,7 +1755,27 @@ public class AdminController : Controller
             detail.StudentHistories.Add(studentHistory);
         }
 
+        var studentRole = _context.Roles.FirstOrDefault(r => r.Name == "Student");
+        ViewBag.Students = _context.Users
+            .Include(u => u.UserRoles)
+            .Where(u => u.UserRoles.Any(ur => ur.RoleId == studentRole!.Id))
+            .OrderBy(u => u.FullName)
+            .ToList();
+        ViewBag.ClassId = classId;
         return View("Classes/Details", detail);
+    }
+
+    [HttpPost]
+    public IActionResult AddStudentToClass(int classId, int studentId)
+    {
+        var exists = _context.ClassStudents.Any(cs => cs.ClassId == classId && cs.UserId == studentId);
+        if (!exists)
+        {
+            _context.ClassStudents.Add(new ClassStudent { ClassId = classId, UserId = studentId });
+            _context.SaveChanges();
+            TempData["Message"] = "Đã thêm học viên vào lớp.";
+        }
+        return RedirectToAction(nameof(ClassDetails), new { classId });
     }
 }
 

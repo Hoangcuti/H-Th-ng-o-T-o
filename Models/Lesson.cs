@@ -30,6 +30,9 @@ public class Lesson
     public int? ChapterId { get; set; }
     public CourseChapter? Chapter { get; set; }
 
+    public int? BlockId { get; set; }
+    public Block? Block { get; set; }
+
     [MaxLength(20)]
     public string Status { get; set; } = "Pending";
 

@@ -29,4 +29,6 @@ public class LessonFormVm
     public bool IsFreePreview { get; set; }
 
     public bool IsPublished { get; set; } = true;
+
+    public int? BlockId { get; set; }
 }

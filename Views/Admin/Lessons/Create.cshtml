@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Tạo bài giảng";
     var courses = ViewBag.Courses as List<COTHUYPRO.Models.Course> ?? new();
+    var blocks = ViewBag.Blocks as List<COTHUYPRO.Models.Block> ?? new();
 }
 
 <div class="page-header">
@@ -25,6 +26,17 @@
             <select asp-for="CourseId" class="form-select">
                 @foreach (var c in courses) { <option value="@c.Id">@c.CourseName</option> }
             </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Block (kỳ học)</label>
+            <select asp-for="BlockId" class="form-select">
+                <option value="">-- Chọn Block --</option>
+                @foreach (var b in blocks)
+                {
+                    <option value="@b.Id">@b.BlockName · @b.Semester?.SemesterName · Năm @b.Semester?.Year?.YearNumber</option>
+                }
+            </select>
+            <span class="text-danger" asp-validation-for="BlockId"></span>
         </div>
         <div class="col-md-6">
             <label class="form-label">Thứ tự bài giảng (Order Index)</label>

@@ -1,31 +1,128 @@
 @model IEnumerable<COTHUYPRO.Models.Block>
 @{
-    ViewData["Title"] = "Quản lý Block học";
+    ViewData["Title"] = "Quản lý Block";
     Layout = "_AdminLayout";
     var semesters = ViewBag.Semesters as IEnumerable<COTHUYPRO.Models.Semester>;
+    var departments = ViewBag.Departments as IEnumerable<COTHUYPRO.Models.Department>;
+    var courses = ViewBag.Courses as IEnumerable<COTHUYPRO.Models.Course>;
+    var classes = ViewBag.Classes as IEnumerable<COTHUYPRO.Models.Class>;
+    var blocks = Model ?? Enumerable.Empty<COTHUYPRO.Models.Block>();
 }
 
-<div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-white fw-bold"><i class="fas fa-th-large me-2 text-warning"></i>Quản lý Block</h2>
-        <button class="btn btn-warning text-dark shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#createBlockModal">
-            <i class="fas fa-plus me-2"></i>Thêm Block
+<div class="container-fluid p-4 page-shell">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <div class="text-muted small">Niên khóa</div>
+            <h2 class="fw-bold mb-1 text-dark"><i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i>Quản lý Block</h2>
+            <p class="text-muted small mb-0">Gán ngành học, ghép tên môn nhanh kiểu SD1901-IT201, đồng bộ UI sáng.</p>
+        </div>
+        <button class="btn btn-warning text-dark rounded-pill shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#createBlockModal">
+            <i class="bi bi-plus-circle me-1"></i> Thêm Block
         </button>
     </div>
 
     @if (TempData["Message"] != null)
     {
-        <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm text-dark" role="alert">
-            <i class="fas fa-check-circle me-2"></i>@TempData["Message"]
+        <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm rounded-pill px-3" role="alert">
+            <i class="bi bi-check2-circle me-2"></i>@TempData["Message"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="card bg-dark border-0 shadow-lg rounded-4 overflow-hidden">
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="card soft-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <div class="text-muted small">Chọn ngành học</div>
+                            <h6 class="mb-0 fw-semibold">Danh sách ngành / khoa</h6>
+                        </div>
+                        <span class="badge bg-soft-primary text-primary">Bấm + để add</span>
+                    </div>
+                    <div class="input-group mb-2">
+                        <select id="departmentSelect" class="form-select">
+                            <option value="">-- Chọn ngành --</option>
+                            @if (departments != null && departments.Any())
+                            {
+                                foreach (var d in departments)
+                                {
+                                    <option value="@d.Name">@d.Name</option>
+                                }
+                            }
+                            else
+                            {
+                                <option disabled>(Chưa có ngành, thêm ở mục Tài khoản/Ngành)</option>
+                            }
+                        </select>
+                        <button class="btn btn-outline-primary" type="button" id="addDepartmentBtn"><i class="bi bi-plus"></i></button>
+                    </div>
+                    <div id="departmentChips" class="d-flex flex-wrap gap-2"></div>
+                    <p class="text-muted small mt-2 mb-0">Ngành đã chọn tạm lưu trên UI; cần lưu Block để áp dụng.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card soft-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-muted small">Ghép tên môn + lớp</div>
+                            <h6 class="mb-0 fw-semibold">Preview: SD1901-IT201</h6>
+                        </div>
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill" type="button" id="copySubjectBtn">
+                            <i class="bi bi-clipboard-check me-1"></i>Copy
+                        </button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label text-muted small mb-0">Chọn lớp (ClassCode)</label>
+                                <a class="small text-primary" asp-action="Classes" asp-controller="Admin">Tạo lớp</a>
+                            </div>
+                            <select id="classSelect" class="form-select">
+                                <option value="">-- Chọn lớp --</option>
+                                @if (classes != null && classes.Any())
+                                {
+                                    foreach (var c in classes)
+                                    {
+                                        var label = $"{c.ClassCode}" + (c.Course != null ? $" · {c.Course.CourseName}" : "");
+                                        <option value="@c.ClassCode">@label</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option disabled>(Chưa có lớp — bấm “Tạo lớp”)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Chọn môn (CourseName hoặc mã)</label>
+                            <select id="courseSelect" class="form-select">
+                                <option value="">-- Chọn môn --</option>
+                                @foreach (var c in courses ?? Enumerable.Empty<COTHUYPRO.Models.Course>())
+                                {
+                                    <option value="@c.CourseName">@c.CourseName</option>
+                                }
+                            </select>
+                            <input id="manualCourse" class="form-control mt-2" placeholder="Hoặc gõ mã môn (IT201)" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted small">Tên môn hiển thị</label>
+                            <input id="subjectPreview" class="form-control form-control-lg text-primary fw-bold" readonly value="--" />
+                            <div class="small text-muted mt-1">Quy tắc: <code>ClassCode-Course</code>. Copy để dùng khi tạo bài giảng.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card soft-card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
-            <table class="table table-hover table-dark align-middle mb-0">
-                <thead class="bg-warning text-dark">
-                    <tr>
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr class="text-uppercase small text-muted">
                         <th class="ps-4 py-3">ID</th>
                         <th class="py-3">Tên Block</th>
                         <th class="py-3">Kỳ & Năm học</th>
@@ -33,27 +130,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var block in Model ?? Enumerable.Empty<COTHUYPRO.Models.Block>())
+                    @foreach (var block in blocks)
                     {
                         <tr>
-                            <td class="ps-4 fw-bold text-muted">#@block.Id</td>
+                            <td class="ps-4 fw-semibold text-muted">#@block.Id</td>
                             <td>
                                 <span class="badge bg-soft-warning text-warning px-3 py-2 rounded-pill fw-bold">
                                     @block.BlockName
                                 </span>
                             </td>
-                            <td>
-                                <span class="text-light">
-                                    @(block.Semester?.SemesterName ?? "N/A") 
-                                    - Năm @(block.Semester?.Year?.YearNumber ?? 0)
-                                </span>
+                            <td class="text-muted">
+                                @(block.Semester?.SemesterName ?? "N/A") - Năm @(block.Semester?.Year?.YearNumber ?? 0)
                             </td>
                             <td class="pe-4 text-end">
-                                <button class="btn btn-outline-warning btn-sm rounded-pill px-3 me-2">
-                                    <i class="fas fa-edit me-1"></i>Sửa
+                                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 me-2">
+                                    <i class="bi bi-pencil-square me-1"></i>Sửa
                                 </button>
                                 <button class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                    <i class="fas fa-trash me-1"></i>Xóa
+                                    <i class="bi bi-trash me-1"></i>Xóa
                                 </button>
                             </td>
                         </tr>
@@ -66,37 +160,41 @@
 
 <!-- Modal Create -->
 <div class="modal fade" id="createBlockModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered text-dark">
-        <div class="modal-content bg-dark border-warning shadow-lg">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content soft-card border-0 shadow-lg">
             <form asp-action="CreateBlock" method="post">
-                <div class="modal-header border-warning text-white">
-                    <h5 class="modal-title fw-bold">Thêm Block mới</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-0 text-dark">
+                    <div>
+                        <div class="text-muted small">Tạo mới</div>
+                        <h5 class="modal-title fw-bold mb-0">Block</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 text-white">
+                <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label">Tên Block (ví dụ: Block 1)</label>
-                        <select name="name" class="form-select bg-secondary text-white border-0 shadow-sm" required>
+                        <label class="form-label text-muted">Tên Block (ví dụ: Block 1)</label>
+                        <select name="name" class="form-select" required>
                             <option value="Block 1">Block 1</option>
                             <option value="Block 2">Block 2</option>
+                            <option value="Block 3">Block 3</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Chọn Kỳ học</label>
-                        <select name="semesterId" class="form-select bg-secondary text-white border-0 shadow-sm" required>
-                            @if (semesters != null)
+                        <label class="form-label text-muted">Chọn Kỳ học</label>
+                        <select name="semesterId" class="form-select" required>
+                            <option value="">-- Chọn Kỳ --</option>
+                            @foreach (var s in semesters ?? Enumerable.Empty<COTHUYPRO.Models.Semester>())
                             {
-                                @foreach (var s in semesters)
-                                {
-                                    <option value="@s.Id">Kỳ @s.SemesterName - Năm @(s.Year?.YearNumber ?? 0)</option>
-                                }
+                                <option value="@s.Id">Kỳ @s.SemesterName - Năm @(s.Year?.YearNumber ?? 0)</option>
                             }
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer border-warning">
-                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-warning text-dark px-4 fw-bold">Xác nhận</button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-warning text-dark rounded-pill px-4 fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i>Xác nhận
+                    </button>
                 </div>
             </form>
         </div>
@@ -104,5 +202,75 @@
 </div>
 
 <style>
-    .bg-soft-warning { background-color: rgba(255, 193, 7, 0.15) !important; }
+    .page-shell { background: linear-gradient(180deg, #f7f9fb 0%, #f2f5fa 100%); }
+    .soft-card { background: #fff; border-radius: 16px; }
+    .bg-soft-warning { background: #fff7e6; }
+    .bg-soft-warning.text-warning { color: #f59e0b !important; }
+    .thead-gradient-warning { background: linear-gradient(90deg, #ffc107, #ff9800); }
+    #departmentChips .chip { background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; border-radius: 999px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px; }
+    #departmentChips .chip button { border: none; background: transparent; color: inherit; }
+    .table > :not(caption) > * > * { background-color: transparent; }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Department chips
+        const deptSelect = document.getElementById('departmentSelect');
+        const deptChips = document.getElementById('departmentChips');
+        const addDeptBtn = document.getElementById('addDepartmentBtn');
+        const selected = new Set();
+
+        const renderChips = () => {
+            deptChips.innerHTML = '';
+            selected.forEach(name => {
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                chip.innerHTML = `<span>${name}</span><button type="button" data-name="${name}">&times;</button>`;
+                deptChips.appendChild(chip);
+            });
+        };
+        addDeptBtn?.addEventListener('click', () => {
+            const val = deptSelect.value;
+            if (!val) return;
+            selected.add(val);
+            renderChips();
+        });
+        deptChips?.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-name]');
+            if (!btn) return;
+            selected.delete(btn.dataset.name);
+            renderChips();
+        });
+
+        // Subject name composer
+        const classSelect = document.getElementById('classSelect');
+        const courseSelect = document.getElementById('courseSelect');
+        const manualCourse = document.getElementById('manualCourse');
+        const preview = document.getElementById('subjectPreview');
+        const copyBtn = document.getElementById('copySubjectBtn');
+
+        const updatePreview = () => {
+            const cls = classSelect.value || 'Lớp';
+            const course = (manualCourse.value || courseSelect.value || 'Môn').trim();
+            preview.value = `${cls}-${course}`;
+        };
+
+        classSelect?.addEventListener('change', updatePreview);
+        courseSelect?.addEventListener('change', () => {
+            if (!manualCourse.value) updatePreview();
+        });
+        manualCourse?.addEventListener('input', updatePreview);
+        updatePreview();
+
+        copyBtn?.addEventListener('click', async () => {
+            updatePreview();
+            try {
+                await navigator.clipboard.writeText(preview.value);
+                copyBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Đã copy';
+                setTimeout(() => copyBtn.innerHTML = '<i class="bi bi-clipboard-check me-1"></i>Copy', 1200);
+            } catch {
+                copyBtn.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Lỗi';
+            }
+        });
+    });
+</script>

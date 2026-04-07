@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+fN5dnp9zHo=",
+  "dgSpecHash": "xYghIQDf7mw=",
   "success": true,
-  "projectFilePath": "E:\\COTHUY\\H-Th-ng-o-T-o\\COTHUYPRO.csproj",
+  "projectFilePath": "E:\\DATA\\H-Th-ng-o-T-o\\COTHUYPRO.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\tohoa\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\tohoa\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",

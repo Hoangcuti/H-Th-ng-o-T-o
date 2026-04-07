@@ -1,71 +1,282 @@
 @model COTHUYPRO.Models.ClassDetailVm
 @{
-    ViewData["Title"] = $"Class Details - {Model.ClassInfo.ClassCode}";
+    ViewData["Title"] = $"Lớp {Model.ClassInfo.ClassCode}";
+    Layout = "_AdminLayout";
+    var students = ViewBag.Students as IEnumerable<COTHUYPRO.Models.User>;
+    var classId = ViewBag.ClassId;
 }
 
-<div class="container-fluid p-4">
-    <h2 class="mb-4">Class @Model.ClassInfo.ClassCode</h2>
-    <p>Course: @Model.ClassInfo.Course?.CourseName</p>
-    <p>Instructor: @Model.ClassInfo.Instructor?.FullName</p>
-    <p>Block: @Model.ClassInfo.Block?.BlockName</p>
-    <p>Semester: @Model.ClassInfo.Block?.Semester?.SemesterName</p>
-    <p>Year: @Model.ClassInfo.Block?.Semester?.Year?.YearNumber</p>
+<div class="container-fluid p-4 class-details-shell">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <div class="text-muted small">Chi tiết lớp</div>
+            <h2 class="fw-bold mb-1 text-dark"><i class="bi bi-collection me-2 text-primary"></i>Lớp @Model.ClassInfo.ClassCode</h2>
+            <p class="text-muted small mb-0">
+                Môn: <span class="fw-semibold text-dark">@Model.ClassInfo.Course?.CourseName</span> ·
+                Giảng viên: <span class="fw-semibold text-dark">@(Model.ClassInfo.Instructor?.FullName ?? "Chưa gán")</span> ·
+                Block: <span class="fw-semibold text-dark">@Model.ClassInfo.Block?.BlockName</span>
+                (@Model.ClassInfo.Block?.Semester?.SemesterName @Model.ClassInfo.Block?.Semester?.Year?.YearNumber)
+            </p>
+        </div>
+        <a asp-action="Classes" class="btn btn-outline-secondary rounded-pill shadow-sm"><i class="bi bi-arrow-left"></i> Quay lại</a>
+    </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Students</h5>
-            <ul class="list-group list-group-flush">
-                @foreach (var student in Model.StudentHistories)
-                {
-                    <li class="list-group-item">
-                        <strong>@student.StudentName</strong> - @student.StudentCode
-                        <div class="small text-muted">Quiz results: @student.ExamResults.Count() | Assignment submissions:
-                            @student.AssignmentSubmissions.Count()</div>
-                        </li>
-                    }
-                </ul>
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm glass-alert" role="alert">
+            <i class="bi bi-check2-circle me-2"></i>@TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card neo-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-muted small">Học viên</div>
+                            <h5 class="m-0 fw-bold text-dark">Danh sách</h5>
+                        </div>
+                        <span class="badge bg-success-subtle text-success px-3 py-2 fw-semibold shadow-sm">@(Model.StudentHistories.Count) SV</span>
+                    </div>
+                    <div class="d-grid gap-2">
+                        @foreach (var student in Model.StudentHistories)
+                        {
+                            var examCount = student.ExamResults.Count();
+                            var assignmentCount = student.AssignmentSubmissions.Count();
+                            <div class="student-row p-2 rounded-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold text-dark">@student.StudentName</div>
+                                    <div class="text-muted small">@student.StudentCode</div>
+                                </div>
+                                <div class="text-muted small me-3">@examCount bài kiểm tra · @assignmentCount bài tập</div>
+                                <button type="button"
+                                        class="btn btn-outline-primary btn-sm rounded-pill"
+                                        data-detail="#student-detail-@student.StudentId">
+                                    Xem tiến độ
+                                </button>
+                            </div>
+                        }
+                        @if (!Model.StudentHistories.Any())
+                        {
+                            <div class="text-muted">Chưa có học viên.</div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Lessons</h5>
-                        <ul class="list-group list-group-flush">
-                            @foreach (var lesson in Model.Lessons.Take(5))
-                            {
-                                <li class="list-group-item">@lesson.Title</li>
-                            }
-                        </ul>
+        <div class="col-lg-7">
+            <div class="card neo-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-muted small">Thêm học viên</div>
+                            <h5 class="m-0 fw-bold text-dark">Gán vào lớp</h5>
+                        </div>
+                        <span class="badge bg-info-subtle text-info px-3 py-2 fw-semibold shadow-sm">Chọn rồi Add</span>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Exams</h5>
-                        <ul class="list-group list-group-flush">
-                            @foreach (var exam in Model.Exams.Take(5))
-                            {
-                                <li class="list-group-item">@exam.Title</li>
-                            }
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Assignments</h5>
-                        <ul class="list-group list-group-flush">
-                            @foreach (var assignment in Model.Assignments.Take(5))
-                            {
-                                <li class="list-group-item">@assignment.Title</li>
-                            }
-                        </ul>
-                    </div>
+                    <form asp-action="AddStudentToClass" method="post" class="row g-3">
+                        <input type="hidden" name="classId" value="@classId" />
+                        <div class="col-12">
+                            <label class="form-label text-muted">Chọn học viên</label>
+                            <select name="studentId" class="form-select border-0 shadow-sm bg-white" required>
+                                <option value="">-- Chọn học viên --</option>
+                                @foreach (var s in students ?? Enumerable.Empty<COTHUYPRO.Models.User>())
+                                {
+                                    <option value="@s.Id">@s.FullName (@s.Email)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end">
+                            <button class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="bi bi-plus-circle me-1"></i>Thêm</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-lg-4">
+            <div class="card neo-card h-100">
+                <div class="card-body">
+                    <h6 class="text-dark fw-bold mb-3">Lessons</h6>
+                    <ul class="list-unstyled m-0 text-muted">
+                        @foreach (var lesson in Model.Lessons.Take(6))
+                        {
+                            <li class="mb-1">• @lesson.Title</li>
+                        }
+                        @if (!Model.Lessons.Any()) { <li class="text-muted">Chưa có bài giảng.</li> }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card neo-card h-100">
+                <div class="card-body">
+                    <h6 class="text-dark fw-bold mb-3">Exams</h6>
+                    <ul class="list-unstyled m-0 text-muted">
+                        @foreach (var exam in Model.Exams.Take(6))
+                        {
+                            <li class="mb-1">• @exam.Title</li>
+                        }
+                        @if (!Model.Exams.Any()) { <li class="text-muted">Chưa có kỳ thi.</li> }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card neo-card h-100">
+                <div class="card-body">
+                    <h6 class="text-dark fw-bold mb-3">Assignments</h6>
+                    <ul class="list-unstyled m-0 text-muted">
+                        @foreach (var assignment in Model.Assignments.Take(6))
+                        {
+                            <li class="mb-1">• @assignment.Title</li>
+                        }
+                        @if (!Model.Assignments.Any()) { <li class="text-muted">Chưa có bài tập.</li> }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card neo-card mt-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="text-muted small">Tiến độ</div>
+                    <h5 class="fw-bold text-dark m-0">Danh sách học viên</h5>
+                </div>
+                <span class="badge bg-primary-subtle text-primary px-3 py-2 fw-semibold shadow-sm">Theo dõi tiến độ</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="text-muted small">
+                        <tr>
+                            <th class="ps-3">Học viên</th>
+                            <th>Kiểm tra</th>
+                            <th>Bài tập</th>
+                            <th>Điểm TB (nếu có)</th>
+                            <th class="text-end pe-3">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model.StudentHistories)
+                        {
+                            var examCount = student.ExamResults.Count();
+                            var assignmentCount = student.AssignmentSubmissions.Count();
+                            var avgScore = student.ExamResults.Any() ? student.ExamResults.Average(x => x.Score) : (double?)null;
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="fw-semibold text-dark">@student.StudentName</div>
+                                    <div class="text-muted small">@student.StudentCode</div>
+                                </td>
+                                <td>@examCount btvn</td>
+                                <td>@assignmentCount bài</td>
+                                <td>
+                                    @if (avgScore.HasValue)
+                                    {
+                                        <span class="badge bg-success-subtle text-success px-2">@Math.Round(avgScore.Value, 1)</span>
+                                    }
+                                    else { <span class="text-muted small">—</span>; }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <button type="button"
+                                            class="btn btn-outline-primary btn-sm rounded-pill"
+                                            data-detail="#student-detail-@student.StudentId">
+                                        Xem tiến độ
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.StudentHistories.Any())
+                        {
+                            <tr><td colspan="5" class="text-center text-muted py-4">Chưa có học viên.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @* Hidden detail blocks for modal *@
+    @foreach (var student in Model.StudentHistories)
+    {
+        <div id="student-detail-@student.StudentId" class="d-none">
+            <h6 class="fw-bold mb-2 text-dark">@student.StudentName <span class="text-muted">(@student.StudentCode)</span></h6>
+            <div class="mb-3">
+                <div class="text-muted small mb-1">Bài kiểm tra</div>
+                <ul class="list-unstyled m-0">
+                    @if (student.ExamResults.Any())
+                    {
+                        foreach (var ex in student.ExamResults)
+                        {
+                            <li class="mb-1 d-flex justify-content-between">
+                                <span>@ex.ExamTitle</span>
+                                <span class="text-muted">@ex.Score/@ex.TotalQuestions · @ex.AttemptDate.ToString("dd/MM/yyyy")</span>
+                            </li>
+                        }
+                    }
+                    else { <li class="text-muted">Chưa có kết quả.</li>; }
+                </ul>
+            </div>
+            <div>
+                <div class="text-muted small mb-1">Bài tập</div>
+                <ul class="list-unstyled m-0">
+                    @if (student.AssignmentSubmissions.Any())
+                    {
+                        foreach (var sub in student.AssignmentSubmissions)
+                        {
+                            <li class="mb-1 d-flex justify-content-between">
+                                <span>@sub.AssignmentTitle</span>
+                                <span class="text-muted">@sub.Status @if(sub.Score.HasValue){<text>· @sub.Score</text>}</span>
+                            </li>
+                        }
+                    }
+                    else { <li class="text-muted">Chưa có bài nộp.</li>; }
+                </ul>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .class-details-shell { background: radial-gradient(120% 90% at 20% 10%, #e9f1ff 0%, #f7f9fb 35%, #eef2f7 100%); min-height: 100vh; }
+    .neo-card { background: #ffffff; border: 1px solid #eef0f5; border-radius: 18px; box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12); }
+    .student-row { background: #f3f6fb; border: 1px solid #e3e8f0; transition: transform .1s ease, box-shadow .1s ease; }
+    .student-row:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08); }
+    .table thead { background: #f6f8fc; }
+    .table > :not(caption) > * > * { background-color: transparent; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalEl = document.createElement('div');
+        modalEl.className = 'modal fade';
+        modalEl.id = 'studentProgressModal';
+        modalEl.innerHTML = `
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold text-dark">Tiến độ học viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body pt-3" id="studentProgressBody"></div>
+                </div>
+            </div>`;
+        document.body.appendChild(modalEl);
+        const modal = new bootstrap.Modal(modalEl);
+
+        document.querySelectorAll('[data-detail]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = document.querySelector(btn.getAttribute('data-detail'));
+                if (!target) return;
+                const body = document.getElementById('studentProgressBody');
+                body.innerHTML = target.innerHTML;
+                modal.show();
+            });
+        });
+    });
+</script>

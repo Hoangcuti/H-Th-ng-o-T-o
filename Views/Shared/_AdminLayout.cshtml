@@ -21,66 +21,88 @@
                     <div class="brand-title">SmartHub</div>
                 </div>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <div class="nav-label">Chính</div>
-                <a class="nav-link @((ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Admin") ? "active" : "")" 
+                <a class="nav-link @((ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Admin") ? "active" : "")"
                    asp-controller="Admin" asp-action="Index">
                     <span class="icon dashboard"><i class="bi bi-grid-fill"></i></span>
                     <span class="text">Tổng quan</span>
                 </a>
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingContent" ? "active" : "")" 
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingContent" ? "active" : "")"
                    asp-controller="Admin" asp-action="PendingContent">
                     <span class="icon dashboard"><i class="bi bi-shield-check"></i></span>
                     <span class="text">Trung tâm Phê duyệt</span>
                 </a>
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ContentHistory" ? "active" : "")" 
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ContentHistory" ? "active" : "")"
                    asp-controller="Admin" asp-action="ContentHistory">
                     <span class="icon dashboard"><i class="bi bi-clock-history"></i></span>
                     <span class="text">Lịch sử thao tác</span>
                 </a>
-                
+
                 <div class="nav-label">Nội dung</div>
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Courses" ? "active" : "")" 
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Courses" ? "active" : "")"
                    asp-controller="Admin" asp-action="Courses">
                     <span class="icon courses"><i class="bi bi-journal-bookmark-fill"></i></span>
                     <span class="text">Khóa học</span>
                 </a>
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lessons" ? "active" : "")" 
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lessons" ? "active" : "")"
                    asp-controller="Admin" asp-action="Lessons">
                     <span class="icon lessons"><i class="bi bi-play-btn-fill"></i></span>
                     <span class="text">Bài giảng</span>
                 </a>
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Quiz" ? "active" : "")" 
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Quiz" ? "active" : "")"
                    asp-controller="Admin" asp-action="Quiz">
                     <span class="icon quizzes"><i class="bi bi-patch-check-fill"></i></span>
                     <span class="text">Bài tập Quiz</span>
                 </a>
 
+                <div class="nav-label">Niên khóa</div>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "AcademicYears" ? "active" : "")"
+                   asp-controller="Admin" asp-action="AcademicYears">
+                    <span class="icon system"><i class="bi bi-calendar-event-fill"></i></span>
+                    <span class="text">Năm học</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Semesters" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Semesters">
+                    <span class="icon system"><i class="bi bi-layers-fill"></i></span>
+                    <span class="text">Kỳ học</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Blocks" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Blocks">
+                    <span class="icon system"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+                    <span class="text">Block</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Classes" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Classes">
+                    <span class="icon system"><i class="bi bi-person-video3"></i></span>
+                    <span class="text">Lớp học</span>
+                </a>
+
                 <div class="nav-label">Nhân sự</div>
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Accounts" ? "active" : "")" 
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Accounts" ? "active" : "")"
                    asp-controller="Admin" asp-action="Accounts">
                     <span class="icon accounts"><i class="bi bi-people-fill"></i></span>
                     <span class="text">Tài khoản</span>
                 </a>
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Students" ? "active" : "")" 
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Students" ? "active" : "")"
                    asp-controller="Admin" asp-action="Students">
                     <span class="icon students"><i class="bi bi-mortarboard-fill"></i></span>
                     <span class="text">Học viên</span>
                 </a>
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Instructors" ? "active" : "")" 
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Instructors" ? "active" : "")"
                    asp-controller="Admin" asp-action="Instructors">
                     <span class="icon instructors"><i class="bi bi-person-workspace"></i></span>
                     <span class="text">Giảng viên</span>
                 </a>
 
                 <div class="nav-label">Tài chính</div>
-                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Revenue" ? "active" : "")" 
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Revenue" ? "active" : "")"
                    asp-controller="Admin" asp-action="Revenue">
                     <span class="icon revenue"><i class="bi bi-bar-chart-fill"></i></span>
                     <span class="text">Doanh thu</span>
                 </a>
-                
+
                 <div class="nav-label">Hệ thống</div>
                 <a class="nav-link" asp-controller="Chat" asp-action="Index">
                     <span class="icon system"><i class="bi bi-robot"></i></span>

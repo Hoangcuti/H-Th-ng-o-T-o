@@ -3716,11 +3716,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\COTHUY\\H-Th-ng-o-T-o\\COTHUYPRO.csproj",
+      "projectUniqueName": "E:\\DATA\\H-Th-ng-o-T-o\\COTHUYPRO.csproj",
       "projectName": "COTHUYPRO",
-      "projectPath": "E:\\COTHUY\\H-Th-ng-o-T-o\\COTHUYPRO.csproj",
+      "projectPath": "E:\\DATA\\H-Th-ng-o-T-o\\COTHUYPRO.csproj",
       "packagesPath": "C:\\Users\\tohoa\\.nuget\\packages\\",
-      "outputPath": "E:\\COTHUY\\H-Th-ng-o-T-o\\obj\\",
+      "outputPath": "E:\\DATA\\H-Th-ng-o-T-o\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

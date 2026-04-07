@@ -5,72 +5,164 @@
     var courses = ViewBag.Courses as IEnumerable<COTHUYPRO.Models.Course>;
     var instructors = ViewBag.Instructors as IEnumerable<COTHUYPRO.Models.User>;
     var blocks = ViewBag.Blocks as IEnumerable<COTHUYPRO.Models.Block>;
+    var departments = ViewBag.Departments as IEnumerable<COTHUYPRO.Models.Department>;
+    var items = Model ?? Enumerable.Empty<COTHUYPRO.Models.Class>();
 }
 
-<div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-white fw-bold"><i class="fas fa-chalkboard-teacher me-2 text-success"></i>Quản lý Lớp học</h2>
-        <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#createClassModal">
-            <i class="fas fa-plus me-2"></i>Tạo Lớp mới
-        </button>
+<div class="container-fluid p-4 page-shell">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <div class="text-muted small">Niên khóa</div>
+            <h2 class="fw-bold mb-1 text-dark">
+                <i class="bi bi-person-video3 me-2 text-primary"></i>Quản lý Lớp học
+            </h2>
+            <p class="text-muted small mb-0">Tạo và quản lý lớp học theo Block, kỳ học và ngành đào tạo.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary rounded-pill shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#createClassModal">
+                <i class="bi bi-plus-circle me-1"></i> Tạo Lớp mới
+            </button>
+        </div>
     </div>
 
     @if (TempData["Message"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-            <i class="fas fa-check-circle me-2"></i>@TempData["Message"]
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-pill px-4 mb-4" role="alert">
+            <i class="bi bi-check2-circle me-2"></i>@TempData["Message"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="card bg-dark border-0 shadow-lg rounded-4 overflow-hidden">
+    <!-- Stats row -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="card soft-card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold text-primary">@items.Count()</div>
+                <div class="text-muted small">Tổng lớp học</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card soft-card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold text-success">@items.Count(c => c.Block != null)</div>
+                <div class="text-muted small">Đã gán Block</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card soft-card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold text-warning">@items.Count(c => c.Block == null)</div>
+                <div class="text-muted small">Chưa gán Block</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card soft-card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-table text-primary fs-5"></i>
+                <h5 class="m-0 fw-bold">Danh sách lớp học</h5>
+            </div>
+            <span class="badge bg-primary rounded-pill px-3">@items.Count() lớp</span>
+        </div>
         <div class="table-responsive">
-            <table class="table table-hover table-dark align-middle mb-0">
-                <thead class="bg-success text-white">
-                    <tr>
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr class="text-uppercase small text-muted">
                         <th class="ps-4 py-3">Mã lớp</th>
                         <th class="py-3">Môn học</th>
                         <th class="py-3">Giảng viên</th>
-                        <th class="py-3">Block học</th>
-                        <th class="py-3">Sĩ số</th>
+                        <th class="py-3">Block / Kỳ học</th>
+                        <th class="py-3 text-center">Sĩ số</th>
                         <th class="pe-4 py-3 text-end">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var cls in Model)
+                    @if (!items.Any())
                     {
                         <tr>
-                            <td class="ps-4 fw-bold">
-                                <span class="badge bg-soft-success text-success px-3 py-2 rounded-3">
-                                    @cls.ClassCode
-                                </span>
-                            </td>
-                            <td>@(cls.Course?.CourseName ?? "N/A")</td>
-                            <td>@(cls.Instructor?.FullName ?? "Chưa gán")</td>
-                            <td>
-                                @if (cls.Block != null)
-                                {
-                                    <small class="text-muted">
-                                        @cls.Block.BlockName (@cls.Block.Semester?.SemesterName @cls.Block.Semester?.Year?.YearNumber)
-                                    </small>
-                                }
-                                else
-                                {
-                                    <span class="text-danger">Chưa gán Block</span>
-                                }
-                            </td>
-                            <td>
-                                <span class="badge bg-light text-dark">@(cls.ClassStudents?.Count ?? 0) SV</span>
-                            </td>
-                            <td class="pe-4 text-end">
-                                <button class="btn btn-outline-info btn-sm rounded-pill px-3 me-2">
-                                    <i class="fas fa-edit"></i> Sửa
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                    <i class="fas fa-trash"></i> Xóa
-                                </button>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox display-6 d-block mb-2 opacity-25"></i>
+                                <span class="small fw-medium">Chưa có lớp học nào</span>
                             </td>
                         </tr>
+                    }
+                    else
+                    {
+                        @foreach (var cls in items)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-bold fs-6">
+                                        @cls.ClassCode
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">@(cls.Course?.CourseName ?? "—")</div>
+                                </td>
+                                <td>
+                                    @if (cls.Instructor != null)
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center fw-bold"
+                                                 style="width:28px;height:28px;font-size:11px;">
+                                                @cls.Instructor.FullName.Substring(0, 1)
+                                            </div>
+                                            <span class="small">@cls.Instructor.FullName</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small fst-italic">Chưa gán</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (cls.Block != null)
+                                    {
+                                        <div>
+                                            <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1">
+                                                <i class="bi bi-grid-3x3-gap me-1"></i>@cls.Block.BlockName
+                                            </span>
+                                            <div class="text-muted small mt-1">
+                                                @cls.Block.Semester?.SemesterName · Năm @cls.Block.Semester?.Year?.YearNumber
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning-subtle text-warning rounded-pill px-2 py-1">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>Chưa gán Block
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2">
+                                        @(cls.ClassStudents?.Count ?? 0) SV
+                                    </span>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <a class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                                           asp-action="ClassDetails" asp-route-classId="@cls.Id">
+                                            <i class="bi bi-eye me-1"></i>Xem
+                                        </a>
+                                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"
+                                                data-bs-toggle="modal" data-bs-target="#editClassModal"
+                                                data-id="@cls.Id"
+                                                data-code="@cls.ClassCode"
+                                                data-course="@cls.CourseId"
+                                                data-instructor="@cls.InstructorId"
+                                                data-block="@cls.BlockId">
+                                            <i class="bi bi-pencil me-1"></i>Sửa
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                                                onclick="deleteClass(@cls.Id)">
+                                            <i class="bi bi-trash me-1"></i>Xóa
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
@@ -78,54 +170,74 @@
     </div>
 </div>
 
-<!-- Modal Create -->
+<!-- Modal Tạo Lớp -->
 <div class="modal fade" id="createClassModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-success shadow-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:18px;">
             <form asp-action="CreateClass" method="post">
-                <div class="modal-header border-success text-white">
-                    <h5 class="modal-title fw-bold">Tạo Lớp học mới</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-0 px-4 pt-4">
+                    <div>
+                        <div class="text-muted small">Tạo mới</div>
+                        <h5 class="modal-title fw-bold mb-0">Lớp học</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 text-white">
-                    <div class="mb-3">
-                        <label class="form-label">Mã lớp học (ví dụ: SE1701)</label>
-                        <input type="text" name="classCode" class="form-control bg-secondary text-white border-0 shadow-sm" placeholder="Nhập mã lớp..." required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Chọn Môn học</label>
-                        <select name="courseId" class="form-select bg-secondary text-white border-0 shadow-sm">
-                            <option value="">-- Chọn môn học --</option>
-                            @foreach (var c in courses ?? Enumerable.Empty<COTHUYPRO.Models.Course>())
-                            {
-                                <option value="@c.Id">@c.CourseName</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Chọn Giảng viên</label>
-                        <select name="instructorId" class="form-select bg-secondary text-white border-0 shadow-sm">
-                            <option value="">-- Chọn giảng viên --</option>
-                            @foreach (var i in instructors ?? Enumerable.Empty<COTHUYPRO.Models.User>())
-                            {
-                                <option value="@i.Id">@i.FullName</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Chọn Block học</label>
-                        <select name="blockId" class="form-select bg-secondary text-white border-0 shadow-sm" required>
-                            <option value="">-- Chọn Block --</option>
-                            @foreach (var b in blocks ?? Enumerable.Empty<COTHUYPRO.Models.Block>())
-                            {
-                                <option value="@b.Id">Block @b.BlockName - Kỳ @b.Semester?.SemesterName (@b.Semester?.Year?.YearNumber)</option>
-                            }
-                        </select>
+                <div class="modal-body px-4 pb-2">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-semibold">Chọn Ngành (gợi ý mã lớp)</label>
+                            <select id="departmentSelect" class="form-select">
+                                <option value="">-- Chọn ngành --</option>
+                                @foreach (var d in departments ?? Enumerable.Empty<COTHUYPRO.Models.Department>())
+                                {
+                                    <option value="@d.Name">@d.Name</option>
+                                }
+                            </select>
+                            <div class="form-text">Mã lớp gợi ý theo ngành + năm học</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-semibold">Mã lớp học <span class="text-danger">*</span></label>
+                            <input id="classCodeInput" type="text" name="classCode"
+                                   class="form-control fw-bold text-primary"
+                                   placeholder="VD: SD2601" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-semibold">Chọn Môn học</label>
+                            <select name="courseId" class="form-select">
+                                <option value="">-- Chọn môn học --</option>
+                                @foreach (var c in courses ?? Enumerable.Empty<COTHUYPRO.Models.Course>())
+                                {
+                                    <option value="@c.Id">@c.CourseName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-semibold">Chọn Giảng viên</label>
+                            <select name="instructorId" class="form-select">
+                                <option value="">-- Chọn giảng viên --</option>
+                                @foreach (var i in instructors ?? Enumerable.Empty<COTHUYPRO.Models.User>())
+                                {
+                                    <option value="@i.Id">@i.FullName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-semibold">Chọn Block học <span class="text-danger">*</span></label>
+                            <select name="blockId" class="form-select" required>
+                                <option value="">-- Chọn Block --</option>
+                                @foreach (var b in blocks ?? Enumerable.Empty<COTHUYPRO.Models.Block>())
+                                {
+                                    <option value="@b.Id">@b.BlockName · Kỳ @b.Semester?.SemesterName · Năm @b.Semester?.Year?.YearNumber</option>
+                                }
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer border-success">
-                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-success px-4 fw-bold">Tạo ngay</button>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                        <i class="bi bi-plus-circle me-1"></i>Tạo lớp
+                    </button>
                 </div>
             </form>
         </div>
@@ -133,5 +245,33 @@
 </div>
 
 <style>
-    .bg-soft-success { background-color: rgba(25, 135, 84, 0.15) !important; }
+    .page-shell { background: linear-gradient(180deg, #f7f9fb 0%, #f2f5fa 100%); min-height: 100vh; }
+    .soft-card { background: #fff; border-radius: 16px; }
+    .bg-primary-subtle { background: #eef2ff !important; }
+    .table > :not(caption) > * > * { background-color: transparent; }
+    .table-hover tbody tr:hover td { background-color: #f8fafc !important; }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const deptSelect = document.getElementById('departmentSelect');
+        const classCodeInput = document.getElementById('classCodeInput');
+        const year = new Date().getFullYear().toString().slice(-2);
+        const slug = (name) => {
+            if (!name) return 'CL';
+            const parts = name.split(/\s+/).filter(Boolean);
+            return parts.map(p => p[0]).join('').toUpperCase() || name.substring(0, 2).toUpperCase();
+        };
+        deptSelect?.addEventListener('change', () => {
+            const prefix = slug(deptSelect.value);
+            classCodeInput.value = `${prefix}${year}01`;
+        });
+    });
+
+    async function deleteClass(id) {
+        if (!confirm('Xóa lớp học này?')) return;
+        const res = await fetch(`/Admin/DeleteClass/${id}`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if (res.ok) location.reload();
+        else alert('Xóa thất bại. Vui lòng thử lại.');
+    }
+</script>

@@ -135,4 +135,6 @@ public class CreateBulkVm
     public string ChapterTitle { get; set; } = string.Empty;
     public List<BulkLessonEntry> Lessons { get; set; } = new();
     public List<Course> AvailableCourses { get; set; } = new();
+    public int? BlockId { get; set; }
+    public List<Block> AvailableBlocks { get; set; } = new();
 }

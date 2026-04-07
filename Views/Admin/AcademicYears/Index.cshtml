@@ -2,40 +2,81 @@
 @{
     ViewData["Title"] = "Quản lý Năm học";
     Layout = "_AdminLayout";
+    var years = Model?.OrderByDescending(y => y.YearNumber).ToList() ?? new List<COTHUYPRO.Models.AcademicYear>();
+    var currentYear = years.FirstOrDefault(y => y.YearNumber == DateTime.Now.Year) ?? years.FirstOrDefault();
 }
 
-<div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-white fw-bold"><i class="fas fa-calendar-alt me-2 text-primary"></i>Quản lý Năm học</h2>
-        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createYearModal">
-            <i class="fas fa-plus me-2"></i>Thêm Năm học
-        </button>
+<div class="container-fluid p-4 page-shell">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <div class="text-muted small">Niên khóa</div>
+            <h2 class="fw-bold mb-1 text-dark">Quản lý Năm học</h2>
+            <p class="text-muted small mb-0">Theo dõi tiến độ năm theo thời gian thực và thêm nhanh kỳ cho từng năm.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="clock-card text-center px-3 py-2">
+                <div class="text-muted small">Đồng hồ admin</div>
+                <div id="liveClock" class="fw-bold text-primary fs-5">--:--:--</div>
+                <div class="text-muted small">Asia/Bangkok</div>
+            </div>
+            <button class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#createYearModal">
+                <i class="bi bi-plus-circle me-1"></i> Thêm Năm học
+            </button>
+        </div>
     </div>
 
     @if (TempData["Message"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-            <i class="fas fa-check-circle me-2"></i>@TempData["Message"]
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-pill px-3" role="alert">
+            <i class="bi bi-check2-circle me-2"></i>@TempData["Message"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="card bg-dark border-0 shadow-lg rounded-4 overflow-hidden">
+    @if (currentYear != null)
+    {
+        <div class="card soft-card shadow-sm border-0 mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <div class="text-muted small">Năm đang theo dõi</div>
+                        <h4 class="mb-0">Năm @currentYear.YearNumber</h4>
+                    </div>
+                    <div class="ring"></div>
+                </div>
+                <div class="progress progress-thin mb-2">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                         role="progressbar"
+                         id="yearProgress"
+                         data-year="@currentYear.YearNumber">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between text-muted small">
+                    <span>Bắt đầu: 01/01/@currentYear.YearNumber</span>
+                    <span id="yearCountdown" class="text-primary fw-semibold"></span>
+                    <span>Kết thúc: 31/12/@currentYear.YearNumber</span>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card soft-card border-0 shadow-sm">
         <div class="table-responsive">
-            <table class="table table-hover table-dark align-middle mb-0">
-                <thead class="bg-primary text-white">
-                    <tr>
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr class="text-uppercase small text-muted">
                         <th class="ps-4 py-3">ID</th>
                         <th class="py-3">Năm học</th>
                         <th class="py-3">Trạng thái</th>
+                        <th class="py-3">Tiến độ</th>
                         <th class="pe-4 py-3 text-end">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var year in Model)
+                    @foreach (var year in years)
                     {
                         <tr>
-                            <td class="ps-4 fw-bold text-muted">#@year.Id</td>
+                            <td class="ps-4 fw-semibold text-muted">#@year.Id</td>
                             <td>
                                 <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill fw-bold">
                                     Năm @year.YearNumber
@@ -44,21 +85,30 @@
                             <td>
                                 @if (year.IsActive)
                                 {
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1">
-                                        <i class="fas fa-check-circle me-1"></i>Đang hoạt động
+                                    <span class="badge bg-success-subtle text-success border-0 px-3 py-2 rounded-pill">
+                                        <i class="bi bi-check-circle me-1"></i>Đang hoạt động
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary text-white px-2 py-1">Đã đóng</span>
+                                    <span class="badge bg-secondary-subtle text-muted border-0 px-3 py-2 rounded-pill">Đã đóng</span>
                                 }
                             </td>
+                            <td style="min-width:180px;">
+                                <div class="small text-muted" id="rowCountdown-@year.Id">Đang tính...</div>
+                                <div class="progress progress-mini mt-1">
+                                    <div class="progress-bar bg-primary mini-year-progress"
+                                         id="rowProgress-@year.Id"
+                                         data-year="@year.YearNumber">
+                                    </div>
+                                </div>
+                            </td>
                             <td class="pe-4 text-end">
-                                <button class="btn btn-outline-info btn-sm rounded-pill px-3 me-2">
-                                    <i class="fas fa-edit me-1"></i>Sửa
+                                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 me-2">
+                                    <i class="bi bi-pencil me-1"></i>Sửa
                                 </button>
                                 <button class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                    <i class="fas fa-trash me-1"></i>Xóa
+                                    <i class="bi bi-trash me-1"></i>Xóa
                                 </button>
                             </td>
                         </tr>
@@ -71,22 +121,72 @@
 
 <!-- Modal Create -->
 <div class="modal fade" id="createYearModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-secondary shadow-lg">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0 shadow-lg rounded-4">
             <form asp-action="CreateAcademicYear" method="post">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-white fw-bold">Thêm Năm học mới</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-0">
+                    <div>
+                        <div class="text-muted small">Tạo mới</div>
+                        <h5 class="modal-title fw-bold mb-0">Năm học</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label text-light">Nhập Năm học (ví dụ: 2024)</label>
-                        <input type="number" name="yearNumber" class="form-control bg-secondary text-white border-0 shadow-sm" required min="2020" max="2100" value="@DateTime.Now.Year" />
+                    <div class="row g-4">
+                        <div class="col-lg-4">
+                            <label class="form-label text-muted">Nhập Năm học (ví dụ: 2026)</label>
+                            <input type="number"
+                                   name="yearNumber"
+                                   class="form-control form-control-lg"
+                                   required
+                                   min="2020"
+                                   max="2100"
+                                   value="@DateTime.Now.Year" />
+                            <p class="text-muted small mt-2 mb-0">
+                                Sau khi lưu, bạn có thể thêm kỳ ở màn Kỳ học.
+                            </p>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label text-muted mb-0">Kỳ trong năm (soạn sẵn)</label>
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" id="addSemesterRow">
+                                    <i class="bi bi-plus-circle me-1"></i>Thêm kỳ
+                                </button>
+                            </div>
+                            <div id="semesterContainer" class="d-grid gap-2">
+                                <div class="semester-row p-3 rounded-3 border bg-light" data-index="0">
+                                    <div class="row g-2 align-items-center">
+                                        <div class="col-md-4">
+                                            <label class="small text-muted">Tên kỳ</label>
+                                            <input name="semesterNames[]" class="form-control" value="Spring" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="small text-muted">Bắt đầu</label>
+                                            <input type="datetime-local" name="semesterStarts[]" class="form-control" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="small text-muted">Kết thúc</label>
+                                            <div class="input-group">
+                                                <input type="datetime-local" name="semesterEnds[]" class="form-control" />
+                                                <button type="button" class="btn btn-outline-secondary remove-semester" title="Xóa">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-muted small mt-2 mb-0">
+                                Dữ liệu này chỉ để ghi chú, chưa tự lưu kỳ. Vào trang Kỳ học để lưu chính thức.
+                            </p>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-outline-light" data-bs-toggle="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary px-4">Xác nhận</button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-check2-circle me-1"></i>Xác nhận
+                    </button>
                 </div>
             </form>
         </div>
@@ -94,7 +194,91 @@
 </div>
 
 <style>
-    .bg-soft-primary { background-color: rgba(13, 110, 253, 0.15) !important; }
-    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05) !important; transition: background 0.3s; }
-    .card { background: rgba(33, 37, 41, 0.7); backdrop-filter: blur(10px); }
+    .page-shell { background: linear-gradient(180deg, #f7f9fb 0%, #f2f5fa 100%); }
+    .soft-card { background: #fff; border-radius: 18px; }
+    .bg-soft-primary { background: #eef2ff; }
+    .progress-thin { height: 10px; background: #eef2ff; border-radius: 12px; }
+    .progress-mini { height: 8px; background: #f3f4f6; border-radius: 10px; }
+    .clock-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; }
+    .ring { width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #c7d2fe, #6366f1); opacity: 0.85; }
+    .table > :not(caption) > * > * { background-color: transparent; }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const formatTwo = (n) => String(n).padStart(2, '0');
+
+        // Live clock
+        const clockEl = document.getElementById('liveClock');
+        const tickClock = () => {
+            const now = new Date();
+            clockEl.textContent = `${formatTwo(now.getHours())}:${formatTwo(now.getMinutes())}:${formatTwo(now.getSeconds())}`;
+        };
+        tickClock();
+        setInterval(tickClock, 1000);
+
+        const bindYearBar = (barEl, countdownEl) => {
+            if (!barEl) return;
+            const year = parseInt(barEl.dataset.year, 10);
+            const start = new Date(year, 0, 1, 0, 0, 0);
+            const end = new Date(year, 11, 31, 23, 59, 59);
+            const update = () => {
+                const now = new Date();
+                const total = end - start;
+                const elapsed = Math.max(0, Math.min(total, now - start));
+                const percent = Math.min(100, Math.max(0, (elapsed / total) * 100));
+                barEl.style.width = `${percent.toFixed(1)}%`;
+                if (countdownEl) {
+                    const remain = Math.max(0, end - now);
+                    const days = Math.floor(remain / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((remain / (1000 * 60 * 60)) % 24);
+                    const minutes = Math.floor((remain / (1000 * 60)) % 60);
+                    const seconds = Math.floor((remain / 1000) % 60);
+                    countdownEl.textContent = `Còn ${days} ngày ${formatTwo(hours)}:${formatTwo(minutes)}:${formatTwo(seconds)} tới 31/12/${year}`;
+                }
+            };
+            update();
+            setInterval(update, 1000);
+        };
+
+        bindYearBar(document.getElementById('yearProgress'), document.getElementById('yearCountdown'));
+        document.querySelectorAll('.mini-year-progress').forEach(bar => {
+            const rowCountdown = document.getElementById(`rowCountdown-${bar.id.split('-')[1]}`);
+            bindYearBar(bar, rowCountdown);
+        });
+
+        // Dynamic semester rows
+        const semesterContainer = document.getElementById('semesterContainer');
+        const addSemesterBtn = document.getElementById('addSemesterRow');
+        const createRow = () => {
+            const div = document.createElement('div');
+            div.className = 'semester-row p-3 rounded-3 border bg-light';
+            div.innerHTML = `
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-4">
+                        <label class="small text-muted">Tên kỳ</label>
+                        <input name="semesterNames[]" class="form-control" placeholder="Fall / Summer / Spring" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted">Bắt đầu</label>
+                        <input type="datetime-local" name="semesterStarts[]" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted">Kết thúc</label>
+                        <div class="input-group">
+                            <input type="datetime-local" name="semesterEnds[]" class="form-control" />
+                            <button type="button" class="btn btn-outline-secondary remove-semester" title="Xóa"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                    </div>
+                </div>`;
+            semesterContainer.appendChild(div);
+        };
+        addSemesterBtn?.addEventListener('click', createRow);
+        semesterContainer?.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-semester')) {
+                const row = e.target.closest('.semester-row');
+                if (row && semesterContainer.children.length > 1) row.remove();
+            }
+        });
+    });
+</script>
